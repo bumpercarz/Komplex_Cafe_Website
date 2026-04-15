@@ -1,0 +1,56 @@
+.qr-wrapper {
+    flex: 1;
+    font-family: 'Golos', sans-serif;
+    width: 100%;
+    background-color: #EF7828;
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-top: 110px;
+}
+
+.qr-page {
+    background: white;
+    height: 80vh;
+    width: 85%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-direction: column;
+    text-align: center;
+    font-family: 'Golos', sans-serif;
+}
+
+.qr-page img {
+    width: 200px;
+    height: 200px;
+}
+
+.qr-header {
+    font-size: 2em;
+    font-weight: 600;
+    padding-bottom: 5px;
+}
+
+.qr-page p {
+    font-size: 1.1em;
+    font-weight: 600;
+    padding: 5px 10px 25px 10px;
+}
+
+.qr-page button {
+    font-weight: bold;
+    width: 250px;
+    height: 60px;
+    border-radius: 10px;
+    background-color: #EF7828;
+}
+
+.qr-btns {
+    display: flex;
+    flex-direction: column;
+    padding: 0px 20px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}

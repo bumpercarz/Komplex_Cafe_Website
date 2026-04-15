@@ -1,0 +1,885 @@
+/* Layout */
+.ao-main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 24px 40px;
+  box-sizing: border-box;
+}
+
+/* =========================
+   Pending / Finished Tabs
+========================= */
+
+.ao-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.ao-tab {
+  border: none;
+  padding: 20px 24px;
+  font-size: 48px;
+  font-weight: 600;
+  text-align: left;
+  background: #d6d6d6;
+  color: rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.ao-tab.is-active {
+  background: #ea7425;
+  color: black;
+}
+
+/* =========================
+   Order Cards
+========================= */
+
+.ao-list {
+  padding: 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ao-card {
+  border-radius: 6px;
+  overflow: hidden;
+  background: #eee;
+}
+
+/* Orange header */
+.ao-cardTop {
+  width: 100%;
+  border: none;
+  background: #ea7425;
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  cursor: pointer;
+  position: relative;
+}
+
+/* LEFT SIDE */
+.ao-cardTopLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 500px;
+}
+
+.ao-orderId {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.ao-row {
+  font-size: 22px;
+}
+
+.ao-label {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* RIGHT SIDE */
+.ao-cardTopRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.ao-time {
+  display: flex;
+  gap: 10px;
+  font-size: 22px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ao-clock {
+  font-size: 22px;
+}
+
+.ao-date {
+  margin-left: 10px;
+}
+
+.ao-hint {
+  font-size: 18px;
+}
+
+.ao-chevron {
+  position: absolute;
+  bottom: 12px;
+  right: 28px;
+  font-size: 20px;
+  margin-right: 18px;
+  text-decoration: underline;
+}
+
+.ao-chevron2 {
+  position: absolute;
+  bottom: 12px;
+  right: 28px;
+  font-size: 20px;
+}
+
+/* =========================
+   Expanded Body
+========================= */
+
+.ao-cardBody {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  padding: 24px 28px;
+  background: #ddd;
+}
+
+/* LEFT */
+.ao-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.ao-sectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.ao-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ao-itemRow {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  font-size: 22px;
+  column-gap: 10px;
+}
+
+.ao-itemQty {
+  font-weight: 600;
+}
+
+.ao-divider {
+  margin-top: 32px;
+  border-top: 2px solid #bbb;
+}
+
+.ao-totalRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.ao-totalPrice {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* MIDDLE DIVIDER */
+.ao-midDivider {
+  width: 2px;
+  background: #bbb;
+  margin: 0 24px;
+}
+
+.ao-selectWrap {
+  width: 280px;
+}
+
+.ao-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 20px;
+}
+
+.ao-metaRow {
+  font-size: 20px;
+}
+
+.ao-instructions {
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+/* Empty state */
+.ao-empty {
+  padding: 40px;
+  text-align: center;
+  font-size: 20px;
+  color: #777;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 1100px) {
+  .ao-main {
+    padding: 0 20px 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .ao-main {
+    padding: 0 18px 28px;
+  }
+
+  .ao-tab {
+    font-size: 32px;
+  }
+
+  .ao-cardTop {
+    padding: 18px 20px 48px;
+  }
+
+  .ao-orderId {
+    font-size: 28px;
+  }
+
+  .ao-row {
+    font-size: 18px;
+  }
+
+  .ao-time {
+    font-size: 18px;
+    justify-content: flex-end;
+  }
+
+  .ao-clock {
+    font-size: 18px;
+  }
+
+  .ao-chevron,
+  .ao-chevron2 {
+    bottom: 12px;
+    right: 20px;
+    font-size: 16px;
+  }
+
+  .ao-cardBody {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .ao-midDivider {
+    display: none;
+  }
+
+  .ao-itemRow,
+  .ao-metaRow,
+  .ao-select,
+  .ao-totalPrice {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ao-main {
+    padding: 0 16px 24px;
+  }
+
+  .ao-list {
+    padding: 16px 0 0;
+  }
+
+  .ao-tab {
+    font-size: 22px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .ao-cardTop {
+    padding: 16px 16px 52px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .ao-cardTopLeft {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .ao-cardTopRight {
+    width: 100%;
+    min-width: 0;
+    align-items: flex-start;
+    flex: 1 1 auto;
+  }
+
+  .ao-time {
+    font-size: 16px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .ao-orderId {
+    font-size: 22px;
+  }
+
+  .ao-row {
+    font-size: 16px;
+  }
+
+  .ao-date {
+    margin-left: 0;
+  }
+
+  .ao-chevron,
+  .ao-chevron2 {
+    right: 16px;
+    bottom: 12px;
+    font-size: 14px;
+  }
+
+  .ao-cardBody {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .ao-sectionTitle {
+    font-size: 20px;
+  }
+
+  .ao-itemRow {
+    grid-template-columns: 32px 1fr auto;
+    font-size: 16px;
+    column-gap: 8px;
+  }
+
+  .ao-selectWrap {
+    width: 100%;
+  }
+
+  .ao-select {
+    font-size: 16px;
+  }
+
+  .ao-metaRow,
+  .ao-instructions,
+  .ao-totalPrice {
+    font-size: 16px;
+  }
+}
+
+.ad-topbar.no-menu {
+  justify-content: space-between;
+}
+
+.ad-spacer {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+/* =========================
+   Receipt Upload + Preview
+========================= */
+
+.ao-formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 18px;
+}
+
+.ao-uploadBox {
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  border: 2px dashed #aaa;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.ao-uploadBox:hover {
+  border-color: #ea7425;
+  background: #f9f9f9;
+}
+
+/* Receipt container */
+.ao-receipt {
+  margin-top: 12px;
+}
+
+/* Receipt image */
+.ao-receipt-img {
+  width: 100%;
+  max-width: 260px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.ao-receipt-img:hover {
+  transform: scale(1.03);
+}
+
+/* Layout */
+.ao-main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 24px 40px;
+  box-sizing: border-box;
+}
+
+/* =========================
+   Pending / Finished Tabs
+========================= */
+
+.ao-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.ao-tab {
+  border: none;
+  padding: 20px 24px;
+  font-size: 48px;
+  font-weight: 600;
+  text-align: left;
+  background: #d6d6d6;
+  color: rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+.ao-tab.is-active {
+  background: #ea7425;
+  color: black;
+}
+
+/* =========================
+   Order Cards
+========================= */
+
+.ao-list {
+  padding: 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.ao-card {
+  border-radius: 6px;
+  overflow: hidden;
+  background: #eee;
+}
+
+/* Orange header */
+.ao-cardTop {
+  width: 100%;
+  border: none;
+  background: #ea7425;
+  padding: 20px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+  cursor: pointer;
+  position: relative;
+}
+
+/* LEFT SIDE */
+.ao-cardTopLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 500px;
+}
+
+.ao-orderId {
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.ao-row {
+  font-size: 22px;
+}
+
+.ao-label {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+/* RIGHT SIDE */
+.ao-cardTopRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.ao-time {
+  display: flex;
+  gap: 10px;
+  font-size: 22px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ao-clock {
+  font-size: 22px;
+}
+
+.ao-date {
+  margin-left: 10px;
+}
+
+.ao-hint {
+  font-size: 18px;
+}
+
+.ao-chevron {
+  position: absolute;
+  bottom: 12px;
+  right: 28px;
+  font-size: 20px;
+  margin-right: 18px;
+  text-decoration: underline;
+}
+
+.ao-chevron2 {
+  position: absolute;
+  bottom: 12px;
+  right: 28px;
+  font-size: 20px;
+}
+
+/* =========================
+   Expanded Body
+========================= */
+
+.ao-cardBody {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  padding: 24px 28px;
+  background: #ddd;
+}
+
+/* LEFT */
+.ao-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.ao-sectionTitle {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.ao-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ao-itemRow {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  font-size: 22px;
+  column-gap: 10px;
+}
+
+.ao-itemQty {
+  font-weight: 600;
+}
+
+.ao-divider {
+  margin-top: 32px;
+  border-top: 2px solid #bbb;
+}
+
+.ao-totalRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.ao-totalPrice {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* MIDDLE DIVIDER */
+.ao-midDivider {
+  width: 2px;
+  background: #bbb;
+  margin: 0 24px;
+}
+
+/* RIGHT SIDE */
+.ao-right {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ao-selectWrap {
+  width: 280px;
+}
+
+.ao-select {
+  width: 100%;
+  padding: 10px;
+  font-size: 20px;
+}
+
+.ao-metaRow {
+  font-size: 20px;
+}
+
+.ao-instructions {
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+/* Empty state */
+.ao-empty {
+  padding: 40px;
+  text-align: center;
+  font-size: 20px;
+  color: #777;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 1100px) {
+  .ao-main {
+    padding: 0 20px 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .ao-main {
+    padding: 0 18px 28px;
+  }
+
+  .ao-tab {
+    font-size: 32px;
+  }
+
+  .ao-cardTop {
+    padding: 18px 20px 48px;
+  }
+
+  .ao-orderId {
+    font-size: 28px;
+  }
+
+  .ao-row {
+    font-size: 18px;
+  }
+
+  .ao-time {
+    font-size: 18px;
+    justify-content: flex-end;
+  }
+
+  .ao-clock {
+    font-size: 18px;
+  }
+
+  .ao-chevron,
+  .ao-chevron2 {
+    bottom: 12px;
+    right: 20px;
+    font-size: 16px;
+  }
+
+  .ao-cardBody {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .ao-midDivider {
+    display: none;
+  }
+
+  .ao-itemRow,
+  .ao-metaRow,
+  .ao-select,
+  .ao-totalPrice {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ao-main {
+    padding: 0 16px 24px;
+  }
+
+  .ao-list {
+    padding: 16px 0 0;
+  }
+
+  .ao-tab {
+    font-size: 22px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .ao-cardTop {
+    padding: 16px 16px 52px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .ao-cardTopLeft {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .ao-cardTopRight {
+    width: 100%;
+    min-width: 0;
+    align-items: flex-start;
+    flex: 1 1 auto;
+  }
+
+  .ao-time {
+    font-size: 16px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .ao-orderId {
+    font-size: 22px;
+  }
+
+  .ao-row {
+    font-size: 16px;
+  }
+
+  .ao-date {
+    margin-left: 0;
+  }
+
+  .ao-chevron,
+  .ao-chevron2 {
+    right: 16px;
+    bottom: 12px;
+    font-size: 14px;
+  }
+
+  .ao-cardBody {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .ao-sectionTitle {
+    font-size: 20px;
+  }
+
+  .ao-itemRow {
+    grid-template-columns: 32px 1fr auto;
+    font-size: 16px;
+    column-gap: 8px;
+  }
+
+  .ao-selectWrap {
+    width: 100%;
+  }
+
+  .ao-select {
+    font-size: 16px;
+  }
+
+  .ao-metaRow,
+  .ao-instructions,
+  .ao-totalPrice {
+    font-size: 16px;
+  }
+}
+
+.ad-topbar.no-menu {
+  justify-content: space-between;
+}
+
+.ad-spacer {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+/* =========================
+   Receipt Upload + Preview
+========================= */
+
+.ao-formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 18px;
+}
+
+.ao-uploadBox {
+  width: 100%;
+  padding: 12px;
+  background: #fff;
+  border: 2px dashed #aaa;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.ao-uploadBox:hover {
+  border-color: #ea7425;
+  background: #f9f9f9;
+}
+
+/* Receipt container */
+.ao-receipt {
+  margin-top: 12px;
+}
+
+/* Receipt image */
+.ao-receipt-img {
+  width: 100%;
+  max-width: 260px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.ao-receipt-img:hover {
+  transform: scale(1.03);
+}
+
+.ao-right {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start; /* add this */
+}

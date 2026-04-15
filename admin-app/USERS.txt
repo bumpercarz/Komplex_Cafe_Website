@@ -1,0 +1,89 @@
+const DEFAULT_USERS = [
+  {
+    id: 1,
+    name: "Adminfirst Lastname",
+    email: "adminlongnamed@gmail.com",
+    password: "admin123",
+    role: "ADMIN",
+    contactNumber: "09768372918",
+    dateRegistered: "November 7, 2025",
+  },
+  {
+    id: 2,
+    name: "Firstname LastName",
+    email: "anotherlongname@gmail.com",
+    password: "owner123",
+    role: "OWNER",
+    contactNumber: "09761234568",
+    dateRegistered: "November 11, 2025",
+  },
+  {
+    id: 3,
+    name: "Firstname LastName",
+    email: "shortemailname@gmail.com",
+    password: "staff123",
+    role: "STAFF",
+    contactNumber: "09763283780",
+    dateRegistered: "November 7, 2025",
+  },
+  {
+    id: 4,
+    name: "Firstname LastName",
+    email: "stafflongname2@gmail.com",
+    password: "staff456",
+    role: "STAFF",
+    contactNumber: "09761231234",
+    dateRegistered: "November 7, 2025",
+  },
+  {
+    id: 5,
+    name: "Firstname LastName",
+    email: "staffshort2@gmail.com",
+    password: "staff789",
+    role: "STAFF",
+    contactNumber: "09768881923",
+    dateRegistered: "November 7, 2025",
+  },
+];
+
+DATABASE FORMAT IMPORT USERS: 
+
+
+import { Routes, Route } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import AdminDashboard from "./pages/AdminDashboard";
+import StaffDashboard from "./pages/StaffDashboard";
+import AdminOrderPage from "./pages/AdminOrderPage";
+import AdminPaymentsPage from "./pages/AdminPaymentsPage";
+import AdminTableQrPage from "./pages/AdminTableQrPage";
+import AdminMenuPage from "./pages/AdminMenuPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminNotificationsPage from "./pages/AdminNotificationsPage";
+import AdminProfilePage from "./pages/AdminProfilePage";
+import StaffProfilePage from "./pages/StaffProfilePage";
+import FirestoreTestPage from "./pages/FirestoreTestPage";
+
+export default function App() {
+  return (
+    <>
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+
+      {/* Staff routes */}
+      <Route path="/staff" element={<StaffDashboard />} />
+      <Route path="/staff/profile" element={<StaffProfilePage />} />
+
+      {/* Admin routes */}
+      <Route path="/admin" element={<AdminDashboard />} />
+      <Route path="/admin/orders" element={<AdminOrderPage />} />
+      <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+      <Route path="/admin/tables" element={<AdminTableQrPage />} />
+      <Route path="/admin/menu" element={<AdminMenuPage />} />
+      <Route path="/admin/users" element={<AdminUsersPage />} />
+      <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
+      <Route path="/admin/profile" element={<AdminProfilePage />} />
+      <Route path="/firestore-test" element={<FirestoreTestPage />} />
+    </Routes>
+    </>
+  );
+}

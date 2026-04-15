@@ -1,0 +1,108 @@
+/* Topbar */
+.ad-topbar {
+  height: 64px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--border);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ad-rightGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Menu button */
+.ad-iconBtn {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Hamburger */
+.ad-hamburger {
+  width: 22px;
+  height: 2px;
+  background: #222;
+  position: relative;
+  display: block;
+}
+.ad-hamburger::before,
+.ad-hamburger::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 22px;
+  height: 2px;
+  background: #222;
+}
+.ad-hamburger::before { top: -6px; }
+.ad-hamburger::after  { top:  6px; }
+
+/* Brand */
+.ad-brand {
+  justify-self: center;
+  text-align: center;
+  line-height: 1.05;
+}
+
+.ad-brandTitle {
+  font-family: "gliker", sans-serif;
+  font-weight: 400;
+  font-size: 22px;
+  margin: 0;
+}
+
+.ad-brandSub {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  margin: 0;
+  margin-left: 100px;
+}
+
+/* Avatar button */
+.ad-avatarBtn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-avatarBtn:focus-visible {
+  outline: 2px solid #ea7425;
+  outline-offset: 2px;
+}
+
+/* Avatar */
+.ad-avatar {
+  justify-self: end;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #bdbdbd;
+}
+
+/* Responsive Topbar */
+@media (max-width: 760px) {
+  .ad-topbar {
+    padding: 0 12px;
+    gap: 8px;
+  }
+}

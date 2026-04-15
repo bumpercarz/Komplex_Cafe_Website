@@ -1,0 +1,257 @@
+/* Theme vars (easy edit) */
+:root {
+  --text: #111;
+  --muted: #666;
+  --border: #e8e8e8;
+  --border-strong: #d9d9d9;
+  --bg: #fff;
+
+  --tab-bg: #efefef;
+  --tab-active: #989898;
+
+  --pill-active: #f08a2b;
+}
+
+/* Root */
+.ad-root {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main */
+.ad-main {
+  flex: 1;
+  width: 100%;
+  max-width: none;          /* full width */
+  margin: 0;               /* remove centering gap */
+  padding: 0 24px 40px;    /* top | left-right | bottom */
+  box-sizing: border-box;
+}
+
+/* Page title */
+.ad-pageTitle {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 34px;
+  margin: 0 0 14px;        /* top right bottom left */
+  font-weight: 600;
+}
+
+/* Cards */
+.ad-cards {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 14px;               /* space between cards */
+  margin-bottom: 16px;     /* space below cards */
+}
+
+.ad-card {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 14px 16px;      /* inner spacing */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ad-cardLabel {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-weight: 600;
+  font-size: 30px;
+  letter-spacing: 0.5px;
+}
+
+.ad-cardValue {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-weight: 600;
+  font-size: 44px;
+}
+
+/* Panels */
+.ad-panel {
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 14px 14px 10px; /* inner spacing */
+  margin-top: 14px;        /* space above each panel */
+}
+
+.ad-panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;               /* space between title and buttons */
+  flex-wrap: wrap;
+  margin-bottom: 10px;     /* space below header */
+}
+
+.ad-panelTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* Tabs wrapper */
+.ad-tabs {
+  display: inline-flex;
+  border: 1px solid #cfcfcf;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ad-tab {
+  border-radius: 0;
+  padding: 6px 12px;
+  border: 0;
+  background: var(--tab-bg);
+  cursor: pointer;
+  font-weight: 400;
+  font-size: 13px;
+  color: black;
+}
+
+.ad-tab.is-active {
+  background: var(--tab-active);
+}
+
+/* Pills */
+.ad-pills {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 6px 2px 10px;
+  margin-bottom: 4px;
+}
+
+.ad-pill {
+  border: 1px solid #bdbdbd;
+  background: #d6d6d6;
+  color: #222;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ad-pill.is-active {
+  background: var(--pill-active);
+  border-color: var(--pill-active);
+  color: #fff;
+}
+
+/* Chart box */
+.ad-chartBox {
+  border-radius: 10px;
+  padding: 6px 6px 10px;
+  position: relative;
+}
+
+.ad-emptyHint {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .ad-main {
+    padding: 0 20px 32px;
+  }
+}
+
+@media (max-width: 760px) {
+  .ad-main {
+    padding: 0 14px 30px;
+  }
+
+  .ad-pageTitle {
+    font-size: 28px;
+  }
+
+  .ad-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .ad-cardValue {
+    font-size: 38px;
+  }
+}
+
+/* Recharts legend */
+.ad-chartBox .recharts-legend-item-text {
+  font-size: 12px;
+}
+
+.ad-chartBox .recharts-legend-item {
+  margin-right: 0 !important;
+}
+
+.ad-chartBox .recharts-legend-wrapper ul {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.ad-chartBox .recharts-legend-wrapper {
+  left: 60px !important;
+}
+
+/* NEW: fixed height for item sales graph */
+.ad-fixedChart {
+  height: 340px;
+}
+
+/* Custom legend wrapper - placed outside the fixed chart */
+.ad-legend-wrapper {
+  margin-top: 16px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.ad-legend-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ad-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.ad-legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.ad-legend-text {
+  color: var(--text);
+}
+
+/* Make legend scrollable if too many items */
+.ad-legend-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ad-legend-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.ad-legend-wrapper::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}

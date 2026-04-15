@@ -1,0 +1,381 @@
+/* ══════════════════════════════════════════════════════════════
+   CheckoutPage.css — Komplex Cafe
+══════════════════════════════════════════════════════════════ */
+
+/* ─── Reset / base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── Page shell ────────────────────────────────────────────── */
+.checkout-page {
+    font-family: 'Golos', sans-serif;
+    background: #f5f5f5;
+    height: 100dvh;           /* full viewport, no overflow */
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-top: 70px;        /* NavBar */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;         /* children handle their own scroll */
+}
+
+.checkout-extra {
+    font-family: 'Golos', sans-serif;
+    background: #f5f5f5;
+    height: 100dvh;           /* full viewport, no overflow */
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;         /* children handle their own scroll */
+}
+
+/* ─── Hero banner ───────────────────────────────────────────── */
+.checkout-hero {
+    font-family: 'gliker', sans-serif;
+    background: #e07820;
+    padding: 10px 24px;
+    flex-shrink: 0;           /* never squish the hero */
+    position: sticky;
+}
+
+.checkout-hero-title {
+    font-size: 3em;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+/* ─── Scrollable cart list ──────────────────────────────────── */
+.checkout-list {
+    flex: 1;                  /* takes all space between hero and footer */
+    overflow-y:auto;
+    padding: 12px 16px;
+    padding-bottom: 136px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scrollbar-width: none;    /* Firefox */
+}
+.checkout-list::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+.checkout-empty {
+    text-align: center;
+    color: #999;
+    font-size: 14px;
+    margin-top: 32px;
+}
+
+/* ─── Cart item card ────────────────────────────────────────── */
+.checkout-item {
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.07);
+    flex-shrink: 0;           /* cards never compress */
+}
+
+.checkout-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.checkout-item-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111;
+    flex: 1;
+}
+
+.checkout-item-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    white-space: nowrap;
+}
+
+.checkout-item-sub {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+/* ─── Item controls row ─────────────────────────────────────── */
+.checkout-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ─── Checkout Page 1 Buttons ─────────────────────────────────────── */
+.btn-edit-item {
+    background: #e07820;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-edit-item:hover { background: #c96a18; }
+
+.btn-remove-item {
+    background: #1e1e1e;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.btn-remove-item:hover { background: #333; }
+
+/* ─── Inline qty stepper ────────────────────────────────────── */
+.item-qty-stepper {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    background: #f0f0f0;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1.5px solid #ddd;
+}
+
+.item-qty-btn {
+    background: none;
+    border: none;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+}
+.item-qty-btn:hover { background: #e0e0e0; }
+
+.item-qty-display {
+    min-width: 24px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+    user-select: none;
+}
+
+/* ─── Checkout Page 2 stuff ─────────────────────────────────────── */
+.order-type-btns {
+    position: relative;
+    display: flex;
+    align-content: center;
+    gap: 5px;
+    padding-left: 15px;
+}
+
+.receive-at-btns {
+    position: relative;
+    display: flex;
+    align-content: center;
+    gap: 10px;
+    padding-left: 15px;
+}
+
+.spec-instruct-textarea {
+    padding: 0px 10px 10px 10px;
+}
+
+.spec-instruct-text {
+    width: 100%;
+    display: flex;
+    padding: 5px;
+}
+    
+
+/* ─── Sticky footer ─────────────────────────────────────────── */
+.checkout-footer {
+    flex-shrink: 0;           /* never squish the footer */
+    width: 100%;
+    background: #fff;
+    border-top: 1px solid #e5e5e5;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, .07);
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    z-index: 10;
+    box-shadow: 0 -2px 8px rgba(0,0,0,.07);
+}
+
+.checkout-footer-total {
+    display: block;
+    background-color: #e07820;
+    font-size: 15px;
+    color: #fff;
+    padding: 15px 20px;
+}
+
+.checkout-footer-total strong {
+    font-weight: 700;
+}
+
+.checkout-footer-buttons {
+    display: flex;
+    border-top: 1px solid #1e1e1e;
+    justify-content: space-between;
+    padding: 12px 20px;
+}
+
+.btn-dine-in {
+    background: #e0e0e0;
+    color: #1e1e1e;
+    border: 1px solid #5b5b5b;
+    border-radius: 999px;
+    padding: 5px 25px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+}
+.btn-dine-in--active {
+    background: #989898;
+    border: 1px solid #5b5b5b;
+}
+
+.btn-take-out {
+    background: #e0e0e0;
+    color: #1e1e1e;
+    border: 1px solid #5b5b5b;
+    border-radius: 999px;
+    padding: 5px 25px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+}
+.btn-take-out--active {
+    background: #989898;
+    border: 1px solid #5b5b5b;
+}
+
+.btn-counter {
+    background: #e0e0e0;
+    color: #1e1e1e;
+    border: 1px solid #5b5b5b;
+    border-radius: 5px;
+    padding: 20px 40px 20px;
+    font-size: 15px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+}
+.btn-counter--active {
+    background: #989898;
+    border: 1px solid #5b5b5b;
+}
+
+.btn-table {
+    background: #e0e0e0;
+    color: #1e1e1e;
+    border: 1px solid #5b5b5b;
+    border-radius: 5px;
+    padding: 25px 50px 20px;
+    font-size: 15px;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.btn-table--active {
+    background: #989898;
+    border-color: 1px solid #5b5b5b;
+    color: #000;
+}
+
+.btn-back {
+    background: #e0e0e0;
+    color: #1e1e1e;
+    border: 1px solid #5b5b5b;
+    border-radius: 999px;
+    padding: 10px 52px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-continue {
+    background: #e07820;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 52px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+}
+.btn-continue:hover           { background: #c96a18; }
+.btn-continue:disabled        { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── Misc label helpers ────────────────────────────────────── */
+.order-type-label {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.receive-at-label {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.spec-instruct-label {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.order-type-label::after,
+.receive-at-label::after,
+.spec-instruct-label::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: #111;
+    border-radius: 2px;
+}
+
+/* ─── Responsive ────────────────────────────────────────────── */
+@media (min-width: 501px) {
+    .checkout-page   { max-width: 100%; }
+    .checkout-footer-buttons {
+        align-items: end;
+        justify-content: end;
+        gap: 50px;
+    }
+}

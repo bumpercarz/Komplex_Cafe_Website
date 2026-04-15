@@ -1,0 +1,133 @@
+/* Full page background */
+
+.login-container {
+  height: 100vh;               /* Full viewport height */
+  width: 100vw;                /* Full viewport width */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;      /* Center overlay horizontally */
+  align-items: center;          /* Center overlay vertically */
+  position: relative;           /* For overlay positioning */
+  overflow: hidden;             /* Prevent scrollbars */
+}
+
+/* Dark blur overlay */
+.overlay {
+  position: absolute;           /* Cover entire container */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.131);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+/* Center card */
+.login-card {
+  position: relative;           /* On top of overlay */
+  z-index: 2;                   /* Ensure above overlay */
+  text-align: center;
+  color: white;
+  width: 380px;
+  padding: 40px 30px;
+  border-radius: 15px;
+}
+
+/* Logo circle */
+.logo-circle {
+  width: 90px;
+  height: 90px;
+  background: white;
+  border-radius: 50%;
+  margin: 0 auto 5px;
+}
+
+/* Titles */
+.title {
+  font-family: 'gliker', sans-serif;
+  font-size: 60px;
+  font-weight: 700;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  white-space: nowrap;
+}
+
+.subtitle {
+  font-family: 'Golos Text', sans-serif;
+  letter-spacing: 3px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: -8px;
+  margin-bottom: 30px;
+  margin-left: 240px;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Inputs */
+.input {
+  font-family: 'Golos Text', sans-serif;
+  font-weight: 560;
+  padding: 14px 20px;
+  border-radius: 25px;
+  border: none;
+  font-size: 16px;
+  outline: none;
+  background-color: rgba(255, 255, 255); /* change this */
+  color: rgb(114, 114, 114);
+}
+
+.input::placeholder {
+  font-family: 'Golos Text', sans-serif;
+  font-weight: 560;
+  color: rgb(114, 114, 114);
+}
+
+/* Button */
+.login-btn {
+  background: #f07c2f;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 25px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+
+  height: 50px;
+  width: 250px;      
+  align-self: center; 
+}
+
+.login-btn:hover {
+  transform: scale(1.05);
+  background: #e46f23;
+}
+
+.form-msg {
+  margin: 0;
+  font-family: 'Golos Text', sans-serif;
+  font-size: 14px;
+}
+
+.form-msg.error {
+  color: #ff6b6b;
+}
+
+.form-msg.success {
+  color: #7CFF7A;
+}

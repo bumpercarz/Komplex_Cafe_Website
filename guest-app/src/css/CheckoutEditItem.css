@@ -1,0 +1,57 @@
+
+/* ══════════════════════════════════════════════════════════════
+   CheckoutEditItem.css — Komplex Cafe
+   Overrides / additions on top of PopUp.css
+══════════════════════════════════════════════════════════════ */
+
+/* ─── Slide-up animation for the edit popup ─────────────────── */
+@keyframes edit-popup-in {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.edit-popup {
+  animation: edit-popup-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  border-top: 4px solid #e07820;
+  position: relative;
+}
+
+/* ─── "Editing Item" badge at the top ───────────────────────── */
+.edit-popup-badge {
+  position: absolute;
+  top: -1px;          /* sits just above the orange border-top */
+  left: 50%;
+  transform: translate(-50%, -100%);
+  background: #e07820;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: 8px 8px 0 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ─── Save button — same shape as btn-add-item, amber accent ─ */
+.btn-save-item {
+  background: #1e1e1e !important;  /* dark to distinguish from "Add Item" */
+  color: #fff !important;
+  border: none;
+}
+
+.btn-save-item:hover:not(:disabled) {
+  background: #333 !important;
+}
+
+.btn-save-item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

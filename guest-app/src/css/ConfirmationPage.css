@@ -1,0 +1,93 @@
+/* ══════════════════════════════════════════════════════════════
+   ConfirmationPage.css — Komplex Cafe
+══════════════════════════════════════════════════════════════ */
+ 
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+/* ─── Outer wrapper — full orange background ────────────────── */
+.confirmation-wrapper {
+    font-family: 'Golos', sans-serif;
+    height: 100vh;
+    width: 100%;
+    background: #e07820;
+    display: flex;
+    flex-direction: column;
+    padding-top: 70px;      /* NavBar height */
+}
+ 
+/* ─── Page area below NavBar ────────────────────────────────── */
+.confirmation-page {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #EF7828;
+}
+ 
+/* ─── White card ────────────────────────────────────────────── */
+.confirmation-white {
+    background: #fff;
+    height: 80vh;
+    width: 85%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+}
+
+/* ─── Border ──────────────────────────────────────────────── */
+.confirmation-border {
+    padding: 140px 20px;
+    border: 2px solid #111;
+    border-radius: 15px;
+}
+ 
+/* ─── Header text ───────────────────────────────────────────── */
+.confirmation-header {
+    font-size: 1.7em;
+    font-weight: 800;
+    color: #111;
+    text-align: center;
+    line-height: 1.25;
+    margin-bottom: 24px;
+}
+
+/* ─── Coffee Icon ───────────────────────────────────────────── */
+.coffee-icon {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+}
+ 
+/* ─── Reference number box ──────────────────────────────────── */
+.reference-number {
+    width: 100%;
+    border-radius: 10px;
+    background-color: #eaeaea;
+    padding: 22px 16px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+    text-align: center;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+ 
+/* ─── Subtitle ──────────────────────────────────────────────── */
+.confirmation-subtitle {
+    font-size: 13px;
+    color: #333;
+    text-align: center;
+    line-height: 1.5;
+    max-width: 220px;
+    margin: 0 auto;
+}
+ 
+/* ─── Responsive ────────────────────────────────────────────── */
+@media (min-width: 501px) {
+    .confirmation-white {
+        max-width: 400px;
+    }
+}
+ 

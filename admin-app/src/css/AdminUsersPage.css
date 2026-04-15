@@ -1,0 +1,423 @@
+.au-main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 24px 40px;
+  box-sizing: border-box;
+}
+
+/* Toolbar */
+.amp-title {
+  font-size: 28px;
+}
+.au-toolbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.au-search {
+  flex: 1 1 420px;
+  min-width: 260px;
+  max-width: none;
+  width: 100%;
+  height: 38px;
+  border-radius: 999px;
+  background: #d8d8d8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.au-searchIcon {
+  font-size: 18px;
+  color: #777;
+}
+
+.au-search input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 18px;
+  color: #333;
+  min-width: 0;
+}
+
+.au-search input::placeholder {
+  color: #666;
+}
+
+.au-addBtn {
+  flex: 0 0 auto;
+  border: none;
+  background: #ea7425;
+  color: #111;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 10px 26px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* Table */
+.au-tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.au-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.au-table thead th {
+  background: #ef7b24;
+  color: #111;
+  padding: 18px 14px;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  border-right: 3px solid #111;
+  word-break: break-word;
+}
+
+.au-table thead th:last-child {
+  border-right: none;
+}
+
+.au-table tbody td {
+  padding: 18px 14px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111;
+  vertical-align: middle;
+  word-break: break-word;
+}
+
+.au-table tbody tr:nth-child(odd) td {
+  background: #d9d9d9;
+}
+
+.au-table tbody tr:nth-child(even) td {
+  background: #cfcfcf;
+}
+
+.au-actionHead {
+  width: 160px;
+}
+
+.au-actionsCell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.au-editBtn {
+  border: none;
+  background: #ef7b24;
+  color: #111;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-right: 14px;
+}
+
+.au-deleteBtn {
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 50%;
+  background: #df4735;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.au-deleteBtn:hover {
+  background: #c03528;
+}
+
+.au-empty {
+  text-align: center;
+  padding: 24px !important;
+}
+
+/* Modal */
+.au-modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 2000;
+}
+
+.au-modal {
+  width: 100%;
+  max-width: 980px;
+  background: #f1f1f1;
+  border-radius: 20px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+  position: relative;
+  overflow: hidden;
+}
+
+.au-modalClose {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  border: none;
+  background: transparent;
+  color: #555;
+  font-size: 34px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.au-modalTitle {
+  background: #ef7b24;
+  color: #111;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  padding: 18px 12px;
+  letter-spacing: 0.5px;
+}
+
+.au-modalPanel {
+  background: #a1a1a1;
+  padding: 28px;
+}
+
+.au-form {
+  max-width: 100%;
+}
+
+.au-formGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.au-formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.au-formGroup label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111;
+}
+
+.au-formGroup input,
+.au-formGroup select {
+  width: 100%;
+  height: 44px;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  background: #ececec;
+  padding: 0 14px;
+  font-size: 16px;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.au-formGroup input[readonly] {
+  background: #dddddd;
+  color: #666;
+}
+
+.au-message {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.55);
+  color: #111;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.au-formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.au-saveBtn,
+.au-cancelBtn {
+  border: none;
+  background: #ef7b24;
+  color: #111;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 11px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Modal action buttons */
+.au-modalActions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.au-confirmBtn {
+  border: none;
+  background: #df4735;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.au-confirmBtn:hover {
+  background: #c03528;
+}
+
+/* FIX: match amp classes used in JSX */
+
+.amp-modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 2000;
+}
+
+.amp-modal {
+  width: 100%;
+  max-width: 980px;
+  background: #f1f1f1;
+  border-radius: 20px;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+  position: relative;
+}
+
+.amp-formModal {
+  padding: 30px;
+}
+
+.amp-modalActions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.amp-closeBtn {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.amp-exitBtn {
+  border: none;
+  background: #ef7b24;
+  color: #111;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.au-cancelBtn {
+  border: none;
+  background: #ef7b24;
+  color: #111;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .au-formGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .au-modal {
+    max-width: 820px;
+  }
+}
+
+@media (max-width: 900px) {
+  .au-table {
+    min-width: 980px;
+  }
+}
+
+@media (max-width: 700px) {
+  .au-main {
+    padding: 16px;
+  }
+
+  .au-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .au-search {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .au-addBtn {
+    width: 100%;
+  }
+
+  .au-modalPanel {
+    padding: 20px 16px;
+  }
+
+  .au-formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .au-formActions {
+    justify-content: stretch;
+    flex-direction: column;
+  }
+
+  .au-saveBtn,
+  .au-cancelBtn {
+    width: 100%;
+  }
+}

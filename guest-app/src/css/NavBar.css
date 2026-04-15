@@ -1,0 +1,195 @@
+/* ---------- Navbar ---------- */
+/* .nav_background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  z-index: 998;
+} */
+
+.nav_background {
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  /* max-width: 551px; */
+  background-color: white;
+  z-index: 998;
+}
+
+.nav_homeLogo{
+  line-height: 0;
+}
+
+.nav_logo{
+  margin: 10.5px 10px;
+}
+
+.nav_logo img{
+  width:55px;
+  height: 55px;
+  border-radius: 100px;
+}
+
+.nav_hamburger {
+  background: none;
+  position: relative;
+  border: none;
+  cursor: pointer;
+  font-size: 44px;
+  z-index: 999;
+  padding: 9px 10px;
+}
+
+/* ── Clipping wrapper — hides the drawer outside the 550px column ── */
+/* .nav_clip {
+  position: fixed;
+  top: 64px;     
+  left: 50%;
+  transform: translateX(-50%);
+  width: 550px;
+  max-width: 100%;
+  height: calc(100vh - 64px);
+  overflow: hidden;     
+  pointer-events:all;      
+  z-index: 501;
+} */
+
+/* ---------- Overlay ---------- */
+.dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 500;
+  animation: fadeIn 0.2s ease;
+}
+
+.dropdown-overlay--closing {
+  animation: fadeOut 0.28s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ---------- Dropdown Menu ---------- */
+.dropdown {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  width: 75%;
+  max-width: 320px;
+  height: 100vh;
+  background-color: #fff;
+  z-index: 505;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+  animation: slideIn 0.3s ease forwards;
+}
+
+.dropdown--closing {
+  animation: slideOut 0.28s ease forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes slideOut {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+/* ---------- Dropdown Items ---------- */
+.dropdown_item {
+  padding: 12px 24px;
+  font-size: 1.5em;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #222;
+}
+
+.dropdown_item--parent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dropdown_item:last-child {
+  border-bottom: none;
+}
+
+.dropdown_arrow {
+  font-size: 0.7em;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.dropdown_arrow--open {
+  transform: rotate(180deg);
+}
+
+/* ---------- Sub-nav ---------- */
+.dropdown_subnav {
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown_subgroup_label {
+  padding: 8px 24px 4px 36px;
+  font-size: 0.95em;
+  font-weight: 800;
+  color: #888;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dropdown_subitem {
+  padding: 10px 24px 10px 48px;
+  font-size: 1.1em;
+  font-weight: 500;
+  cursor: pointer;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown_subitem:last-child {
+  border-bottom: none;
+}
+
+.dropdown_subitem:hover {
+  background-color: #f0f0f0;
+}
+
+@media (max-width: 500px){
+  .nav_background{
+    max-width: 100%;
+  }
+  .nav_logo{
+    margin: 5px 10px;
+  }
+  .nav_logo img{
+    width: 40px;
+    height: 40px;
+  }
+}
+@media (min-width: 501px) {
+
+  .dropdown {
+    width: 300px;
+    max-width: 300px;
+  }
+}

@@ -1,0 +1,238 @@
+.apf-main {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 22px 40px;
+}
+
+.apf-title {
+  margin: 0 0 24px;
+  font-size: 42px;
+  font-weight: 700;
+  color: #111;
+}
+
+.apf-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+}
+
+.apf-summaryCard,
+.apf-formCard {
+  background: #efefef;
+  border: 1px solid #d4d4d4;
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+}
+
+.apf-summaryCard {
+  padding: 28px 24px;
+  text-align: center;
+}
+
+.apf-avatarLarge {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  background: #bdbdbd;
+  margin: 0 auto 18px;
+}
+
+.apf-name {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+}
+
+.apf-email {
+  margin: 0 0 14px;
+  font-size: 16px;
+  color: #555;
+  word-break: break-word;
+}
+
+.apf-roleBadge {
+  display: inline-block;
+  background: #ef7b24;
+  color: #111;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 999px;
+  margin-bottom: 22px;
+}
+
+.apf-infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  margin-top: 8px;
+}
+
+.apf-infoRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #e6e6e6;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.apf-infoRow span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #777;
+}
+
+.apf-infoRow strong {
+  font-size: 15px;
+  color: #111;
+}
+
+.apf-logoutBtn {
+  width: 100%;
+  border: none;
+  background: #df4735;
+  color: #111;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 18px;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-top: 22px;
+}
+
+.apf-formCard {
+  overflow: hidden;
+}
+
+.apf-cardTitle {
+  background: #ef7b24;
+  color: #111;
+  font-size: 22px;
+  font-weight: 800;
+  padding: 18px 22px;
+}
+
+.apf-form {
+  padding: 24px 22px 22px;
+}
+
+.apf-formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.apf-formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.apf-formGroupFull {
+  grid-column: 1 / -1;
+}
+
+.apf-formGroup label {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+}
+
+.apf-formGroup input {
+  width: 100%;
+  height: 46px;
+  border: none;
+  outline: none;
+  border-radius: 12px;
+  background: #ececec;
+  padding: 0 14px;
+  font-size: 16px;
+  color: #333;
+  box-sizing: border-box;
+}
+
+.apf-formGroup input::placeholder {
+  color: #777;
+}
+
+.apf-message {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #f7e6d8;
+  color: #111;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.apf-formActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.apf-saveBtn,
+.apf-resetBtn {
+  border: none;
+  color: #111;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 11px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.apf-saveBtn {
+  background: #ef7b24;
+}
+
+.apf-resetBtn {
+  background: #d9d9d9;
+}
+
+@media (max-width: 980px) {
+  .apf-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .apf-main {
+    padding: 18px 16px 30px;
+  }
+
+  .apf-title {
+    font-size: 32px;
+  }
+
+  .apf-formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .apf-formActions {
+    flex-direction: column;
+  }
+
+  .apf-saveBtn,
+  .apf-resetBtn {
+    width: 100%;
+  }
+}
+.apf-backBtnWrapper {
+  margin-bottom: 12px;
+}
+
+.apf-backBtn {
+  background: none;
+  border: none;
+  color: #111;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}

@@ -1,0 +1,21 @@
+/* Font */
+@font-face {
+  font-family: "gliker";
+  src: url("../assets/Fonts/gliker-regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Theme vars */
+:root {
+  --text: #111;
+  --muted: #666;
+  --border: #e8e8e8;
+  --border-strong: #d9d9d9;
+  --bg: #fff;
+
+  --tab-bg: #efefef;
+  --tab-active: #989898;
+
+  --pill-active: #f08a2b;
+}

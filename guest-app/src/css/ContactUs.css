@@ -1,0 +1,52 @@
+.wrapperContact {
+  font-family: 'Golos', sans-serif;
+  width: 100%;
+  /* max-width: 550px; */
+  left: 50%;
+  margin: 0 auto;
+  background-color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* ---------- Contacts ---------- */
+.contacts {
+  padding: 10px 20px 10px 20px;
+  font-family: "Golos", sans-serif;
+  display: block;
+}
+
+.contacts_Title {
+  font-weight: bold;
+}
+
+.contacts_email_text {
+  font-weight: bold;
+}
+
+.contacts_socmed_text {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.other_text {
+  margin-top: 10px;
+}
+
+a, a:visited, a:hover, a:active {
+  color: black !important;
+  width: 100px;
+}
+
+.contacts_links {
+  font-weight: 200;
+}
+
+
+@media (max-width: 500px) {
+  .hero_tagline {
+    color: #ddd;
+    font-size: 15px;
+    font-family: 'inter', sans-serif;
+    font-style: italic;
+  }
+}

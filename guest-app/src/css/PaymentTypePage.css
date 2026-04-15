@@ -1,0 +1,79 @@
+.paymenttype-page{
+    background: white;
+    height: 100vh;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ─── Hero banner ───────────────────────────────────────────── */
+.paymenttype-header{
+    position: fixed;
+    top: 70px;
+    width: 100%;
+    z-index: 100;
+}
+.paymenttype-hero { 
+    font-family: 'gliker', sans-serif;
+    background: #e07820;
+    padding: 10px 24px 10px;
+}
+
+.paymenttype-hero-title {
+    font-size: 2.5em;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+/* ─── Button Layouting ──────────────────────────────────────── */
+
+.paymenttype-buttonlayout{
+    display: grid;
+    padding-top: 170px;
+    grid-template-rows: auto auto auto;
+    justify-content:center;
+    align-content: center;
+    row-gap: 15px;
+}
+
+.paymenttype-buttonlayout button{
+    width: 300px;
+    height: 250px;
+    background: #EF7828;
+    border-radius: 10px;
+}
+
+button img{
+    width: 130px;
+    height: 130px;
+}
+
+.btn-text{
+    font-family: 'inter', sans-serif;
+    font-weight: bold;
+    font-size: 30px;
+    margin: 0 25px;
+    padding-top: 2px;
+}
+
+@media (min-width: 500px){
+    .paymenttype-buttonlayout{
+        grid-template-rows: auto;
+        grid-template-columns: auto auto auto;
+        column-gap: 50px;  
+        justify-content: center;
+    }
+    .paymenttype-header{
+        max-width: 1000px;
+    }
+    .paymenttype-buttonlayout button{
+        margin-top: 100px;
+        width: 335px;
+        height:300px;
+    }
+    .paymenttype-page{
+        max-width: 100%;
+    }
+}

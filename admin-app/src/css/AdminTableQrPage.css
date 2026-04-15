@@ -1,0 +1,433 @@
+/* Layout */
+.atq-main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 24px 40px;
+  box-sizing: border-box;
+}
+
+/* =========================
+   Table
+========================= */
+
+.atq-tableWrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+.atq-table {
+  width: 100%;
+  min-width: 1040px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+  background: #eee;
+  border: 1px solid #333;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.atq-table th {
+  background: #ea7425;
+  color: #111;
+  text-align: left;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 16px 12px;
+  border-right: 1px solid #333;
+  border-bottom: 1px solid #333;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.atq-table th:last-child {
+  border-right: none;
+}
+
+.atq-table td {
+  font-size: 16px;
+  padding: 12px;
+  border-right: 1px solid #333;
+  border-bottom: 1px solid #333;
+  background: #eee;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.atq-table td:last-child {
+  border-right: none;
+}
+
+.atq-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.atq-qrCell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.atq-tableQr {
+  width: 110px;
+  height: 110px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.atq-viewCell {
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+.atq-viewBtn {
+  border: none;
+  background: #ea7425;
+  color: #111;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-width: 178px;
+}
+
+.atq-actionsCell {
+  text-align: center;
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.atq-editBtn {
+  border: none;
+  background: #ea7425;
+  color: #111;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.atq-deleteBtn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: #df3b2f;
+  color: #111;
+  font-size: 18px;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.atq-empty {
+  text-align: center;
+  padding: 28px !important;
+  color: #666;
+  font-size: 18px;
+}
+
+/* =========================
+   Modal Shared
+========================= */
+
+.atq-modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 2000;
+}
+
+.atq-modal {
+  width: 100%;
+  max-width: 460px;
+  background: #efefef;
+  border-radius: 18px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
+}
+
+.atq-modalTitle {
+  margin: 0 0 22px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111;
+}
+
+.atq-centerTitle {
+  text-align: center;
+}
+
+/* =========================
+   Add / Edit Modal
+========================= */
+
+.atq-formModal {
+  padding: 28px 32px 26px;
+}
+
+.atq-modalQr {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 24px;
+}
+
+.atq-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid #888;
+  border-radius: 4px;
+  background: #f7f7f7;
+  font-size: 18px;
+  color: #333;
+  box-sizing: border-box;
+  margin-bottom: 14px;
+}
+
+.atq-input::placeholder {
+  color: #777;
+}
+
+.atq-fieldLabel {
+  display: block;
+  font-size: 18px;
+  color: #444;
+  margin-bottom: 8px;
+}
+
+.atq-selectShell {
+  position: relative;
+  margin-bottom: 26px;
+}
+
+.atq-selectShell::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-25%);
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #666;
+}
+
+.atq-select {
+  width: 100%;
+  height: 40px;
+  padding: 0 44px 0 14px;
+  border: none;
+  border-radius: 4px;
+  background: #d1d1d1;
+  font-size: 18px;
+  color: #444;
+  appearance: none;
+  outline: none;
+}
+
+.atq-modalActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.atq-btn {
+  min-width: 112px;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.atq-btnGhost,
+.atq-btnPrimary {
+  background: #ea7425;
+  color: #111;
+}
+
+/* =========================
+   QR Modal
+========================= */
+
+.atq-qrModal {
+  max-width: 430px;
+}
+
+.atq-qrModalContent {
+  padding: 28px 34px 30px;
+}
+
+.atq-qrLarge {
+  width: 190px;
+  height: 190px;
+  margin-bottom: 20px;
+}
+
+.atq-wideAction {
+  width: 100%;
+  height: 44px;
+  border: none;
+  border-radius: 4px;
+  background: #d1d1d1;
+  color: #666;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  cursor: pointer;
+}
+
+.atq-qrBottomActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.atq-inlineAction {
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  padding: 0;
+}
+
+.atq-inlineIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #ea7425;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  color: #111;
+  flex-shrink: 0;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 1100px) {
+  .atq-main {
+    padding: 0 20px 32px;
+  }
+}
+
+@media (max-width: 900px) {
+  .atq-main {
+    padding: 0 18px 28px;
+  }
+}
+
+@media (max-width: 600px) {
+  .atq-main {
+    padding: 0 16px 24px;
+  }
+
+  .atq-modal {
+    max-width: 100%;
+  }
+
+  .atq-formModal,
+  .atq-qrModalContent {
+    padding: 22px 18px 20px;
+  }
+
+  .atq-modalTitle {
+    font-size: 24px;
+  }
+
+  .atq-modalQr {
+    width: 140px;
+    height: 140px;
+  }
+
+  .atq-qrBottomActions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .atq-modalActions {
+    flex-wrap: wrap;
+  }
+}
+
+/* Keep the wrapper centered */
+.atq-qrPreviewBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* Real QR canvases */
+.atq-qrCell canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+.atq-qrPreviewBox canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Match the canvas wrappers to your JSX sizes */
+.atq-modalQr {
+  width: 220px;
+  height: 220px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 24px;
+}
+
+.atq-qrLarge {
+  width: 260px;
+  height: 260px;
+  margin-bottom: 20px;
+}
+
+.atq-linkText {
+  margin: 10px 0 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .atq-modalQr {
+    width: 180px;
+    height: 180px;
+  }
+
+  .atq-qrLarge {
+    width: 220px;
+    height: 220px;
+  }
+}

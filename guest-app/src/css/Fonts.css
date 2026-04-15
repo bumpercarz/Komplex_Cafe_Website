@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'gliker';
+  src: url('../assets/Fonts/gliker-regular.ttf') format('truetype'),
+        url('../assets/Fonts/gliker-regular.woff') format('woff'),
+        url('../assets/Fonts/gliker-regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
