@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  background-image: url("../src/assets/head-backdrop.png");
+  background-image: url("../assets/head-backdrop.png");
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -134,7 +134,7 @@
 .hours_bg {
   position:absolute;
   background-color: #222;
-  background-image: url('../src/assets/homePageOpenbg.png');
+  background-image: url('../assets/homePageOpenbg.png');
   filter: blur(5px);
   left: 0;
   top: -5%;

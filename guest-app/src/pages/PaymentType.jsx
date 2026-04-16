@@ -11,6 +11,9 @@ import "../css/PaymentTypePage.css";
 import NavBar from "../components/NavBar";
 import UploadReceiptPopup from "../components/UploadReceiptPopup";
 
+import cashCounter from "../assets/cashcounter.png";
+import onlinePayment from "../assets/onlinepayment.png";
+
 /* ─── Session-based guest ID ─────────────────────────────────────
    Returns the existing guest_id for this session, or null if this
    is a new guest — the counter will assign the real ID.
@@ -201,7 +204,7 @@ export default function PaymentType() {
               disabled={submitting}
               onClick={handleCashPayment}
             >
-              <img src="src/assets/cashcounter.png" alt="Cash at the Counter" />
+              <img src={cashCounter} alt="Cash at the Counter" />
               <p className="btn-text">
                 {submitting ? "Placing order…" : "Cash at the Counter"}
               </p>
@@ -213,7 +216,7 @@ export default function PaymentType() {
               disabled={submitting}
               onClick={() => setShowReceiptPopup(true)}
             >
-              <img src="src/assets/onlinepayment.png" alt="Online Payment" />
+              <img src={onlinePayment} alt="Online Payment" />
               <p className="btn-text">Online Payment</p>
             </button>
           </div>

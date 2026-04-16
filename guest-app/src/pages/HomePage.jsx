@@ -1,10 +1,14 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-
 import { useNavigate } from "react-router-dom";
 import "../css/Fonts.css";
 import "../css/HomePage.css";
 import NavBar from "../components/NavBar";
+
+// ✅ Import images at the top
+import homepageAbout from "../assets/homepageAbout.png";
+import homepageOpenbg from "../assets/homePageOpenbg.png";
+import homePageContact from "../assets/homePageContact.png";
 
 const HOURS = [
   ["Weekdays:", "10:00 AM - 2:00 AM"],
@@ -12,10 +16,7 @@ const HOURS = [
   ["Sundays:", "12:00 PM - 10:00 PM"],
 ];
 
-
-
 const HomePage = () => {
-
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
@@ -24,11 +25,12 @@ const HomePage = () => {
       sessionStorage.setItem("table_id", tableId);
     }
   }, []);
+
   const navigate = useNavigate();
+
   return (
     <div className="wrapper">
-
-      <NavBar/>
+      <NavBar />
 
       {/* ── Hero ── */}
       <section className="hero">
@@ -53,23 +55,19 @@ const HomePage = () => {
       {/* ── About ── */}
       <section className="about">
         <div className="about_img-wrap">
-          <img
-            src="../src/assets/homepageAbout.png"
-            alt="Coffee drinks"
-          />
+          <img src={homepageAbout} alt="Coffee drinks" /> 
         </div>
         <p className="about_text">
           Here at Komplex Cafe, you can focus on your work while enjoying
           freshly brewed coffee. We also offer fruit tea, pasta, and pastries.
         </p>
       </section>
-      {/*test*/}
 
       {/* ── Hours ── */}
       <section className="hours">
         <img
           className="hours_bg"
-          src="../src/assets/homepageOpenbg.png"
+          src={homepageOpenbg}
           alt="Cafe background"
         />
         <div className="hours_content">
@@ -93,10 +91,7 @@ const HomePage = () => {
           <button className="btn--white" onClick={() => navigate("/contact")}>Contact Us</button>
         </div>
         <div className="booking_img-wrap">
-          <img
-            src="../src/assets/homePageContact.png"
-            alt="Coffee"
-          />
+          <img src={homePageContact} alt="Coffee" />
         </div>
       </section>
 
@@ -112,7 +107,6 @@ const HomePage = () => {
           </p>
         </div>
       </footer>
-
     </div>
   );
 };

@@ -6,9 +6,6 @@ import NavBar from "../components/NavBar";
 import ItemPopup from "../components/ItemPopUp";
 import "../css/MenuPage.css";
 
-const PLACEHOLDER =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23d1d5db'/%3E%3C/svg%3E";
-
 const peso = (n) =>
   "₱" + Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2 });
 
