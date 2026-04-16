@@ -11,7 +11,7 @@ const STATUS_CONFIG = {
   "PENDING": {
     icon:    <FaClock size={50} />,
     header:  "Your order has been placed!",
-    sub:     "We're waiting to confirm your order. Do not leave or close this page.",
+    sub:     "We're waiting to confirm your order. Please pay at the counter. Do not leave or close this page.",
   },
   "PROCESSING PAYMENT": {
     icon:    <FaSpinner size={50} className="spin" />,
