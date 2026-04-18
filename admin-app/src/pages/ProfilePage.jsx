@@ -8,6 +8,10 @@ import StaffTopbar from "../components/StaffTopbar";
 
 import { getCurrentUser, updateCurrentUserProfile, logoutUser } from "../services/authService";
 import { getAllUsersLive } from "../services/adminUserData";
+import { useNotificationSound } from "../hooks/useNotificationSound";
+
+// IMPORT THE LOGO
+import komplexLogo from "../assets/komplexLogoPlain.png";
 
 function toRoleLabel(role) {
   const normalized = String(role || "").toUpperCase();
@@ -118,8 +122,9 @@ export default function ProfilePage({ role = "STAFF", showMenu = false }) {
     navigate("/");
   }
 
-  if (!currentUser) return null;
   useNotificationSound();
+
+  if (!currentUser) return null;
 
   return (
     <div className="ad-root">
@@ -141,7 +146,9 @@ export default function ProfilePage({ role = "STAFF", showMenu = false }) {
 
         <div className="apf-grid">
           <section className="apf-summaryCard">
-            <div className="apf-avatarLarge" />
+            {/* REPLACE DIV WITH IMG */}
+            <img src={komplexLogo} alt="Profile" className="apf-avatarLarge" />
+            
             <h2 className="apf-name">{currentUser.name}</h2>
             <p className="apf-email">{currentUser.email}</p>
             <div className="apf-roleBadge">{toRoleLabel(currentUser.role)}</div>

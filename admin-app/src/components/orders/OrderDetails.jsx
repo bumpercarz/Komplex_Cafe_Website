@@ -73,7 +73,8 @@ export default function OrderDetails({
 
         <div className="ao-meta">
           <div className="ao-metaRow">
-            <b>Table:</b> {order.tableNumber}
+            {/* Added fallback for null tables and multiple property names */}
+            <b>Table:</b> {order.tableNumber || order.tableId || order.table_id || "N/A"}
           </div>
           <div className="ao-metaRow">
             <b>Order Type:</b> {order.orderType}

@@ -10,7 +10,7 @@ import OrderCard from "../components/orders/OrderCard";
 import {
   ORDER_TABS,
   STATUS_OPTIONS,
-  getAllOrdersLive,
+  subscribeToOrders,
   getOrdersByTab,
   updateOrderStatusRecord,
 } from "../services/adminOrderData";
@@ -23,23 +23,22 @@ export default function StaffDashboard() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  async function loadOrders() {
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const data = await getAllOrdersLive();
-      setOrdersSource(data);
-    } catch (error) {
-      console.error("Load orders error:", error);
-      setMessage(error?.message || "Failed to load orders.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
-    loadOrders();
+    setLoading(true);
+
+    const unsubscribe = subscribeToOrders(
+      (data) => {
+        setOrdersSource(data);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Staff listener error:", error);
+        setMessage(error?.message || "Failed to listen to orders.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   const orders = useMemo(() => {

@@ -15,8 +15,8 @@ export function normalizeTableId(value) {
 }
 
 function getCustomerBaseUrl() {
-  // Using the specific domain as requested
-  return import.meta.env.VITE_APP_URL || "http://localhost:5173";
+  // Hardcoded to the requested URL
+  return "https://komplex-guest.web.app";
 }
 
 export function buildTableQrUrl(tableNumber) {

@@ -7,6 +7,9 @@ import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
+// NEW: import current user auth
+import { getCurrentUser } from "../services/authService";
+
 import {
   TABLE_STATUS_OPTIONS,
   getAllTables,
@@ -17,8 +20,8 @@ import {
 } from "../services/adminTableQrData";
 
 function getCustomerBaseUrl() {
-  // Using the specific domain as requested
-  return import.meta.env.VITE_APP_URL || "http://localhost:5173";
+  // Hardcoded to the requested URL
+  return "https://komplex-guest.web.app";
 }
 
 function getRawTableNumber(tableOrValue) {
@@ -39,7 +42,8 @@ function getTableQrUrl(table) {
   if (table?.qrCodeUrl) return table.qrCodeUrl;
 
   const tableNumber = getRawTableNumber(table) || "new";
-  return `${getCustomerBaseUrl()}/customer?table_id=${encodeURIComponent(
+  // Updated format to /?table_id=
+  return `${getCustomerBaseUrl()}/?table_id=${encodeURIComponent(
     tableNumber
   )}`;
 }
@@ -73,7 +77,8 @@ function TableFormModal({
     tableNumber || table?.tableNumber || "new"
   );
 
-  const previewQrUrl = `${getCustomerBaseUrl()}/customer?table_id=${encodeURIComponent(
+  // Updated format to /?table_id=
+  const previewQrUrl = `${getCustomerBaseUrl()}/?table_id=${encodeURIComponent(
     getRawTableNumber(tableNumber || table?.tableNumber || "new")
   )}`;
 
@@ -218,6 +223,19 @@ export default function AdminTableQrPage() {
   const [tables, setTables] = useState([]);
   const [modal, setModal] = useState({ type: null, tableId: null });
 
+  // NEW: current user state
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // NEW: load current user
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  // CHANGED: dynamic role instead of hardcoded ADMIN
+  const role = currentUser?.role || "STAFF";
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+
   const filteredTables = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     if (!keyword) return tables;
@@ -314,10 +332,12 @@ export default function AdminTableQrPage() {
     printWindow.document.close();
     printWindow.print();
   }
+  
   useNotificationSound();
+  
   return (
     <div className="ad-root">
-      <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
+      <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main className="atq-main">
@@ -330,73 +350,79 @@ export default function AdminTableQrPage() {
           onAdd={() => setModal({ type: "add", tableId: null })}
         />
 
-        <div className="atq-tableWrap">
-          <table className="atq-table">
-            <thead>
-              <tr>
-                <th>Table ID</th>
-                <th>QR Code</th>
-                <th>Status</th>
-                <th>View/Print QR</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredTables.map((table) => (
-                <tr key={table.id}>
-                  <td>{table.tableId}</td>
-
-                  <td className="atq-qrCell">
-                    <QRCodeCanvas
-                      value={getTableQrUrl(table)}
-                      size={88}
-                      includeMargin
-                    />
-                  </td>
-
-                  <td>{table.status}</td>
-
-                  <td className="atq-viewCell">
-                    <button
-                      className="atq-viewBtn"
-                      onClick={() =>
-                        setModal({ type: "qr", tableId: table.id })
-                      }
-                    >
-                      View Details
-                    </button>
-                  </td>
-
-                  <td className="atq-actionsCell">
-                    <button
-                      className="atq-editBtn"
-                      onClick={() =>
-                        setModal({ type: "edit", tableId: table.id })
-                      }
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      className="atq-deleteBtn"
-                      onClick={() => handleDeleteTable(table.id)}
-                    >
-                      🗑
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {filteredTables.length === 0 && (
+        {/* ADDED OUTER WRAPPER FOR CLEAN SCROLLBARS AND BORDERS */}
+        <div className="atq-tableOuter">
+          <div className="atq-tableWrap">
+            <table className="atq-table">
+              <thead>
                 <tr>
-                  <td colSpan="5" className="atq-empty">
-                    No tables found.
-                  </td>
+                  <th className="atq-idCell">Table ID</th>
+                  <th>QR Code</th>
+                  <th>Status</th>
+                  <th>View/Print QR</th>
+                  <th>Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody>
+                {filteredTables.map((table) => (
+                  <tr key={table.id}>
+                    <td className="atq-idCell">
+                      {/* WRAP LONG IDS */}
+                      <div className="atq-wrapText atq-idWrap">{table.tableId}</div>
+                    </td>
+
+                    <td className="atq-qrCell">
+                      <QRCodeCanvas
+                        value={getTableQrUrl(table)}
+                        size={88}
+                        includeMargin
+                      />
+                    </td>
+
+                    <td>{table.status}</td>
+
+                    <td className="atq-viewCell">
+                      <button
+                        className="atq-viewBtn"
+                        onClick={() =>
+                          setModal({ type: "qr", tableId: table.id })
+                        }
+                      >
+                        View Details
+                      </button>
+                    </td>
+
+                    <td className="atq-actionsCell">
+                      <button
+                        className="atq-editBtn"
+                        onClick={() =>
+                          setModal({ type: "edit", tableId: table.id })
+                        }
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="atq-deleteBtn"
+                        onClick={() => handleDeleteTable(table.id)}
+                      >
+                        🗑
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+                {filteredTables.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="atq-empty">
+                      No tables found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
 

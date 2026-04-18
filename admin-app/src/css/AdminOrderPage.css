@@ -97,6 +97,23 @@
   min-width: 220px;
 }
 
+/* NEW: Stacks the times vertically */
+.ao-timeGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-bottom: 24px; /* Space for the bottom chevrons */
+}
+
+/* NEW: Label to distinguish which time is which */
+.ao-timeLabel {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  margin-right: 4px;
+}
+
 .ao-time {
   display: flex;
   gap: 10px;
@@ -755,6 +772,25 @@
   .ao-cardTopLeft {
     flex: 1 1 auto;
     min-width: 0;
+  }
+
+  /* ADD THESE NEW ONES FOR MOBILE */
+  .ao-timeGroup {
+    align-items: flex-start;
+  }
+
+  .ao-timeLabel {
+    font-size: 14px;
+  }
+
+  .ao-time {
+    font-size: 16px;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+
+  .ao-clock {
+    font-size: 16px;
   }
 
   .ao-cardTopRight {

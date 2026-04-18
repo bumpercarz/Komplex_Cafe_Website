@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend, DefaultLegendContent,
+  ResponsiveContainer,
 } from "recharts";
 import "../css/AdminDashboard.css";
 
@@ -19,10 +19,12 @@ import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
+// NEW: import current user auth
+import { getCurrentUser } from "../services/authService";
+
 const PESO = (n) =>
   new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(n);
 
-// Custom tooltip component for Online Sales Graph to show sales amount
 const CustomOnlineTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -39,6 +41,10 @@ const CustomOnlineTooltip = ({ active, payload, label }) => {
 
 export default function AdminDashboard() {
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // NEW: current user state
+  const [currentUser, setCurrentUser] = useState(null);
+
   const [onlineRange, setOnlineRange] = useState("Week");
   const [itemRange, setItemRange] = useState("Week");
   const [category, setCategory] = useState("All");
@@ -49,7 +55,17 @@ export default function AdminDashboard() {
   const [categoryItems, setCategoryItems] = useState({});
   const [lineKeys, setLineKeys] = useState({});
 
-  // --- Fetch categories and line keys from menu ---
+  // NEW: load current user
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  // CHANGED: dynamic role instead of hardcoded ADMIN
+  const role = currentUser?.role || "STAFF";
+  const roleLabel =
+    role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+
   useEffect(() => {
     async function fetchMenu() {
       const items = await getCategoryItems();
@@ -60,7 +76,6 @@ export default function AdminDashboard() {
     fetchMenu();
   }, []);
 
-  // --- Fetch dashboard summary ---
   useEffect(() => {
     async function fetchSummary() {
       const s = await getDashboardSummary();
@@ -69,7 +84,6 @@ export default function AdminDashboard() {
     fetchSummary();
   }, []);
 
-  // --- Fetch online sales ---
   useEffect(() => {
     async function fetchOnline() {
       const data = await getOnlineSalesData(onlineRange);
@@ -78,7 +92,6 @@ export default function AdminDashboard() {
     fetchOnline();
   }, [onlineRange]);
 
-  // --- Fetch item performance ---
   useEffect(() => {
     async function fetchPerformance() {
       const data = await getItemPerformanceData(itemRange);
@@ -87,29 +100,19 @@ export default function AdminDashboard() {
     fetchPerformance();
   }, [itemRange]);
 
-  // Custom tooltip component for Online Sales Graph to show sales amount
-  const CustomOnlineTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="custom-tooltip" style={{ backgroundColor: '#fff', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}>
-          <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
-          <p style={{ margin: 0 }}>Orders: {data.orders}</p>
-          <p style={{ margin: 0 }}>Sales: {PESO(data.sales).replace("PHP", "₱")}</p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // --- Compute visible lines dynamically ---
   const visibleLines = category === "All"
     ? Object.keys(lineKeys)
     : (categoryItems[category] || []).map(name => name.toLowerCase().replace(/\s+/g, "_"));
-  useNotificationSound();
+
   return (
     <div className="ad-root">
-      <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
+
+      {/* CHANGED: dynamic roleLabel instead of "ADMIN" */}
+      <AdminTopbar
+        roleLabel={roleLabel}
+        onMenuClick={() => setMenuOpen(true)}
+      />
+
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main className="ad-main">
@@ -132,14 +135,12 @@ export default function AdminDashboard() {
         <section className="ad-panel">
           <div className="ad-panelHeader">
             <h2 className="ad-panelTitle">Online Sales Graph</h2>
-            <div className="ad-tabs" role="tablist" aria-label="Online range">
+            <div className="ad-tabs">
               {["Hour", "Week", "Month", "Year"].map(t => (
                 <button
                   key={t}
                   className={`ad-tab ${onlineRange === t ? "is-active" : ""}`}
                   onClick={() => setOnlineRange(t)}
-                  role="tab"
-                  aria-selected={onlineRange === t}
                 >
                   {t}
                 </button>
@@ -149,12 +150,12 @@ export default function AdminDashboard() {
 
           <div className="ad-chartBox">
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={onlineData} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
+              <BarChart data={onlineData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" />
                 <YAxis />
-                <Tooltip content={<CustomOnlineTooltip />} />  // THIS LINE CHANGED
-                <Bar dataKey="orders" fill="#f08a2b"/>
+                <Tooltip content={<CustomOnlineTooltip />} />
+                <Bar dataKey="orders" fill="#f08a2b" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -163,14 +164,12 @@ export default function AdminDashboard() {
         <section className="ad-panel">
           <div className="ad-panelHeader">
             <h2 className="ad-panelTitle">Item Sales Performance</h2>
-            <div className="ad-tabs" role="tablist" aria-label="Item range">
+            <div className="ad-tabs">
               {["Week", "Month", "Year"].map(t => (
                 <button
                   key={t}
                   className={`ad-tab ${itemRange === t ? "is-active" : ""}`}
                   onClick={() => setItemRange(t)}
-                  role="tab"
-                  aria-selected={itemRange === t}
                 >
                   {t}
                 </button>
@@ -178,14 +177,12 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="ad-pills" role="tablist" aria-label="Categories">
+          <div className="ad-pills">
             {Object.keys(categoryItems).map(c => (
               <button
                 key={c}
                 className={`ad-pill ${category === c ? "is-active" : ""}`}
                 onClick={() => setCategory(c)}
-                role="tab"
-                aria-selected={category === c}
               >
                 {c}
               </button>
@@ -193,18 +190,14 @@ export default function AdminDashboard() {
           </div>
 
           <div className="ad-chartBox">
-            {/* Chart with fixed height container - legend removed from here */}
             <div style={{ height: "340px", width: "100%" }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart
-                  data={performanceData}
-                  margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
-                >
-                  <CartesianGrid stroke="#e6e6e6" strokeDasharray="0" />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                  <YAxis tickLine={false} axisLine={false} allowDecimals={false} />
+                <LineChart data={performanceData}>
+                  <CartesianGrid stroke="#e6e6e6" />
+                  <XAxis dataKey="label" />
+                  <YAxis />
                   <Tooltip />
-                  {/* Legend removed from here */}
+
                   {visibleLines.map(k => (
                     <Line
                       key={k}
@@ -214,23 +207,23 @@ export default function AdminDashboard() {
                       stroke={lineKeys[k]?.color || "#000"}
                       strokeWidth={3}
                       dot={false}
-                      activeDot={false}
                     />
                   ))}
                 </LineChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Legend moved OUTSIDE the fixed height container */}
             <div className="ad-legend-wrapper">
               <div className="ad-legend-list">
                 {visibleLines.map(k => (
                   <div key={k} className="ad-legend-item">
-                    <span 
-                      className="ad-legend-color" 
+                    <span
+                      className="ad-legend-color"
                       style={{ backgroundColor: lineKeys[k]?.color || "#000" }}
-                    ></span>
-                    <span className="ad-legend-text">{lineKeys[k]?.label || k}</span>
+                    />
+                    <span className="ad-legend-text">
+                      {lineKeys[k]?.label || k}
+                    </span>
                   </div>
                 ))}
               </div>

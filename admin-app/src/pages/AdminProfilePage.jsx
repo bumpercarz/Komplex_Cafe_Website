@@ -4,6 +4,7 @@ import "../css/AdminProfilePage.css";
 
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
+
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
 import {
@@ -34,12 +35,16 @@ export default function AdminProfilePage() {
     password: "",
   });
 
+  // FIX: hook must be called at top level
+  useNotificationSound();
+
   useEffect(() => {
     const user = getCurrentUser();
     if (!user) {
       navigate("/");
       return;
     }
+
     setCurrentUser(user);
     setForm({
       name: user.name || "",
@@ -57,7 +62,7 @@ export default function AdminProfilePage() {
     const { name, value } = e.target;
 
     if (name === "contactNumber") {
-      const numericValue = value.replace(/\D/g, ""); // Only digits
+      const numericValue = value.replace(/\D/g, "");
       setForm((prev) => ({ ...prev, [name]: numericValue }));
     } else {
       setForm((prev) => ({ ...prev, [name]: value }));
@@ -66,12 +71,14 @@ export default function AdminProfilePage() {
 
   function handleReset() {
     if (!currentUser) return;
+
     setForm({
       name: currentUser.name || "",
       email: currentUser.email || "",
       contactNumber: currentUser.contactNumber || "",
       password: "",
     });
+
     setMessage("");
   }
 
@@ -82,6 +89,7 @@ export default function AdminProfilePage() {
 
     try {
       const allUsers = await getAllUsersLive();
+
       const duplicate = allUsers.find(
         (u) =>
           u.contactNumber === form.contactNumber &&
@@ -95,7 +103,9 @@ export default function AdminProfilePage() {
       }
 
       if (form.password && !/^[\S]{8,16}$/.test(form.password)) {
-        setMessage("Password must be 8–16 characters long and cannot contain spaces.");
+        setMessage(
+          "Password must be 8–16 characters long and cannot contain spaces."
+        );
         setSaving(false);
         return;
       }
@@ -109,6 +119,7 @@ export default function AdminProfilePage() {
       }
 
       const refreshedUser = getCurrentUser();
+
       setCurrentUser(refreshedUser);
       setForm((prev) => ({ ...prev, password: "" }));
       setMessage(result.message);
@@ -126,7 +137,7 @@ export default function AdminProfilePage() {
   }
 
   if (!currentUser) return null;
-  useNotificationSound();
+
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
@@ -134,7 +145,11 @@ export default function AdminProfilePage() {
 
       <main className="apf-main">
         <div className="apf-backBtnWrapper">
-          <button type="button" className="apf-backBtn" onClick={() => navigate(-1)}>
+          <button
+            type="button"
+            className="apf-backBtn"
+            onClick={() => navigate(-1)}
+          >
             ← Back
           </button>
         </div>
@@ -146,24 +161,32 @@ export default function AdminProfilePage() {
             <div className="apf-avatarLarge" />
             <h2 className="apf-name">{currentUser.name}</h2>
             <p className="apf-email">{currentUser.email}</p>
-            <div className="apf-roleBadge">{toRoleLabel(currentUser.role)}</div>
+            <div className="apf-roleBadge">
+              {toRoleLabel(currentUser.role)}
+            </div>
 
             <div className="apf-infoList">
               <div className="apf-infoRow">
                 <span>Role</span>
                 <strong>{toRoleLabel(currentUser.role)}</strong>
               </div>
+
               <div className="apf-infoRow">
                 <span>Contact Number</span>
                 <strong>{currentUser.contactNumber || "N/A"}</strong>
               </div>
+
               <div className="apf-infoRow">
                 <span>Date Registered</span>
                 <strong>{currentUser.dateRegistered || "N/A"}</strong>
               </div>
             </div>
 
-            <button type="button" className="apf-logoutBtn" onClick={handleLogout}>
+            <button
+              type="button"
+              className="apf-logoutBtn"
+              onClick={handleLogout}
+            >
               Log Out
             </button>
           </section>
@@ -221,9 +244,14 @@ export default function AdminProfilePage() {
               {message && <div className="apf-message">{message}</div>}
 
               <div className="apf-formActions">
-                <button type="button" className="apf-resetBtn" onClick={handleReset}>
+                <button
+                  type="button"
+                  className="apf-resetBtn"
+                  onClick={handleReset}
+                >
                   Reset
                 </button>
+
                 <button type="submit" className="apf-saveBtn" disabled={saving}>
                   {saving ? "Saving..." : "Save Changes"}
                 </button>

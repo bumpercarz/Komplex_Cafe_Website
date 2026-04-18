@@ -9,11 +9,14 @@ import OrderTabs from "../components/orders/OrderTabs";
 import OrderCard from "../components/orders/OrderCard";
 
 import { useNotificationSound } from "../hooks/useNotificationSound";
+import { subscribeToOrders } from "../services/adminOrderData";
+
+// NEW: import current user auth
+import { getCurrentUser } from "../services/authService";
 
 import {
   ORDER_TABS,
   STATUS_OPTIONS,
-  getAllOrdersLive,
   getOrdersByTab,
   updateOrderStatusRecord,
 } from "../services/adminOrderData";
@@ -27,23 +30,35 @@ export default function AdminOrderPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  async function loadOrders() {
-    setLoading(true);
-    setMessage("");
+  // NEW: current user state
+  const [currentUser, setCurrentUser] = useState(null);
 
-    try {
-      const data = await getAllOrdersLive();
-      setOrdersSource(data);
-    } catch (error) {
-      console.error("Load orders error:", error);
-      setMessage(error?.message || "Failed to load orders.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  // NEW: load current user
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  // CHANGED: dynamic role instead of hardcoded ADMIN
+  const role = currentUser?.role || "STAFF";
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
   useEffect(() => {
-    loadOrders();
+    setLoading(true);
+
+    const unsubscribe = subscribeToOrders(
+      (data) => {
+        setOrdersSource(data);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Orders listener error:", error);
+        setMessage(error?.message || "Failed to listen to orders.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   const orders = useMemo(() => {
@@ -99,10 +114,13 @@ export default function AdminOrderPage() {
       setMessage(error?.message || "Failed to update order status.");
     }
   }
+
   useNotificationSound();
+
   return (
     <div className="ad-root">
-      <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
+      {/* CHANGED: dynamic roleLabel instead of "ADMIN" */}
+      <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main className="ao-main">
@@ -112,7 +130,12 @@ export default function AdminOrderPage() {
           onSearchChange={setSearch}
           searchPlaceholder="Search orders"
         />
-        <OrderTabs tabs={ORDER_TABS} activeTab={activeTab} onChange={setActiveTab} />
+
+        <OrderTabs
+          tabs={ORDER_TABS}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+        />
 
         {message ? <div className="ao-empty">{message}</div> : null}
         {loading ? <div className="ao-empty">Loading orders...</div> : null}

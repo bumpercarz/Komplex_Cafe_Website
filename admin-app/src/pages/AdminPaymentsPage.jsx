@@ -6,6 +6,9 @@ import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
+// NEW: import current user auth
+import { getCurrentUser } from "../services/authService";
+
 import {
   getAllPayments,
   formatMoney,
@@ -92,6 +95,16 @@ export default function AdminPaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  const role = currentUser?.role || "STAFF";
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+
   async function reloadPayments() {
     setLoading(true);
     setMessage("");
@@ -130,10 +143,12 @@ export default function AdminPaymentsPage() {
   const selectedPayment = useMemo(() => {
     return payments.find((payment) => payment.id === selectedPaymentId) || null;
   }, [payments, selectedPaymentId]);
+  
   useNotificationSound();
+  
   return (
     <div className="ad-root">
-      <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
+      <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main className="ap-main">
@@ -148,47 +163,55 @@ export default function AdminPaymentsPage() {
         {loading ? <div className="ap-empty">Loading payments...</div> : null}
 
         {!loading && (
-          <div className="ap-tableWrap">
-            <table className="ap-table">
-              <thead>
-                <tr>
-                  <th>Payment ID</th>
-                  <th>Order ID</th>
-                  <th>Method</th>
-                  <th>Amount</th>
-                  <th>Timestamp</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredPayments.map((payment) => (
-                  <tr key={payment.id}>
-                    <td>{payment.paymentId}</td>
-                    <td>{payment.orderId}</td>
-                    <td>{payment.method}</td>
-                    <td>{formatMoney(payment.amount)}</td>
-                    <td>{payment.timestamp}</td>
-                    <td className="ap-detailsCell">
-                      <button
-                        className="ap-viewBtn"
-                        onClick={() => setSelectedPaymentId(payment.id)}
-                      >
-                        View Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-                {filteredPayments.length === 0 && (
+          /* ADDED OUTER WRAPPER FOR CLEAN SCROLLBARS AND BORDERS */
+          <div className="ap-tableOuter">
+            <div className="ap-tableWrap">
+              <table className="ap-table">
+                <thead>
                   <tr>
-                    <td colSpan="6" className="ap-empty">
-                      No payments found.
-                    </td>
+                    <th className="ap-idCell">Payment ID</th>
+                    <th className="ap-idCell">Order ID</th>
+                    <th>Method</th>
+                    <th>Amount</th>
+                    <th>Timestamp</th>
+                    <th>Details</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+
+                <tbody>
+                  {filteredPayments.map((payment) => (
+                    <tr key={payment.id}>
+                      {/* Wrap text in specific divs to respect max-width and force wrap on long IDs */}
+                      <td className="ap-idCell">
+                        <div className="ap-wrapText ap-idWrap">{payment.paymentId}</div>
+                      </td>
+                      <td className="ap-idCell">
+                        <div className="ap-wrapText ap-idWrap">{payment.orderId}</div>
+                      </td>
+                      <td>{payment.method}</td>
+                      <td>{formatMoney(payment.amount)}</td>
+                      <td>{payment.timestamp}</td>
+                      <td className="ap-detailsCell">
+                        <button
+                          className="ap-viewBtn"
+                          onClick={() => setSelectedPaymentId(payment.id)}
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {filteredPayments.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="ap-empty">
+                        No payments found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>

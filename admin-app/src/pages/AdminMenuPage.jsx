@@ -6,10 +6,12 @@ import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
+import { getCurrentUser } from "../services/authService";
+
 import {
   MENU_CATEGORY_OPTIONS,
   MENU_AVAILABLE_OPTIONS,
-  getAllMenuItemsLive,
+  subscribeToMenuItems, 
   createMenuItemRecord,
   updateMenuItemRecord,
   deleteMenuItemRecord,
@@ -69,17 +71,31 @@ function MenuFormModal({
       return;
     }
 
+    if (trimmedName.length > 50) {
+      alert("Item name cannot exceed 50 characters.");
+      return;
+    }
+
     if (!trimmedDescription) {
       alert("Please enter the description.");
       return;
     }
 
-    if (!price || Number.isNaN(numericPrice) || numericPrice < 0) {
-      alert("Please enter a valid price.");
+    if (trimmedDescription.length > 150) {
+      alert("Description cannot exceed 150 characters.");
       return;
     }
 
-    // FIX: compare by docId, not id
+    if (!price || Number.isNaN(numericPrice) || numericPrice < 0) {
+      alert("Please enter a valid price (Must be 0 or greater).");
+      return;
+    }
+
+    if (!MENU_CATEGORY_OPTIONS.includes(category)) {
+      alert("Invalid category selected.");
+      return;
+    }
+
     const hasDuplicate = existingItems.some(
       (menuItem) =>
         menuItem.name.toLowerCase() === trimmedName.toLowerCase() &&
@@ -117,24 +133,37 @@ function MenuFormModal({
 
         <div className="amp-modalGrid">
           <div className="amp-modalLeft">
+            
             <div className="amp-formGroup">
-              <label>Name</label>
+              <div className="amp-labelRow">
+                <label>Name</label>
+                <span className={`amp-charCount ${name.length >= 50 ? "amp-charCountMax" : ""}`}>
+                  {name.length}/50
+                </span>
+              </div>
               <input
                 type="text"
                 placeholder="Iced Matcha"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                maxLength={50}
                 disabled={saving}
               />
             </div>
 
             <div className="amp-formGroup amp-formGroupWide">
-              <label>Description</label>
+              <div className="amp-labelRow">
+                <label>Description</label>
+                <span className={`amp-charCount ${description.length >= 150 ? "amp-charCountMax" : ""}`}>
+                  {description.length}/150
+                </span>
+              </div>
               <input
                 type="text"
                 placeholder="Yummy"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                maxLength={150}
                 disabled={saving}
               />
             </div>
@@ -237,29 +266,38 @@ export default function AdminMenuPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [menuItems, setMenuItems] = useState([]);
-  // FIX: renamed itemId -> itemDocId to store the unique composite key
+  
   const [modal, setModal] = useState({ type: null, itemDocId: null });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
-  async function loadMenuItems() {
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const data = await getAllMenuItemsLive();
-      setMenuItems(data);
-    } catch (error) {
-      console.error("Load menu items error:", error);
-      setMessage(error?.message || "Failed to load menu items.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    loadMenuItems();
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  const role = currentUser?.role || "STAFF";
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = subscribeToMenuItems(
+      (data) => {
+        setMenuItems(data);
+        setLoading(false);
+        setMessage("");
+      },
+      (error) => {
+        console.error("Load menu items error:", error);
+        setMessage(error?.message || "Failed to load menu items.");
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   const filteredItems = useMemo(() => {
@@ -278,7 +316,6 @@ export default function AdminMenuPage() {
     });
   }, [menuItems, search]);
 
-  // FIX: match on docId (unique) instead of id (not unique across categories)
   const selectedItem = useMemo(() => {
     return menuItems.find((item) => item.docId === modal.itemDocId) || null;
   }, [menuItems, modal.itemDocId]);
@@ -299,8 +336,6 @@ export default function AdminMenuPage() {
         setMessage(result.message);
         return;
       }
-
-      await loadMenuItems();
       closeModal();
     } catch (error) {
       console.error("Add menu item error:", error);
@@ -323,8 +358,6 @@ export default function AdminMenuPage() {
         setMessage(result.message);
         return;
       }
-
-      await loadMenuItems();
       closeModal();
     } catch (error) {
       console.error("Edit menu item error:", error);
@@ -350,17 +383,17 @@ export default function AdminMenuPage() {
         setMessage(result.message);
         return;
       }
-
-      await loadMenuItems();
     } catch (error) {
       console.error("Delete menu item error:", error);
       setMessage(error?.message || "Failed to delete menu item.");
     }
   }
+  
   useNotificationSound();
+
   return (
     <div className="ad-root">
-      <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
+      <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main className="amp-main">
@@ -377,67 +410,75 @@ export default function AdminMenuPage() {
         {loading ? (
           <div className="amp-empty">Loading menu items...</div>
         ) : (
-          <div className="amp-tableWrap">
-            <table className="amp-table">
-              <thead>
-                <tr>
-                  <th>Image</th>
-                  <th>Code Name</th>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Category</th>
-                  <th>Available?</th>
-                  <th>Price</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredItems.map((item) => (
-                  // FIX: use docId as React key — globally unique
-                  <tr key={item.docId}>
-                    <td className="amp-imageCell">
-                      <img className="amp-itemImage" src={item.image} alt={item.name} />
-                    </td>
-
-                    <td>{item.codeName}</td>
-                    <td>{item.name}</td>
-                    <td>{item.description}</td>
-                    <td>{item.category}</td>
-                    <td>{item.available}</td>
-                    <td>{formatMoney(item.price)}</td>
-
-                    <td className="amp-actionsCell">
-                      {/* FIX: pass item.docId so selectedItem resolves correctly */}
-                      <button
-                        className="amp-editBtn"
-                        onClick={() =>
-                          setModal({ type: "edit", itemDocId: item.docId })
-                        }
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        className="amp-deleteBtn"
-                        onClick={() => handleDeleteItem(item.docId)}
-                        aria-label={`Delete ${item.name}`}
-                      >
-                        🗑
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-                {filteredItems.length === 0 && (
+          /* ADDED OUTER WRAPPER FOR CLEAN BORDERS */
+          <div className="amp-tableOuter">
+            <div className="amp-tableWrap">
+              <table className="amp-table">
+                <thead>
                   <tr>
-                    <td colSpan="8" className="amp-empty">
-                      No menu items found.
-                    </td>
+                    <th>Image</th>
+                    <th>Code Name</th>
+                    <th className="amp-nameCell">Name</th>
+                    <th className="amp-descCell">Description</th>
+                    <th>Category</th>
+                    <th>Available?</th>
+                    <th>Price</th>
+                    <th>Action</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+
+                <tbody>
+                  {filteredItems.map((item) => (
+                    <tr key={item.docId}>
+                      <td className="amp-imageCell">
+                        <img className="amp-itemImage" src={item.image} alt={item.name} />
+                      </td>
+
+                      <td>{item.codeName}</td>
+                      
+                      {/* ADDED INNER DIVS TO FORCE WRAPPING */}
+                      <td className="amp-nameCell">
+                        <div className="amp-wrapText amp-nameWrap">{item.name}</div>
+                      </td>
+                      <td className="amp-descCell">
+                        <div className="amp-wrapText amp-descWrap">{item.description}</div>
+                      </td>
+                      
+                      <td>{item.category}</td>
+                      <td>{item.available}</td>
+                      <td>{formatMoney(item.price)}</td>
+
+                      <td className="amp-actionsCell">
+                        <button
+                          className="amp-editBtn"
+                          onClick={() =>
+                            setModal({ type: "edit", itemDocId: item.docId })
+                          }
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          className="amp-deleteBtn"
+                          onClick={() => handleDeleteItem(item.docId)}
+                          aria-label={`Delete ${item.name}`}
+                        >
+                          🗑
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {filteredItems.length === 0 && (
+                    <tr>
+                      <td colSpan="8" className="amp-empty">
+                        No menu items found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>

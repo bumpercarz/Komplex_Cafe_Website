@@ -222,10 +222,28 @@
   gap: 8px;
 }
 
+.amp-labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.amp-charCount {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 2px;
+}
+
+.amp-charCountMax {
+  color: #df4735;
+  font-weight: 700;
+}
+
 .au-formGroup label {
   font-size: 16px;
   font-weight: 700;
   color: #111;
+  margin: 0;
 }
 
 .au-formGroup input,
@@ -420,4 +438,21 @@
   .au-cancelBtn {
     width: 100%;
   }
+}
+
+.amp-labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.amp-charCount {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 2px;
+}
+
+.amp-charCountMax {
+  color: #df4735;
+  font-weight: 700;
 }

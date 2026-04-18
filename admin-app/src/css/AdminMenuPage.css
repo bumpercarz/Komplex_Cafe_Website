@@ -8,57 +8,83 @@
 }
 
 /* =========================
-   Table
+   Table & Scrollbars
 ========================= */
 
+/* 1. NEW OUTER WRAPPER: Traps the scrollbars inside the rounded corners! */
+.amp-tableOuter {
+  width: 100%;
+  border: 1px solid #333;
+  border-radius: 16px;
+  overflow: hidden; /* Clips the scrollbars so they stay inside the rounded corners */
+  background: #eee;
+}
+
+/* 2. INNER SCROLL WRAPPER */
 .amp-tableWrap {
   width: 100%;
+  max-height: calc(100vh - 210px); 
   overflow-x: auto;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #dcdcdc;
+}
+
+/* Custom Webkit Scrollbars */
+.amp-tableWrap::-webkit-scrollbar {
+  width: 14px; 
+  height: 14px; 
+}
+.amp-tableWrap::-webkit-scrollbar-track {
+  background: #dcdcdc;
+}
+.amp-tableWrap::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+  border: 3px solid #dcdcdc; 
+}
+.amp-tableWrap::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
 }
 
 .amp-table {
   width: 100%;
-  min-width: 980px;
+  min-width: 850px; 
   border-collapse: separate;
   border-spacing: 0;
   table-layout: auto;
-  background: #eee;
-  border: 1px solid #333;
-  border-radius: 16px;
-  overflow: hidden;
+  background: transparent;
+}
+
+/* FORCE ONE LINE BY DEFAULT */
+.amp-table th,
+.amp-table td {
+  white-space: nowrap; 
+  padding: 12px 14px;
+  border-right: 1px solid #333;
+  border-bottom: 1px solid #333;
+  vertical-align: middle;
 }
 
 .amp-table th {
   background: #ea7425;
   color: #111;
   text-align: left;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
-  padding: 16px 14px;
-  border-right: 1px solid #333;
-  border-bottom: 1px solid #333;
-  white-space: nowrap;
-  word-break: normal;
-  vertical-align: middle;
-}
 
-.amp-table th:last-child {
-  border-right: none;
+  /* STICKY HEADER */
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .amp-table td {
-  font-size: 15px;
-  padding: 14px;
-  border-right: 1px solid #333;
-  border-bottom: 1px solid #333;
-  background: #eee;
-  vertical-align: middle;
-  white-space: nowrap;
-  word-break: normal;
+  font-size: 14px;
 }
 
+.amp-table th:last-child,
 .amp-table td:last-child {
   border-right: none;
 }
@@ -67,14 +93,33 @@
   border-bottom: none;
 }
 
+/* 3. TEXT WRAPPING DIVS (Applied inside the JSX cells) */
+.amp-wrapText {
+  white-space: normal !important; 
+  overflow-wrap: break-word; 
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.amp-nameWrap {
+  min-width: 140px;
+  max-width: 220px; 
+}
+
+.amp-descWrap {
+  min-width: 220px;
+  max-width: 400px; 
+}
+
 .amp-imageCell {
   text-align: center;
   vertical-align: middle;
+  width: 110px; 
 }
 
 .amp-itemImage {
-  width: 104px;
-  height: 104px;
+  width: 90px;
+  height: 90px;
   object-fit: cover;
   border-radius: 12px;
   display: block;
@@ -83,30 +128,29 @@
 
 .amp-actionsCell {
   text-align: center;
-  vertical-align: middle !important;
-  white-space: nowrap;
+  min-width: 130px; 
 }
 
 .amp-editBtn {
   border: none;
   background: #ea7425;
   color: #111;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
-  padding: 10px 18px;
+  padding: 10px 16px;
   border-radius: 12px;
   cursor: pointer;
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
 .amp-deleteBtn {
-  width: 38px;
-  height: 38px;
+  width: 36px;
+  height: 36px;
   border: none;
   border-radius: 50%;
   background: #df4735;
   color: #111;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   vertical-align: middle;
 }
@@ -125,7 +169,7 @@
 .amp-modalBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,6 +184,9 @@
   border-radius: 22px;
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
   position: relative;
+  /* Ensure modal scrolls if screen height is too small */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
 .amp-formModal {
@@ -156,12 +203,13 @@
   font-size: 34px;
   font-weight: 700;
   cursor: pointer;
+  z-index: 10;
 }
 
 .amp-modalGrid {
   display: grid;
   grid-template-columns: 1fr 1.45fr;
-  gap: 70px;
+  gap: 50px;
 }
 
 .amp-modalLeft,
@@ -174,23 +222,42 @@
 .amp-formGroup {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+}
+
+.amp-labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.amp-charCount {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 2px;
+}
+
+.amp-charCountMax {
+  color: #df4735;
+  font-weight: 700;
 }
 
 .amp-formGroup label {
-  font-size: 24px;
+  font-size: 20px;
+  font-weight: 700;
   color: #111;
+  margin: 0;
 }
 
 .amp-formGroup input,
 .amp-formGroup select {
-  height: 50px;
+  height: 48px;
   border: none;
   outline: none;
   background: #dcdcdc;
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 0 16px;
-  font-size: 22px;
+  font-size: 18px;
   color: #444;
   box-sizing: border-box;
 }
@@ -205,7 +272,7 @@
 
 .amp-uploadBox {
   width: 100%;
-  min-height: 286px;
+  min-height: 240px;
   border: none;
   border-radius: 16px;
   background: #dcdcdc;
@@ -215,11 +282,16 @@
   justify-content: center;
   overflow: hidden;
   padding: 0;
+  transition: background 0.2s;
+}
+
+.amp-uploadBox:hover {
+  background: #cfcfcf;
 }
 
 .amp-uploadBox img {
   width: 100%;
-  height: 286px;
+  height: 240px;
   object-fit: cover;
 }
 
@@ -232,12 +304,13 @@
 }
 
 .amp-uploadIcon {
-  font-size: 72px;
+  font-size: 64px;
   line-height: 1;
 }
 
 .amp-uploadInner span {
-  font-size: 22px;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .amp-modalActions {
@@ -254,9 +327,15 @@
   color: #111;
   font-size: 16px;
   font-weight: 700;
-  padding: 10px 28px;
+  padding: 12px 32px;
   border-radius: 14px;
   cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.amp-saveBtn:active,
+.amp-exitBtn:active {
+  transform: scale(0.97);
 }
 
 /* =========================
@@ -275,15 +354,6 @@
   .amp-modalGrid {
     gap: 32px;
   }
-
-  .amp-formGroup label {
-    font-size: 22px;
-  }
-
-  .amp-formGroup input,
-  .amp-formGroup select {
-    font-size: 20px;
-  }
 }
 
 @media (max-width: 900px) {
@@ -293,6 +363,12 @@
 
   .amp-modalGrid {
     grid-template-columns: 1fr;
+  }
+  
+  .amp-uploadBox,
+  .amp-uploadBox img {
+    min-height: 200px;
+    height: 200px;
   }
 }
 
@@ -306,26 +382,27 @@
   }
 
   .amp-formGroup label {
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .amp-formGroup input,
   .amp-formGroup select {
-    height: 46px;
-    font-size: 18px;
-  }
-
-  .amp-uploadBox,
-  .amp-uploadBox img {
-    min-height: 220px;
-    height: 220px;
+    height: 44px;
+    font-size: 16px;
   }
 
   .amp-uploadInner span {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .amp-modalActions {
     flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .amp-saveBtn,
+  .amp-exitBtn {
+    flex: 1;
+    min-width: 120px;
   }
 }

@@ -2,10 +2,11 @@ import { db, storage } from "../firebase";
 import {
   collection,
   doc,
-  getDocs,
+  onSnapshot,
   orderBy,
   query,
   updateDoc,
+  serverTimestamp, // NEW: Added serverTimestamp to write exact times to DB
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -91,6 +92,17 @@ function mapFirestoreOrder(docSnap) {
         ? data.o_timestamp.toDate()
         : new Date(),
 
+    // NEW: Pull the new timestamps if they exist in the DB
+    preparingAt:
+      typeof data.preparing_at?.toDate === "function"
+        ? data.preparing_at.toDate()
+        : null,
+    
+    completedAt:
+      typeof data.completed_at?.toDate === "function"
+        ? data.completed_at.toDate()
+        : null,
+
     customerName: data.user_id
       ? `User #${data.user_id}`
       : `Guest #${data.guest_id ?? "N/A"}`,
@@ -104,10 +116,20 @@ function mapFirestoreOrder(docSnap) {
 /* =========================
    Get Orders
 ========================= */
-export async function getAllOrdersLive() {
+export function subscribeToOrders(callback, onError) {
   const q = query(collection(db, "tbl_orders"), orderBy("order_id", "desc"));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(mapFirestoreOrder);
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const orders = snapshot.docs.map(mapFirestoreOrder);
+      callback(orders);
+    },
+    (error) => {
+      console.error("Firestore listener error:", error);
+      if (onError) onError(error);
+    }
+  );
 }
 
 export function getOrdersByTab(orders, activeTab) {
@@ -119,15 +141,6 @@ export function getOrdersByTab(orders, activeTab) {
 
 /* =========================
    Update Status + Receipt
-
-   ✅ Added 4th parameter { oldStatus, tableLabel, actor }
-      Pass these from your UI component (AdminOrdersPage) like:
-      
-      await updateOrderStatusRecord(order.orderId, newStatus, receiptFile, {
-        oldStatus:  order.status,
-        tableLabel: order.tableLabel,
-        actor:      currentAdminName,
-      });
 ========================= */
 export async function updateOrderStatusRecord(
   orderId,
@@ -142,10 +155,20 @@ export async function updateOrderStatusRecord(
       receiptUrl = await uploadReceiptImage(receiptFile, orderId);
     }
 
-    await updateDoc(doc(db, "tbl_orders", String(orderId)), {
+    // NEW: Construct the payload and add timestamps automatically
+    const updatePayload = {
       order_status: newStatus,
       ...(receiptUrl && { receipt_image: receiptUrl }),
-    });
+    };
+
+    if (newStatus === "PREPARING") {
+      updatePayload.preparing_at = serverTimestamp();
+    } else if (newStatus === "COMPLETED") {
+      updatePayload.completed_at = serverTimestamp();
+    }
+
+    // Write to Firebase
+    await updateDoc(doc(db, "tbl_orders", String(orderId)), updatePayload);
 
     // ✅ Fire notification after successful Firestore update
     await notifyOrderStatusUpdate({
@@ -164,6 +187,7 @@ export async function updateOrderStatusRecord(
 }
 
 export function formatDate(d) {
+  if (!d) return "";
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yy = String(d.getFullYear()).slice(-2);
@@ -171,6 +195,7 @@ export function formatDate(d) {
 }
 
 export function formatTime(d) {
+  if (!d) return "";
   const hh = String(d.getHours()).padStart(2, "0");
   const min = String(d.getMinutes()).padStart(2, "0");
   const ss = String(d.getSeconds()).padStart(2, "0");

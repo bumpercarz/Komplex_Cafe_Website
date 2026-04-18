@@ -8,6 +8,7 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  onSnapshot, // NEW: Import for real-time listener
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -153,6 +154,23 @@ export async function getAllMenuItemsLive() {
   const items = sortMenuItems(snapshot.docs.map(mapFirestoreMenuItem));
   writeMenuCache(items);
   return items;
+}
+
+// NEW: Real-time subscription for menu items
+export function subscribeToMenuItems(onData, onError) {
+  const q = collection(db, MENU_COLLECTION);
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const items = sortMenuItems(snapshot.docs.map(mapFirestoreMenuItem));
+      writeMenuCache(items);
+      if (onData) onData(items);
+    },
+    (err) => {
+      console.error("Menu items subscription error:", err);
+      if (onError) onError(err);
+    }
+  );
 }
 
 export async function createMenuItemRecord(formValues) {

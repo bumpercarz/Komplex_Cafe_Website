@@ -2,6 +2,9 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/AdminTopbar.css";
 
+// IMPORT THE LOGO
+import komplexLogo from "../assets/komplexLogoPlain.png";
+
 export default function StaffTopbar({ roleLabel = "STAFF" }) {
   const navigate = useNavigate();
 
@@ -21,7 +24,8 @@ export default function StaffTopbar({ roleLabel = "STAFF" }) {
           aria-label="Profile"
           onClick={() => navigate("/staff/profile")}
         >
-          <div className="ad-avatar" />
+          {/* REPLACE DIV WITH IMG */}
+          <img src={komplexLogo} alt="Profile" className="ad-avatar" />
         </button>
       </div>
     </header>

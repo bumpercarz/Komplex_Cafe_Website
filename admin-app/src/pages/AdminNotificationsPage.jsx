@@ -6,6 +6,9 @@ import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
+// NEW: import current user auth
+import { getCurrentUser } from "../services/authService";
+
 import {
   subscribeToNotifications,
   markNotificationAsRead,
@@ -85,6 +88,19 @@ export default function AdminNotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // NEW: current user state
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // NEW: load current user
+  useEffect(() => {
+    const user = getCurrentUser();
+    setCurrentUser(user);
+  }, []);
+
+  // CHANGED: dynamic role instead of hardcoded ADMIN
+  const role = currentUser?.role || "STAFF";
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+
   // Real-time subscription — replaces the old getDocs + reloadNotifications pattern
   useEffect(() => {
     const unsub = subscribeToNotifications(
@@ -126,10 +142,13 @@ export default function AdminNotificationsPage() {
     await deleteNotificationById(notificationId);
     // onSnapshot will update the list automatically
   }
+  
   useNotificationSound();
+  
   return (
     <div className="ad-root">
-      <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
+      {/* CHANGED: dynamic roleLabel */}
+      <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main className="an-main">

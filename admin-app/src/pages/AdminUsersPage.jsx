@@ -1,6 +1,6 @@
-// AdminUsersPage.js
 import React, { useEffect, useMemo, useState } from "react";
-import "../css/AdminMenuPage.css";
+// RESTORED: This must be AdminMenuPage.css so the amp- modal classes work!
+import "../css/AdminMenuPage.css"; 
 
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
@@ -40,27 +40,70 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
 
         <div className="amp-modalGrid">
           <div className="amp-modalLeft">
+            
+            {/* FULL NAME: Limit 50 */}
             <div className="amp-formGroup">
-              <label>Full Name</label>
-              <input type="text" name="name" value={form.name} onChange={onChange} required />
+              <div className="amp-labelRow">
+                <label>Full Name</label>
+                <span className={`amp-charCount ${(form.name || "").length >= 50 ? "amp-charCountMax" : ""}`}>
+                  {(form.name || "").length}/50
+                </span>
+              </div>
+              <input 
+                type="text" 
+                name="name" 
+                value={form.name || ""} 
+                onChange={onChange} 
+                maxLength={50}
+                required 
+              />
             </div>
 
+            {/* EMAIL: Limit 100 */}
             <div className="amp-formGroup">
-              <label>Email</label>
-              <input type="email" name="email" value={form.email} onChange={onChange} required />
+              <div className="amp-labelRow">
+                <label>Email</label>
+                <span className={`amp-charCount ${(form.email || "").length >= 100 ? "amp-charCountMax" : ""}`}>
+                  {(form.email || "").length}/100
+                </span>
+              </div>
+              <input 
+                type="email" 
+                name="email" 
+                value={form.email || ""} 
+                onChange={onChange} 
+                maxLength={100}
+                required 
+              />
             </div>
 
+            {/* PASSWORD: Limit 16 */}
             <div className="amp-formGroup">
-              <label>{mode === "edit" ? "New Password" : "Password"}</label>
-              <input type="password" name="password" value={form.password} onChange={onChange} />
-              <small>{mode === "edit" ? "Leave blank to keep current password" : "Minimum 8 characters"}</small>
+              <div className="amp-labelRow">
+                <label>{mode === "edit" ? "New Password" : "Password"}</label>
+                <span className={`amp-charCount ${(form.password || "").length >= 16 ? "amp-charCountMax" : ""}`}>
+                  {(form.password || "").length}/16
+                </span>
+              </div>
+              <input 
+                type="password" 
+                name="password" 
+                value={form.password || ""} 
+                onChange={onChange} 
+                maxLength={16}
+              />
+              <small style={{ marginTop: "-6px", color: "#666" }}>
+                {mode === "edit" ? "Leave blank to keep current. (8-16 chars)" : "Must be 8-16 characters"}
+              </small>
             </div>
           </div>
 
           <div className="amp-modalRight">
+            
+            {/* ROLE */}
             <div className="amp-formGroup">
               <label>Role</label>
-              <select name="role" value={form.role} onChange={onChange}>
+              <select name="role" value={form.role || "STAFF"} onChange={onChange}>
                 {USER_ROLE_OPTIONS.map((role) => (
                   <option key={role} value={role}>
                     {role}
@@ -69,12 +112,18 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
               </select>
             </div>
 
+            {/* CONTACT NUMBER: Limit 11 */}
             <div className="amp-formGroup">
-              <label>Contact Number</label>
+              <div className="amp-labelRow">
+                <label>Contact Number</label>
+                <span className={`amp-charCount ${(form.contactNumber || "").length >= 11 ? "amp-charCountMax" : ""}`}>
+                  {(form.contactNumber || "").length}/11
+                </span>
+              </div>
               <input
                 type="text"
                 name="contactNumber"
-                value={form.contactNumber}
+                value={form.contactNumber || ""}
                 onChange={onChange}
                 placeholder="Numbers only (max 11)"
                 maxLength={11}
@@ -82,6 +131,7 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
               />
             </div>
 
+            {/* DATE REGISTERED */}
             <div className="amp-formGroup">
               <label>Date Registered</label>
               <input
@@ -121,10 +171,10 @@ function DeleteConfirmModal({ user, onConfirm, onClose, isDeleting }) {
         </p>
 
         <div className="amp-modalActions">
-          <button className="au-confirmBtn" onClick={() => onConfirm(user.id)} disabled={isDeleting}>
+          <button className="amp-saveBtn" onClick={() => onConfirm(user.id)} disabled={isDeleting} style={{ background: "#df4735", color: "#fff" }}>
             {isDeleting ? "Deleting..." : "Confirm"}
           </button>
-          <button className="au-cancelBtn" onClick={onClose}>
+          <button className="amp-exitBtn" onClick={onClose}>
             Cancel
           </button>
         </div>
@@ -149,10 +199,10 @@ function TransferOwnershipModal({ user, onConfirm, onClose, isTransferring }) {
         </p>
 
         <div className="amp-modalActions">
-          <button className="au-confirmBtn" onClick={() => onConfirm(user.id)} disabled={isTransferring}>
+          <button className="amp-saveBtn" onClick={() => onConfirm(user.id)} disabled={isTransferring} style={{ background: "#df4735", color: "#fff" }}>
             {isTransferring ? "Transferring..." : "Confirm"}
           </button>
-          <button className="au-cancelBtn" onClick={onClose}>
+          <button className="amp-exitBtn" onClick={onClose}>
             Cancel
           </button>
         </div>
@@ -165,6 +215,9 @@ function TransferOwnershipModal({ user, onConfirm, onClose, isTransferring }) {
 export default function AdminUsersPage() {
   const [currentUser, setCurrentUserState] = useState(() => getCurrentUser());
   const isOwner = currentUser?.role === "OWNER";
+
+  const role = currentUser?.role || "STAFF";
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -214,11 +267,11 @@ export default function AdminUsersPage() {
 
   function openEdit(user) {
     setForm({
-      name: user.name,
-      email: user.email,
+      name: user.name || "",
+      email: user.email || "",
       password: "",
-      role: user.role,
-      contactNumber: user.contactNumber,
+      role: user.role || "STAFF",
+      contactNumber: user.contactNumber || "",
     });
     setModal({ type: "edit", userId: user.id });
   }
@@ -276,16 +329,13 @@ export default function AdminUsersPage() {
     let newValue = value;
 
     if (name === "contactNumber") {
-      newValue = newValue.replace(/\D/g, "");
-      if (!newValue.startsWith("09")) {
-        newValue = "09" + newValue.slice(2);
-      }
+      newValue = newValue.replace(/\D/g, ""); // Allow only digits
       if (newValue.length > 11) newValue = newValue.slice(0, 11);
     }
 
-    if (name === "password") {
-      if (newValue.length > 16) newValue = newValue.slice(0, 16);
-    }
+    if (name === "name" && newValue.length > 50) newValue = newValue.slice(0, 50);
+    if (name === "email" && newValue.length > 100) newValue = newValue.slice(0, 100);
+    if (name === "password" && newValue.length > 16) newValue = newValue.slice(0, 16);
 
     setForm((prev) => ({ ...prev, [name]: newValue }));
   }
@@ -293,14 +343,19 @@ export default function AdminUsersPage() {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    if (modal.type === "add" && form.password.length < 8) {
-      alert("Password must be at least 8 characters long.");
-      return;
-    }
+    const { name, email, password, role, contactNumber } = form;
 
-    if (modal.type === "edit" && form.password.length > 0 && form.password.length < 8) {
-      alert("New password must be at least 8 characters long.");
-      return;
+    // Form submission validation
+    if (name.trim().length > 50) return alert("Name cannot exceed 50 characters.");
+    if (email.trim().length > 100) return alert("Email cannot exceed 100 characters.");
+    if (contactNumber.trim().length > 11) return alert("Contact number cannot exceed 11 characters.");
+    if (!['ADMIN', 'STAFF', 'OWNER'].includes(role)) return alert("Invalid role selected.");
+
+    if (modal.type === "add" && (password.length < 8 || password.length > 16)) {
+      return alert("Password must be between 8 and 16 characters.");
+    }
+    if (modal.type === "edit" && password.length > 0 && (password.length < 8 || password.length > 16)) {
+      return alert("New password must be between 8 and 16 characters.");
     }
 
     setIsSubmitting(true);
@@ -325,10 +380,12 @@ export default function AdminUsersPage() {
       setIsSubmitting(false);
     }
   }
+  
   useNotificationSound();
+  
   return (
     <div className="ad-root">
-      <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
+      <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main className="amp-main">
@@ -341,72 +398,86 @@ export default function AdminUsersPage() {
           onAdd={openAdd}
         />
 
-        <div className="amp-tableWrap">
-          <table className="amp-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Contact</th>
-                <th>Date Registered</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((user) => {
-                const targetIsOwner = user.role === "OWNER";
-                const isSelf = user.id === currentUser?.id;
+        {/* ADDED OUTER WRAPPER FOR CLEAN BORDERS */}
+        <div className="amp-tableOuter">
+          <div className="amp-tableWrap">
+            <table className="amp-table">
+              <thead>
+                <tr>
+                  {/* Reuse name and description cell classes to force wrapping */}
+                  <th className="amp-nameCell">Name</th>
+                  <th className="amp-descCell">Email</th>
+                  <th>Role</th>
+                  <th>Contact</th>
+                  <th>Date Registered</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((user) => {
+                  const targetIsOwner = user.role === "OWNER";
+                  const isSelf = user.id === currentUser?.id;
 
-                const showEdit = isOwner || !targetIsOwner;
-                const showDelete = (isOwner && !isSelf) || (!isOwner && !targetIsOwner);
-                const showTransfer = isOwner && !isSelf;
+                  const showEdit = isOwner || !targetIsOwner;
+                  const showDelete = (isOwner && !isSelf) || (!isOwner && !targetIsOwner);
+                  const showTransfer = isOwner && !isSelf;
 
-                return (
-                  <tr key={user.id}>
-                    <td>{user.name}</td>
-                    <td>{user.email}</td>
-                    <td>{user.roleLabel}</td>
-                    <td>{user.contactNumber}</td>
-                    <td>{user.dateRegistered}</td>
-                    <td className="amp-actionsCell">
-                      {showEdit && (
-                        <button
-                          className="amp-editBtn"
-                          onClick={() => openEdit(user)}
-                        >
-                          Edit
-                        </button>
-                      )}
-                      {showDelete && (
-                        <button
-                          className="amp-deleteBtn"
-                          onClick={() => handleDelete(user.id)}
-                        >
-                          🗑
-                        </button>
-                      )}
-                      {showTransfer && (
-                        <button
-                          className="amp-transferBtn"
-                          onClick={() => handleTransfer(user)}
-                        >
-                          Transfer
-                        </button>
-                      )}
+                  return (
+                    <tr key={user.id}>
+                      {/* Wrap text in specific divs so layout respects max-width */}
+                      <td className="amp-nameCell">
+                        <div className="amp-wrapText amp-nameWrap">{user.name}</div>
+                      </td>
+                      <td className="amp-descCell">
+                        <div className="amp-wrapText amp-descWrap">{user.email}</div>
+                      </td>
+                      <td>{user.roleLabel || user.role}</td>
+                      <td>{user.contactNumber}</td>
+                      <td>{user.dateRegistered}</td>
+                      <td className="amp-actionsCell">
+                        {showEdit && (
+                          <button
+                            className="amp-editBtn"
+                            onClick={() => openEdit(user)}
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {showDelete && (
+                          <button
+                            className="amp-deleteBtn"
+                            onClick={() => handleDelete(user.id)}
+                          >
+                            🗑
+                          </button>
+                        )}
+                        {showTransfer && (
+                          <button
+                            className="amp-transferBtn"
+                            onClick={() => handleTransfer(user)}
+                            style={{
+                              border: "none", background: "#333", color: "#fff",
+                              fontSize: "15px", fontWeight: "700", padding: "10px 18px",
+                              borderRadius: "12px", cursor: "pointer", marginLeft: "10px"
+                            }}
+                          >
+                            Transfer
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="amp-empty">
+                      No users found.
                     </td>
                   </tr>
-                );
-              })}
-              {filteredUsers.length === 0 && (
-                <tr>
-                  <td colSpan="6" className="amp-empty">
-                    No users found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
 
