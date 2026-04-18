@@ -6,6 +6,7 @@ import NavBar from "../components/NavBar";
 import ItemPopup from "../components/ItemPopUp";
 import "../css/MenuPage.css";
 
+const tableId = sessionStorage.getItem("table_id");
 const peso = (n) =>
   "₱" + Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2 });
 

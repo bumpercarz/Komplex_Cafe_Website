@@ -183,6 +183,24 @@
     gap: 5px;
     padding-left: 15px;
 }
+/* ── Disabled Dine-in button ── */
+.btn-dine-in:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: all; /* keep not-allowed cursor visible */
+}
+
+/* ── Disabled Table button ── */
+.btn-table:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: all;
+}
+
+.btn-dine-in:disabled::after {
+    content: attr(title);
+}
+
 
 .receive-at-btns {
     position: relative;
@@ -228,6 +246,7 @@
 
 .checkout-footer-total strong {
     font-weight: 700;
+    color: white;
 }
 
 .checkout-footer-buttons {
@@ -287,6 +306,13 @@
 .btn-counter--active {
     background: #989898;
     border: 1px solid #5b5b5b;
+}
+
+.btn-counter:disabled,
+.btn-table:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: all;
 }
 
 .btn-table {
