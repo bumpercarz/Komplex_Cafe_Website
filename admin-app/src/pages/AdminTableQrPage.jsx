@@ -5,6 +5,7 @@ import "../css/AdminTableQrPage.css";
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
+import { useNotificationSound } from "../hooks/useNotificationSound";
 
 import {
   TABLE_STATUS_OPTIONS,
@@ -313,7 +314,7 @@ export default function AdminTableQrPage() {
     printWindow.document.close();
     printWindow.print();
   }
-
+  useNotificationSound();
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />

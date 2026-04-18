@@ -119,6 +119,7 @@ export default function ProfilePage({ role = "STAFF", showMenu = false }) {
   }
 
   if (!currentUser) return null;
+  useNotificationSound();
 
   return (
     <div className="ad-root">

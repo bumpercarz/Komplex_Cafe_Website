@@ -17,6 +17,7 @@ import {
 
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
+import { useNotificationSound } from "../hooks/useNotificationSound";
 
 const PESO = (n) =>
   new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(n);
@@ -105,7 +106,7 @@ export default function AdminDashboard() {
   const visibleLines = category === "All"
     ? Object.keys(lineKeys)
     : (categoryItems[category] || []).map(name => name.toLowerCase().replace(/\s+/g, "_"));
-
+  useNotificationSound();
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />

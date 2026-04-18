@@ -9,8 +9,11 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
+// ✅ Only import what this file actually uses
+import { notifyOrderStatusUpdate } from "../../../guest-app/src/services/notificationService";
+
 export const ORDER_TABS = [
-  { key: "Pending", label: "Pending Orders" },
+  { key: "Pending",  label: "Pending Orders"  },
   { key: "Finished", label: "Finished Orders" },
 ];
 
@@ -65,25 +68,21 @@ function mapFirestoreOrder(docSnap) {
   const data = docSnap.data() || {};
   const items = Array.isArray(data.items) ? data.items : [];
 
-  // Get table number - prioritize table_id, fallback to receive_at
   let tableNumber = "";
-  
   if (data.table_id !== undefined && data.table_id !== null) {
-    // table_id is a number (int64) like 8
     tableNumber = String(data.table_id);
   } else if (data.receive_at && data.receive_at !== "table") {
-    // If receive_at has actual table number, use it
     tableNumber = String(data.receive_at);
   } else {
-    // Default fallback
     tableNumber = "N/A";
   }
 
   return {
-    id: Number(data.order_id ?? docSnap.id),
-    orderId: Number(data.order_id ?? docSnap.id),
-    tableNumber: tableNumber.padStart(3, "0"), // Pad with zeros to 3 digits
-    status: String(data.order_status || "PREPARING"),
+    id:          Number(data.order_id ?? docSnap.id),
+    orderId:     Number(data.order_id ?? docSnap.id),
+    tableNumber: tableNumber === "N/A" ? "N/A" : tableNumber.padStart(3, "0"),
+    tableLabel:  tableNumber === "N/A" ? "Unknown Table" : `Table ${tableNumber}`, // ✅ added for notifications
+    status:      String(data.order_status || "PREPARING"),
     items,
     totalAmount: Number(data.total_amount ?? calcOrderTotal(items)),
 
@@ -96,9 +95,9 @@ function mapFirestoreOrder(docSnap) {
       ? `User #${data.user_id}`
       : `Guest #${data.guest_id ?? "N/A"}`,
 
-    orderType: data.order_type || "N/A",
+    orderType:    data.order_type || "N/A",
     instructions: data.special_instructions || "",
-    receiptUrl: data.receipt_image || "",
+    receiptUrl:   data.receipt_image || "",
   };
 }
 
@@ -120,11 +119,21 @@ export function getOrdersByTab(orders, activeTab) {
 
 /* =========================
    Update Status + Receipt
+
+   ✅ Added 4th parameter { oldStatus, tableLabel, actor }
+      Pass these from your UI component (AdminOrdersPage) like:
+      
+      await updateOrderStatusRecord(order.orderId, newStatus, receiptFile, {
+        oldStatus:  order.status,
+        tableLabel: order.tableLabel,
+        actor:      currentAdminName,
+      });
 ========================= */
 export async function updateOrderStatusRecord(
   orderId,
   newStatus,
-  receiptFile
+  receiptFile,
+  { oldStatus = "UNKNOWN", tableLabel = "Unknown Table", actor = "Admin" } = {}
 ) {
   try {
     let receiptUrl = "";
@@ -136,6 +145,15 @@ export async function updateOrderStatusRecord(
     await updateDoc(doc(db, "tbl_orders", String(orderId)), {
       order_status: newStatus,
       ...(receiptUrl && { receipt_image: receiptUrl }),
+    });
+
+    // ✅ Fire notification after successful Firestore update
+    await notifyOrderStatusUpdate({
+      orderId,
+      tableLabel,
+      oldStatus,
+      newStatus,
+      actor,
     });
 
     return { ok: true };

@@ -8,6 +8,8 @@ import AdminPageToolbar from "../components/AdminPageToolbar";
 import OrderTabs from "../components/orders/OrderTabs";
 import OrderCard from "../components/orders/OrderCard";
 
+import { useNotificationSound } from "../hooks/useNotificationSound";
+
 import {
   ORDER_TABS,
   STATUS_OPTIONS,
@@ -97,7 +99,7 @@ export default function AdminOrderPage() {
       setMessage(error?.message || "Failed to update order status.");
     }
   }
-
+  useNotificationSound();
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />

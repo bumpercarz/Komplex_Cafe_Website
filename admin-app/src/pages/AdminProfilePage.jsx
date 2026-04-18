@@ -4,6 +4,7 @@ import "../css/AdminProfilePage.css";
 
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
+import { useNotificationSound } from "../hooks/useNotificationSound";
 
 import {
   getCurrentUser,
@@ -125,7 +126,7 @@ export default function AdminProfilePage() {
   }
 
   if (!currentUser) return null;
-
+  useNotificationSound();
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />

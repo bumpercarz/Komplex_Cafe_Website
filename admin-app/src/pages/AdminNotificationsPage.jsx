@@ -4,13 +4,15 @@ import "../css/AdminNotificationsPage.css";
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
+import { useNotificationSound } from "../hooks/useNotificationSound";
 
 import {
-  getAllNotifications,
+  subscribeToNotifications,
   markNotificationAsRead,
   deleteNotificationById,
 } from "../services/adminNotificationData";
 
+// ─── Modal ────────────────────────────────────────────────────────────────────
 function NotificationModal({ notification, onClose }) {
   if (!notification) return null;
 
@@ -30,10 +32,18 @@ function NotificationModal({ notification, onClose }) {
 
         <div className="an-modalBody">
           <div className="an-modalTop">
-            <div className={`an-modalAvatar ${notification.isRead ? "is-read" : ""}`} />
+            <div className={`an-modalAvatar ${notification.isRead ? "is-read" : ""}`}>
+              <span className="an-modalAvatarIcon">{notification.typeIcon}</span>
+            </div>
             <div>
+              <span className="an-typeBadge">{notification.typeLabel}</span>
               <h2 className="an-modalHeadline">{notification.title}</h2>
-              <p className="an-modalTime">{notification.timeLabel}</p>
+              <p className="an-modalTime">
+                {notification.timeLabel}
+                {notification.actor && notification.actor !== "System"
+                  ? ` · by ${notification.actor}`
+                  : ""}
+              </p>
             </div>
           </div>
 
@@ -45,7 +55,6 @@ function NotificationModal({ notification, onClose }) {
           {notification.details?.length > 0 && (
             <div className="an-modalSection">
               <h3>Details</h3>
-
               <div className="an-detailList">
                 {notification.details.map((detail, index) => (
                   <div className="an-detailRow" key={`${detail.label}-${index}`}>
@@ -68,56 +77,56 @@ function NotificationModal({ notification, onClose }) {
   );
 }
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminNotificationsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [selectedNotificationId, setSelectedNotificationId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  async function reloadNotifications() {
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const data = await getAllNotifications();
-      setNotifications(data);
-    } catch (error) {
-      console.error("Load notifications error:", error);
-      setMessage(error?.message || "Failed to load notifications.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // Real-time subscription — replaces the old getDocs + reloadNotifications pattern
   useEffect(() => {
-    reloadNotifications();
+    const unsub = subscribeToNotifications(
+      (data) => {
+        setNotifications(data);
+        setLoading(false);
+        setError("");
+      },
+      (err) => {
+        setError(err?.message || "Failed to load notifications.");
+        setLoading(false);
+      }
+    );
+    return () => unsub();
   }, []);
 
-  const selectedNotification = useMemo(() => {
-    return (
-      notifications.find(
-        (notification) => notification.id === selectedNotificationId
-      ) || null
-    );
-  }, [notifications, selectedNotificationId]);
+  const selectedNotification = useMemo(
+    () => notifications.find((n) => n.id === selectedNotificationId) ?? null,
+    [notifications, selectedNotificationId]
+  );
+
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.isRead).length,
+    [notifications]
+  );
 
   async function handleView(notification) {
-    await markNotificationAsRead(notification.id);
+    if (!notification.isRead) {
+      await markNotificationAsRead(notification.id);
+      // No need to reload — onSnapshot updates state automatically
+    }
     setSelectedNotificationId(notification.id);
-    await reloadNotifications();
   }
 
   async function handleDelete(notificationId) {
-    await deleteNotificationById(notificationId);
-
     if (selectedNotificationId === notificationId) {
       setSelectedNotificationId(null);
     }
-
-    await reloadNotifications();
+    await deleteNotificationById(notificationId);
+    // onSnapshot will update the list automatically
   }
-
+  useNotificationSound();
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
@@ -125,12 +134,16 @@ export default function AdminNotificationsPage() {
 
       <main className="an-main">
         <AdminPageToolbar
-          title="Notification List"
+          title={
+            unreadCount > 0
+              ? `Notification List (${unreadCount} unread)`
+              : "Notification List"
+          }
           showSearch={false}
         />
 
-        {message ? <div className="an-empty">{message}</div> : null}
-        {loading ? <div className="an-empty">Loading notifications...</div> : null}
+        {error   ? <div className="an-empty an-error">{error}</div> : null}
+        {loading ? <div className="an-empty">Loading notifications…</div> : null}
 
         {!loading && (
           <div className="an-list">
@@ -140,9 +153,20 @@ export default function AdminNotificationsPage() {
                 className={`an-card ${notification.isRead ? "is-read" : ""}`}
               >
                 <div className="an-cardLeft">
-                  <div className={`an-avatar ${notification.isRead ? "is-read" : ""}`} />
+                  {/* Type icon replaces the plain avatar dot */}
+                  <div className={`an-avatar ${notification.isRead ? "is-read" : ""}`}>
+                    <span className="an-avatarIcon">{notification.typeIcon}</span>
+                  </div>
 
                   <div className="an-content">
+                    <div className="an-cardMeta">
+                      <span className="an-typeBadge an-typeBadge--sm">
+                        {notification.typeLabel}
+                      </span>
+                      {notification.actor && notification.actor !== "System" && (
+                        <span className="an-actor">by {notification.actor}</span>
+                      )}
+                    </div>
                     <h2 className="an-headline">{notification.title}</h2>
                     <p className="an-time">{notification.timeLabel}</p>
                   </div>

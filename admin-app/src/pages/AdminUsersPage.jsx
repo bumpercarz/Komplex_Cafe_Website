@@ -5,6 +5,7 @@ import "../css/AdminMenuPage.css";
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
+import { useNotificationSound } from "../hooks/useNotificationSound";
 
 import {
   USER_ROLE_OPTIONS,
@@ -324,7 +325,7 @@ export default function AdminUsersPage() {
       setIsSubmitting(false);
     }
   }
-
+  useNotificationSound();
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />

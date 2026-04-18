@@ -14,6 +14,8 @@ import UploadReceiptPopup from "../components/UploadReceiptPopup";
 import cashCounter from "../assets/cashcounter.png";
 import onlinePayment from "../assets/onlinepayment.png";
 
+import { notifyNewOrder } from "../services/notificationService";
+
 /* ─── Session-based guest ID ─────────────────────────────────────
    Returns the existing guest_id for this session, or null if this
    is a new guest — the counter will assign the real ID.
@@ -144,6 +146,9 @@ export default function PaymentType() {
       sessionStorage.setItem("guest_id", String(guestId));
     }
     sessionStorage.setItem("active_order_id", String(newOrderId)); // ← add this
+
+    const tableLabel = tableId ? `Table ${tableId}` : "Unknown Table";
+    await notifyNewOrder({ orderId: newOrderId, tableLabel });
 
     return { newOrderId, newPaymentId };
   };

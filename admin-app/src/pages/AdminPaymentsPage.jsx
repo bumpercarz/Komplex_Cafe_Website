@@ -4,6 +4,7 @@ import "../css/AdminPaymentsPage.css";
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
+import { useNotificationSound } from "../hooks/useNotificationSound";
 
 import {
   getAllPayments,
@@ -129,7 +130,7 @@ export default function AdminPaymentsPage() {
   const selectedPayment = useMemo(() => {
     return payments.find((payment) => payment.id === selectedPaymentId) || null;
   }, [payments, selectedPaymentId]);
-
+  useNotificationSound();
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel="ADMIN" onMenuClick={() => setMenuOpen(true)} />
