@@ -1,5 +1,5 @@
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "../../../admin-app/src/firebase";
+import { db } from "../firebase";
 
 // ─── Notification type constants ─────────────────────────────────────────────
 export const NOTIF_TYPES = {
