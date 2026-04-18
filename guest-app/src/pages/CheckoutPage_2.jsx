@@ -16,17 +16,27 @@ export default function CheckoutPage_2() {
     const cartTotal = cart.reduce((s, e) => s + e.lineTotal, 0);
 
     /* ── Form state ── */
-    const [orderType,    setOrderType]    = useState(null);  // "dine_in" | "take_out"
-    const [receiveAt,    setReceiveAt]    = useState(null);  // "counter" | "table"
+    const tableId = sessionStorage.getItem("table_id");
+
+    const [orderType, setOrderType] = useState(!tableId ? "take_out" : null);
+    const [receiveAt, setReceiveAt] = useState(null);
     const [instructions, setInstructions] = useState("");
 
-    const canContinue = orderType && receiveAt;
+    const canContinue = orderType === "take_out" || (orderType === "dine_in" && receiveAt);
 
     const handleCheckout = () => {
         if (!canContinue) return;
-        navigate("/paymenttype", {
-            state: { cart, orderType, receiveAt, instructions },
-        });
+
+        if (orderType === "take_out") {
+            // Skip payment type selection, go straight to online payment
+            navigate("/qrpage", {
+                state: { cart, orderType, receiveAt, instructions },
+            });
+        } else {
+            navigate("/paymenttype", {
+                state: { cart, orderType, receiveAt, instructions },
+            });
+        }
     };
 
     return (
@@ -50,14 +60,15 @@ export default function CheckoutPage_2() {
                             <button
                                 type="button"
                                 className={`btn-dine-in${orderType === "dine_in" ? " btn-dine-in--active" : ""}`}
-                                onClick={() => setOrderType("dine_in")}
+                                onClick={() => { setOrderType("dine_in"); setReceiveAt(null); }}
+                                disabled={!tableId}
                             >
-                                Dine In
+                                {!tableId ? "No Table Assigned" : "Dine In"}
                             </button>
                             <button
                                 type="button"
                                 className={`btn-take-out${orderType === "take_out" ? " btn-take-out--active" : ""}`}
-                                onClick={() => setOrderType("take_out")}
+                                onClick={() => { setOrderType("take_out"); setReceiveAt("counter"); }}
                             >
                                 Take Out
                             </button>
@@ -76,10 +87,13 @@ export default function CheckoutPage_2() {
                                 <strong>Counter</strong>
                                 <FaCashRegister size={30} />
                             </button>
+
+
                             <button
                                 type="button"
                                 className={`btn-table${receiveAt === "table" ? " btn-table--active" : ""}`}
                                 onClick={() => setReceiveAt("table")}
+                                disabled={orderType === "take_out" || !tableId}
                             >
                                 <strong>Table</strong>
                                 <MdOutlineTableRestaurant size={40} />
