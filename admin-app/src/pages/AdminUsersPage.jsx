@@ -31,6 +31,9 @@ function ModalShell({ children, onClose }) {
 
 /* User Form Modal */
 function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, isSubmitting }) {
+  // NEW: Check if the user being edited is the owner
+  const isEditingOwner = mode === "edit" && form.role === "OWNER";
+
   return (
     <ModalShell onClose={onClose}>
       <form className="amp-formModal" onSubmit={onSubmit}>
@@ -103,12 +106,23 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
             {/* ROLE */}
             <div className="amp-formGroup">
               <label>Role</label>
-              <select name="role" value={form.role || "STAFF"} onChange={onChange}>
-                {USER_ROLE_OPTIONS.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
+              <select 
+                name="role" 
+                value={form.role || "STAFF"} 
+                onChange={onChange}
+                disabled={isEditingOwner} /* CHANGED: Disable if owner */
+                style={isEditingOwner ? { background: "#dddddd", color: "#666", cursor: "not-allowed" } : {}}
+              >
+                {/* CHANGED: If owner, only show Owner option. Otherwise, show standard options */}
+                {isEditingOwner ? (
+                  <option value="OWNER">Owner</option>
+                ) : (
+                  USER_ROLE_OPTIONS.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 

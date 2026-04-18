@@ -143,7 +143,7 @@ function MenuFormModal({
               </div>
               <input
                 type="text"
-                placeholder="Iced Matcha"
+                placeholder="Enter item name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={50}
@@ -160,7 +160,7 @@ function MenuFormModal({
               </div>
               <input
                 type="text"
-                placeholder="Yummy"
+                placeholder="Enter a brief description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={150}
