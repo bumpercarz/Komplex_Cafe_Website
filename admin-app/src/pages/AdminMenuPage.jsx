@@ -78,10 +78,11 @@ function MenuFormModal({
       return;
     }
 
+    // FIX: compare by docId, not id
     const hasDuplicate = existingItems.some(
       (menuItem) =>
         menuItem.name.toLowerCase() === trimmedName.toLowerCase() &&
-        menuItem.id !== item?.id
+        menuItem.docId !== item?.docId
     );
 
     if (hasDuplicate) {
@@ -235,7 +236,8 @@ export default function AdminMenuPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [menuItems, setMenuItems] = useState([]);
-  const [modal, setModal] = useState({ type: null, itemId: null });
+  // FIX: renamed itemId -> itemDocId to store the unique composite key
+  const [modal, setModal] = useState({ type: null, itemDocId: null });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -275,13 +277,14 @@ export default function AdminMenuPage() {
     });
   }, [menuItems, search]);
 
+  // FIX: match on docId (unique) instead of id (not unique across categories)
   const selectedItem = useMemo(() => {
-    return menuItems.find((item) => item.id === modal.itemId) || null;
-  }, [menuItems, modal.itemId]);
+    return menuItems.find((item) => item.docId === modal.itemDocId) || null;
+  }, [menuItems, modal.itemDocId]);
 
   function closeModal() {
     if (saving) return;
-    setModal({ type: null, itemId: null });
+    setModal({ type: null, itemDocId: null });
   }
 
   async function handleAddItem(formValues) {
@@ -366,7 +369,7 @@ export default function AdminMenuPage() {
           onSearchChange={setSearch}
           searchPlaceholder="Search"
           addLabel="+ Add"
-          onAdd={() => setModal({ type: "add", itemId: null })}
+          onAdd={() => setModal({ type: "add", itemDocId: null })}
         />
 
         {message ? <div className="amp-empty">{message}</div> : null}
@@ -390,7 +393,8 @@ export default function AdminMenuPage() {
 
               <tbody>
                 {filteredItems.map((item) => (
-                  <tr key={item.id}>
+                  // FIX: use docId as React key — globally unique
+                  <tr key={item.docId}>
                     <td className="amp-imageCell">
                       <img className="amp-itemImage" src={item.image} alt={item.name} />
                     </td>
@@ -403,9 +407,12 @@ export default function AdminMenuPage() {
                     <td>{formatMoney(item.price)}</td>
 
                     <td className="amp-actionsCell">
+                      {/* FIX: pass item.docId so selectedItem resolves correctly */}
                       <button
                         className="amp-editBtn"
-                        onClick={() => setModal({ type: "edit", itemId: item.id })}
+                        onClick={() =>
+                          setModal({ type: "edit", itemDocId: item.docId })
+                        }
                       >
                         Edit
                       </button>
