@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 // ─── Web Audio alert tone generator ──────────────────────────────────────────
@@ -83,16 +83,35 @@ export function useNotificationSound() {
     loopIntervalRef.current = null;
   }
 
-  function sendBrowserPush(title, body) {
+  // NEW: Accept notificationId to mark it as read on click
+  function sendBrowserPush(title, body, notificationId) {
     if (permissionRef.current !== "granted") return;
     try {
-      // eslint-disable-next-line no-new
-      new Notification(title, {
+      const notif = new Notification(title, {
         body,
-        icon: "/favicon.ico",   // update path to your logo if needed
-        tag:  "new-order-alert", // replaces previous notif so they don't stack
+        icon: "/favicon.ico",     // update path to your logo if needed
+        tag:  "new-order-alert",  // replaces previous notif so they don't stack
         requireInteraction: true, // stays until admin clicks it
       });
+
+      // NEW: Handle what happens when the admin clicks the popup
+      notif.onclick = async () => {
+        window.focus(); // Bring the browser tab to the front
+        stopLoop();     // Stop the ringing immediately
+        notif.close();  // Dismiss the browser notification
+
+        // Mark this specific notification as read in Firebase
+        if (notificationId) {
+          try {
+            await updateDoc(doc(db, "tbl_notifs", String(notificationId)), {
+              read: true,
+            });
+          } catch (err) {
+            console.error("[useNotificationSound] Failed to mark as read:", err);
+          }
+        }
+      };
+
     } catch (err) {
       console.warn("[useNotificationSound] Push notification failed:", err);
     }
@@ -129,9 +148,11 @@ export function useNotificationSound() {
       // If there are newly arrived unread order_new notifs → alert
       if (newlyArrivedIds.length > 0) {
         const newest = docs.find((d) => d.id === newlyArrivedIds[0]);
+        // NEW: Pass the newest notification ID into the push function
         sendBrowserPush(
           newest?.title   ?? "New Order!",
-          newest?.message ?? "A table placed a new order."
+          newest?.message ?? "A table placed a new order.",
+          newest?.id 
         );
         startLoop();
       }

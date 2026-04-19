@@ -44,7 +44,17 @@ export default function PaymentType() {
   const [showReceiptPopup, setShowReceiptPopup] = useState(false);
 
   const totalAmount = cart.reduce((s, e) => s + e.lineTotal, 0);
-  const tableId = sessionStorage.getItem("table_id");
+  
+  // Safely clean the table_id to prevent "null" and "NaN" crashes
+  let rawTableId = sessionStorage.getItem("table_id");
+  if (!rawTableId || rawTableId === "null" || rawTableId === "undefined" || rawTableId === "NaN") {
+    rawTableId = null;
+  }
+
+  // FIXED: Detect Takeout immediately to override any lingering "Ghost" Table IDs
+  const isTakeout = orderType && String(orderType).toLowerCase().replace(/[_ ]/g, "").includes("takeout");
+  const finalTableId = isTakeout ? null : (rawTableId ? Number(rawTableId) : null);
+
   /* ── Core Firestore write (shared by both payment types) ── */
   const submitOrder = async (paymentType, receiptUrl = "") => {
     const existingGuestId = getSessionGuestId();
@@ -57,30 +67,24 @@ export default function PaymentType() {
     let newOrderId, newPaymentId, guestId;
 
     await runTransaction(db, async (transaction) => {
-      /* 1. Read counters — include guest counter only for new guests */
       const [orderSnap, paymentSnap, guestCounterSnap] = await Promise.all([
         transaction.get(orderCounterRef),
         transaction.get(paymentCounterRef),
         isNewGuest ? transaction.get(guestCounterRef) : Promise.resolve(null),
       ]);
 
-      /* 2. Calculate IDs */
       newOrderId   = (orderSnap.data()?.current_value   ?? 0) + 1;
       newPaymentId = (paymentSnap.data()?.current_value ?? 0) + 1;
       guestId      = isNewGuest
         ? (guestCounterSnap.data()?.current_value ?? 0) + 1
         : existingGuestId;
 
-      /* 3. Update counters
-            Use set+merge so the transaction succeeds even if the counter
-            document doesn't exist yet (avoids "Can't update non-existent doc") */
       transaction.set(orderCounterRef,   { current_value: newOrderId   }, { merge: true });
       transaction.set(paymentCounterRef, { current_value: newPaymentId }, { merge: true });
       if (isNewGuest) {
         transaction.set(guestCounterRef, { current_value: guestId }, { merge: true });
       }
 
-      /* 4. Write tbl_orders */
       const orderRef = doc(db, "tbl_orders", String(newOrderId));
       transaction.set(orderRef, clean({
         order_id:      newOrderId,
@@ -108,14 +112,11 @@ export default function PaymentType() {
         order_type:    orderType ?? null,
         receive_at:    receiveAt ?? null,
         special_instructions:  instructions || null,
-        table_id:      tableId ? Number(tableId) : null,
+        table_id:      finalTableId, // Use the cleaned ID so Takeouts don't get saved with Table 1!
         receipt_image: receiptUrl,
         o_timestamp:   serverTimestamp(),
       }));
 
-      /* 5. Write or update tbl_guests
-            New guest  → create doc with order_ids as a 1-item array
-            Returning  → append new order_id to existing order_ids array */
       const guestRef = doc(db, "tbl_guests", String(guestId));
       if (isNewGuest) {
         transaction.set(guestRef, {
@@ -129,7 +130,6 @@ export default function PaymentType() {
         });
       }
 
-      /* 6. Write tbl_payments */
       const paymentRef = doc(db, "tbl_payments", String(newPaymentId));
       transaction.set(paymentRef, {
         payment_id:       newPaymentId,
@@ -141,19 +141,24 @@ export default function PaymentType() {
       });
     });
 
-    /* 7. Persist guest_id to session after successful transaction */
     if (isNewGuest) {
       sessionStorage.setItem("guest_id", String(guestId));
     }
-    sessionStorage.setItem("active_order_id", String(newOrderId)); // ← add this
+    sessionStorage.setItem("active_order_id", String(newOrderId));
 
-    const tableLabel = tableId ? `Table ${tableId}` : "Unknown Table";
-    await notifyNewOrder({ orderId: newOrderId, tableLabel });
+    // FIXED: Prioritize Takeout explicitly for the notification label!
+    let label = "Counter Order";
+    if (isTakeout) {
+      label = "Takeout Order";
+    } else if (finalTableId) {
+      label = `Table ${finalTableId}`;
+    }
+
+    await notifyNewOrder({ orderId: newOrderId, tableLabel: label });
 
     return { newOrderId, newPaymentId };
   };
 
-  /* ── Cash payment ── */
   const handleCashPayment = async () => {
     if (submitting) return;
     setSubmitting(true);
@@ -170,7 +175,6 @@ export default function PaymentType() {
     }
   };
 
-  /* ── Called by UploadReceiptPopup once the image is in Storage ── */
   const handleReceiptSubmit = async (receiptUrl) => {
     setSubmitting(true);
     setError(null);

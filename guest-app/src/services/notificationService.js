@@ -50,18 +50,22 @@ async function writeNotification({
  * Usage (in your order service):
  *   await notifyNewOrder({ orderId: order.id, tableLabel: "Table 3" });
  */
-export async function notifyNewOrder({ orderId, tableLabel, actor = "Customer" }) {
+export async function notifyNewOrder({ orderId, tableLabel = "Counter Order" }) {
+  // Add a console.log so you can visually confirm it triggers in your F12 tools
+  console.log(`[notifyNewOrder] Triggering notification for: ${tableLabel}`);
+
+  // REMOVED: Any old `if` statements that might have been blocking Takeout/Counter orders
+
   await writeNotification({
     type: NOTIF_TYPES.ORDER_NEW,
-    title: `New order from ${tableLabel}`,
-    message: `${tableLabel} placed a new order that needs attention.`,
+    title: `New Order #${orderId}`,
+    message: `Order received from ${tableLabel}.`,
     details: [
       { label: "Order ID", value: String(orderId) },
-      { label: "Table",    value: tableLabel },
-      { label: "Status",   value: "PENDING" },
+      { label: "Source", value: tableLabel },
     ],
-    actor,
-    order_id: Number(orderId),
+    actor: "System",
+    order_id: orderId,
   });
 }
 

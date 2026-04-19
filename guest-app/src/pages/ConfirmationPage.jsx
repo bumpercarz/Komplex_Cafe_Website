@@ -64,7 +64,7 @@ export default function ConfirmationPage() {
       if (!snap.exists()) return;
       const status = snap.data().order_status ?? null;
       setOrderStatus(status);
-r
+
       // Clear active order from session when done
       if (status === "COMPLETED" || status === "CANCELLED") {
         sessionStorage.removeItem("active_order_id");
