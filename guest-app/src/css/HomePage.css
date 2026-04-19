@@ -148,6 +148,7 @@
 }
 
 .hours_content {
+  color: #fff;
   position: relative;
   z-index: 1;
   padding: 20px 24px;
@@ -171,8 +172,13 @@
 }
 
 .hours_day {
+  color: #eee;
   font-weight: bold;
   min-width: 90px;
+}
+
+.hours_time{
+  color: #eee;
 }
 
 /* ---------- Booking CTA ---------- */

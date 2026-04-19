@@ -10,7 +10,7 @@ const tableId = sessionStorage.getItem("table_id");
 const peso = (n) =>
   "₱" + Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2 });
 
-const HIDDEN_CATEGORIES = ["Add-on", "Dip"];
+const HIDDEN_CATEGORIES = ["Add-on", "Dip", "Sweetness"];
 
 export default function MenuPage() {
   const navigate = useNavigate();
@@ -19,11 +19,14 @@ export default function MenuPage() {
   const [popup, setPopup]     = useState(null);
   const [cart, setCart]       = useState(location.state?.cart ?? []);
   const [menu, setMenu]       = useState([]);
-  const [addons, setAddons]   = useState([]);
-  const [dips, setDips]       = useState([]);
+  const [addons, setAddons]       = useState([]);
+  const [dips, setDips]           = useState([]);
+  const [sweetness, setSweetness] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
   const [checkingOrder, setCheckingOrder] = useState(true); // ← keep with other state
+
+  const [drinkFilter, setDrinkFilter] = useState("all"); // "all" | "hot" | "iced"
 
   const sectionRefs = useRef({});
   const headerRef   = useRef();
@@ -79,6 +82,7 @@ export default function MenuPage() {
 
         setAddons(all.filter((i) => i.category === "Add-on"));
         setDips(all.filter((i) => i.category === "Dip"));
+        setSweetness(all.filter((i) => i.category === "Sweetness"));
         setMenu(all.filter((i) => !HIDDEN_CATEGORIES.includes(i.category)));
       } catch (err) {
         console.error("Failed to fetch menu:", err);
@@ -107,10 +111,18 @@ export default function MenuPage() {
   );
 
   const categories  = [...new Set(menu.map((i) => i.category))];
-  const groupedItems = categories.map((cat) => ({
-    category: cat,
-    items: menu.filter((i) => i.category === cat),
-  }));
+  const groupedItems = categories.map((cat) => {
+    let items = menu.filter((i) => i.category === cat);
+    if (cat === "Drink" && drinkFilter !== "all") {
+      items = items.filter((i) => {
+        const name = i.m_name.toLowerCase();
+        return drinkFilter === "hot"
+          ? name.includes("(hot)") || name.startsWith("hot ")
+          : name.includes("(iced)") || name.startsWith("iced ");
+      });
+    }
+    return { category: cat, items };
+  });
 
   const cartTotal = cart.reduce((s, e) => s + e.lineTotal, 0);
   const cartCount = cart.reduce((s, e) => s + e.qty, 0);
@@ -135,17 +147,43 @@ export default function MenuPage() {
           </div>
           <div className="menu-chips-wrap">
             <div className="menu-chips">
-              <button className="chip" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+              <button className="chip" onClick={() => { setDrinkFilter("all"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
                 All
               </button>
               {categories.map((cat) => (
-                <button
-                  key={cat}
-                  className="chip"
-                  onClick={() => sectionRefs.current[cat]?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                >
-                  {cat}
-                </button>
+                <span key={cat} className="chip-group">
+                  <button
+                    className={`chip${cat === "Drink" && drinkFilter !== "all" ? " chip--active" : ""}`}
+                    onClick={() => {
+                      setDrinkFilter("all");
+                      sectionRefs.current[cat]?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                  >
+                    {cat}
+                  </button>
+                  {cat === "Drink" && (
+                    <>
+                      <button
+                        className={`chip chip--sub${drinkFilter === "hot" ? " chip--active" : ""}`}
+                        onClick={() => {
+                          setDrinkFilter("hot");
+                          sectionRefs.current[cat]?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                      >
+                        ☕ Hot
+                      </button>
+                      <button
+                        className={`chip chip--sub${drinkFilter === "iced" ? " chip--active" : ""}`}
+                        onClick={() => {
+                          setDrinkFilter("iced");
+                          sectionRefs.current[cat]?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                      >
+                        🧊 Iced
+                      </button>
+                    </>
+                  )}
+                </span>
               ))}
             </div>
           </div>
@@ -154,7 +192,11 @@ export default function MenuPage() {
         <div className="menu-list">
           {groupedItems.map(({ category, items }) => (
             <div key={category} className="menu-section" ref={(el) => (sectionRefs.current[category] = el)}>
-              <h2 className="menu-section-title">{category}</h2>
+              <h2 className="menu-section-title">
+                {category === "Drink" && drinkFilter === "hot" ? "Hot Drinks"
+                  : category === "Drink" && drinkFilter === "iced" ? "Iced Drinks"
+                  : category}
+              </h2>
               {items.map((item) => {
                 const existing = cart.find((e) => e.item.docId === item.docId);
                 const totalQty = existing?.qty ?? 0;
@@ -195,6 +237,7 @@ export default function MenuPage() {
             item={popup.item}
             addons={addons}
             dips={dips}
+            sweetness={sweetness}
             onClose={() => setPopup(null)}
             onAddToCart={handleAddToCart}
           />

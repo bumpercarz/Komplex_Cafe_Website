@@ -19,6 +19,7 @@ export const ORDER_TABS = [
 ];
 
 export const STATUS_OPTIONS = [
+  "PENDING",
   "PREPARING",
   "PROCESSING PAYMENT",
   "COMPLETED",
@@ -83,7 +84,7 @@ function mapFirestoreOrder(docSnap) {
     orderId:     Number(data.order_id ?? docSnap.id),
     tableNumber: tableNumber === "N/A" ? "N/A" : tableNumber.padStart(3, "0"),
     tableLabel:  tableNumber === "N/A" ? "Unknown Table" : `Table ${tableNumber}`, // ✅ added for notifications
-    status:      String(data.order_status || "PREPARING"),
+    status:      String(data.order_status || "PENDING"),
     items,
     totalAmount: Number(data.total_amount ?? calcOrderTotal(items)),
 

@@ -106,6 +106,11 @@ export default function PaymentType() {
             price: d.price  ?? 0,
             qty:   e.qty    ?? 1,
           })),
+          ...(e.sweetness ?? []).map((s) => ({
+            name:  s.m_name ?? "Unknown",
+            price: s.price  ?? 0,
+            qty:   e.qty    ?? 1,
+          })),
         ]),
         total_amount:  totalAmount,
         order_status:  paymentType === 1 ? "PROCESSING PAYMENT" : "PENDING",
@@ -144,17 +149,12 @@ export default function PaymentType() {
     if (isNewGuest) {
       sessionStorage.setItem("guest_id", String(guestId));
     }
-    sessionStorage.setItem("active_order_id", String(newOrderId));
+    sessionStorage.setItem("active_order_id", String(newOrderId)); // ← add this
 
-    // FIXED: Prioritize Takeout explicitly for the notification label!
-    let label = "Counter Order";
-    if (isTakeout) {
-      label = "Takeout Order";
-    } else if (finalTableId) {
-      label = `Table ${finalTableId}`;
-    }
-
-    await notifyNewOrder({ orderId: newOrderId, tableLabel: label });
+    const tableLabel = orderType === "take_out"
+      ? "Take Out"
+      : tableId ? `Table ${tableId}` : "Unknown Table";
+    await notifyNewOrder({ orderId: newOrderId, tableLabel });
 
     return { newOrderId, newPaymentId };
   };

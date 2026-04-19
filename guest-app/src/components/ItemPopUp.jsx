@@ -9,8 +9,16 @@ const PLACEHOLDER =
 
 const IS_DRINK   = (item) => item?.category?.toLowerCase() === "drink";
 const IS_CHURROS = (item) => item?.m_name?.toLowerCase().includes("churros");
+const IS_SWEETENED_DRINK = (item) => {
+  const name = item?.m_name?.toLowerCase() ?? "";
+  return IS_DRINK(item) && (
+    name.includes("americano") ||
+    name.includes("amerikano") ||
+    name.includes("latte")
+  );
+};
 
-export default function ItemPopup({ item, existing, addons, dips, onClose, onAddToCart }) {
+export default function ItemPopup({ item, existing, addons, dips, sweetness = [], onClose, onAddToCart }) {
   const [qty, setQty] = useState(existing?.qty ?? 1);
   const [selectedAddons, setSelectedAddons] = useState(() => {
     const map = {};
@@ -20,14 +28,18 @@ export default function ItemPopup({ item, existing, addons, dips, onClose, onAdd
   const [selectedDip, setSelectedDip] = useState(
     () => existing?.dips?.[0]?.docId ?? null
   );
+  const [selectedSweetness, setSelectedSweetness] = useState(
+    () => existing?.sweetness?.[0]?.docId ?? null
+  );
 
   useEffect(() => {
     if (existing) setQty(existing.qty);
   }, [existing?.qty]);
 
   const overlayRef = useRef();
-  const isDrink   = IS_DRINK(item);
-  const isChurros = IS_CHURROS(item);
+  const isDrink         = IS_DRINK(item);
+  const isChurros       = IS_CHURROS(item);
+  const isSweetenedDrink = IS_SWEETENED_DRINK(item);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -49,18 +61,26 @@ export default function ItemPopup({ item, existing, addons, dips, onClose, onAdd
     ? (dips.find((d) => d.docId === selectedDip)?.price ?? 0)
     : 0;
 
-  const lineTotal = (item.price + addonTotal + dipTotal) * qty;
-  const dipsValid = !isChurros || selectedDip !== null;
+  const sweetnessTotal = isSweetenedDrink && selectedSweetness
+    ? (sweetness.find((s) => s.docId === selectedSweetness)?.price ?? 0)
+    : 0;
+
+  const lineTotal = (item.price + addonTotal + dipTotal + sweetnessTotal) * qty;
+  const dipsValid      = !isChurros || selectedDip !== null;
+  const sweetnessValid = !isSweetenedDrink || sweetness.length === 0 || selectedSweetness !== null;
 
   const handleAdd = () => {
-    if (!dipsValid) return;
+    if (!dipsValid || !sweetnessValid) return;
     onAddToCart({
         item,
         qty,
         addons: isDrink ? addons.filter((a) => selectedAddons[a.docId]) : [],
         dips:   isChurros && selectedDip
-        ? [dips.find((d) => d.docId === selectedDip)]
-        : [],
+          ? [dips.find((d) => d.docId === selectedDip)]
+          : [],
+        sweetness: isSweetenedDrink && selectedSweetness
+          ? [sweetness.find((s) => s.docId === selectedSweetness)]
+          : [],
         lineTotal,
     });
     onClose();
@@ -136,6 +156,32 @@ export default function ItemPopup({ item, existing, addons, dips, onClose, onAdd
           </div>
         )}
 
+        {/* Sweetness — americanos & lattes only */}
+        {isSweetenedDrink && sweetness.length > 0 && (
+          <div className="popup-section">
+            <div className="popup-section-label">
+              Sweetness <span className="dip-required">*</span>
+            </div>
+            <div className="popup-dips">
+              {sweetness.map((s) => (
+                <label key={s.docId} className="dip-row">
+                  <input
+                    type="radio"
+                    name="sweetness"
+                    checked={selectedSweetness === s.docId}
+                    onChange={() => setSelectedSweetness(s.docId)}
+                    className="dip-radio"
+                  />
+                  <span className="addon-label">{s.m_name}</span>
+                  <span className="addon-price">
+                    {s.price === 0 ? "Free" : `+${peso(s.price)}`}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="popup-footer">
           <span className="popup-total-label">
             Total: <strong>{peso(lineTotal)}</strong>
@@ -143,7 +189,7 @@ export default function ItemPopup({ item, existing, addons, dips, onClose, onAdd
           <button
             className="btn-add-item"
             onClick={handleAdd}
-            disabled={!dipsValid}
+            disabled={!dipsValid || !sweetnessValid}
           >
             Add Item
           </button>
