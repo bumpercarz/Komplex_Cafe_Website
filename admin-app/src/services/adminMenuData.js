@@ -12,11 +12,11 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-export const MENU_CATEGORY_OPTIONS = ["Drink", "Food", "Add-on", "Dip"];
+export const MENU_CATEGORY_OPTIONS = ["Drink", "Food", "Add-on", "Dip", "Sweetness"];
 export const MENU_AVAILABLE_OPTIONS = ["Yes", "No"];
 
 // Display sort order
-const CATEGORY_SORT_ORDER = ["Food", "Drink", "Dip", "Add-on"];
+const CATEGORY_SORT_ORDER = ["Food", "Drink", "Dip", "Add-on", "Sweetness"];
 
 const MENU_COLLECTION = "tbl_menuItems";
 const MENU_CACHE_KEY = "komplex_menu_cache";
@@ -80,6 +80,9 @@ function buildFallbackImage(name, category) {
   if (category === "Dip") {
     return buildFoodSvg(name || "Menu Item", "#d4e0d4", "#a8bca8", "#7a9a7a");
   }
+  if (category === "Sweetness") {
+    return buildFoodSvg(name || "Menu Item", "#fde8f0", "#f4a8c4", "#e07898");
+  }
   return buildFoodSvg(
     name || "Menu Item",
     "#d9d9d9",
@@ -93,6 +96,7 @@ function getPrefix(category) {
   if (cat === "food") return "food";
   if (cat === "add-on") return "addon";
   if (cat === "dip") return "dip";
+  if (cat === "sweetness") return "sweet";
   return "drink";
 }
 

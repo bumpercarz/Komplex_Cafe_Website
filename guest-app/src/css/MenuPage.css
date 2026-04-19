@@ -74,6 +74,26 @@
   color: #fff;
 }
 
+.chip-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chip--sub {
+  font-size: 12px;
+  padding: 4px 11px;
+  border-color: #e0a060;
+  color: #b05a10;
+  background: #fff8f2;
+}
+.chip--sub:hover,
+.chip--sub.chip--active {
+  background: #e07820;
+  border-color: #e07820;
+  color: #fff;
+}
+
 /* ─── Menu list ─────────────────────────────────────────────── */
 .menu-list {
   flex: 1;

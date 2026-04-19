@@ -7,6 +7,7 @@ import { db } from "../firebase.js";
 import "../css/QRPage.css";
 import NavBar from "../components/NavBar";
 import UploadReceiptPopup from "../components/UploadReceiptPopup";
+import { notifyNewOrder } from "../services/notificationService";
 
 const getSessionGuestId = () => {
   const existing = sessionStorage.getItem("guest_id");
@@ -72,6 +73,7 @@ export default function QRPage() {
                     { name: e.item?.m_name ?? "Unknown", price: e.item?.price ?? 0, qty: e.qty ?? 1 },
                     ...(e.addons ?? []).map((a) => ({ name: a.m_name ?? "Unknown", price: a.price ?? 0, qty: e.qty ?? 1 })),
                     ...(e.dips   ?? []).map((d) => ({ name: d.m_name ?? "Unknown", price: d.price ?? 0, qty: e.qty ?? 1 })),
+                    ...(e.sweetness ?? []).map((s) => ({ name: s.m_name ?? "Unknown", price: s.price ?? 0, qty: e.qty ?? 1 })),
                 ]),
                 total_amount:         totalAmount,
                 order_status:         "PROCESSING PAYMENT",
@@ -107,6 +109,11 @@ export default function QRPage() {
 
         if (isNewGuest) sessionStorage.setItem("guest_id", String(guestId));
         sessionStorage.setItem("active_order_id", String(newOrderId));
+
+        const tableLabel = orderType === "take_out"
+            ? "Take Out"
+            : tableId ? `Table ${tableId}` : "Unknown Table";
+        await notifyNewOrder({ orderId: newOrderId, tableLabel });
 
         return { newOrderId, newPaymentId };
     };

@@ -35,7 +35,7 @@ const ContactUs = () => {
                 {/* List of Contacts */}
                 <div className="contacts_email">
                     <h3 className="contacts_email_text">Email</h3>
-                    <p className="email_text contacts_links"><MdOutlineMail /> komplexcafe@gmail.com</p>
+                    <p className="email_text contacts_links"><a href="mailto:komplexcafe@gmail.com"><MdOutlineMail /> komplexcafe@gmail.com</a></p>
                 </div>
                 
                 <div className="contacts_socmed">

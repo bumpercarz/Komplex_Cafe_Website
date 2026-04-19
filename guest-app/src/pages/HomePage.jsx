@@ -75,7 +75,7 @@ const HomePage = () => {
           {HOURS.map(([day, time]) => (
             <div key={day} className="hours_row">
               <span className="hours_day">{day}</span>
-              <span>{time}</span>
+              <span className="hours_time">{time}</span>
             </div>
           ))}
         </div>

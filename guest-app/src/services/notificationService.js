@@ -53,7 +53,7 @@ async function writeNotification({
 export async function notifyNewOrder({ orderId, tableLabel, actor = "Customer" }) {
   await writeNotification({
     type: NOTIF_TYPES.ORDER_NEW,
-    title: `New order from ${tableLabel}`,
+    title: tableLabel == "Take Out" ? `New order for ${tableLabel}` : `New order from ${tableLabel}`,
     message: `${tableLabel} placed a new order that needs attention.`,
     details: [
       { label: "Order ID", value: String(orderId) },

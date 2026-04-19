@@ -102,6 +102,11 @@ export default function PaymentType() {
             price: d.price  ?? 0,
             qty:   e.qty    ?? 1,
           })),
+          ...(e.sweetness ?? []).map((s) => ({
+            name:  s.m_name ?? "Unknown",
+            price: s.price  ?? 0,
+            qty:   e.qty    ?? 1,
+          })),
         ]),
         total_amount:  totalAmount,
         order_status:  paymentType === 1 ? "PROCESSING PAYMENT" : "PENDING",
@@ -147,7 +152,9 @@ export default function PaymentType() {
     }
     sessionStorage.setItem("active_order_id", String(newOrderId)); // ← add this
 
-    const tableLabel = tableId ? `Table ${tableId}` : "Unknown Table";
+    const tableLabel = orderType === "take_out"
+      ? "Take Out"
+      : tableId ? `Table ${tableId}` : "Unknown Table";
     await notifyNewOrder({ orderId: newOrderId, tableLabel });
 
     return { newOrderId, newPaymentId };

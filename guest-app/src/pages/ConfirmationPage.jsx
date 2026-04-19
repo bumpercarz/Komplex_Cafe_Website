@@ -5,6 +5,7 @@ import { db } from "../firebase.js";
 import { FaCoffee, FaCheckCircle, FaSpinner, FaBell, FaTimesCircle, FaClock } from "react-icons/fa";
 import "../css/ConfirmationPage.css";
 import NavBar from "../components/NavBar";
+import FeedbackModal from "../components/FeedbackModal";
 
 /* ── Status config ── */
 const STATUS_CONFIG = {
@@ -46,14 +47,14 @@ const FALLBACK = {
   sub:    "Please save this reference number to claim your order.",
 };
 
-
-
+/* ── Feedback Modal ── */
 export default function ConfirmationPage() {
   const location  = useLocation();
   const { orderId, paymentId } = location.state ?? {};
 
   const [orderStatus,     setOrderStatus]     = useState(null);
   const [referenceNumber, setReferenceNumber] = useState(null);
+  const [showFeedback,    setShowFeedback]    = useState(false);
 
   /* ── Real-time listener on tbl_orders ── */
   useEffect(() => {
@@ -64,7 +65,7 @@ export default function ConfirmationPage() {
       if (!snap.exists()) return;
       const status = snap.data().order_status ?? null;
       setOrderStatus(status);
-r
+
       // Clear active order from session when done
       if (status === "COMPLETED" || status === "CANCELLED") {
         sessionStorage.removeItem("active_order_id");
@@ -105,9 +106,23 @@ r
             )}
 
             <p className="confirmation-subtitle">{sub}</p>
+
+            {(orderStatus === "COMPLETED" || orderStatus === "CANCELLED") && (
+              <div className="fb-trigger-wrap">
+                <p className="fb-trigger-label">How was your experience?</p>
+                <button
+                  className="fb-trigger-btn"
+                  onClick={() => setShowFeedback(true)}
+                >
+                  Send Feedback
+                </button>
+              </div>
+            )}
           </div>
         </section>
       </div>
+
+      {showFeedback && <FeedbackModal onClose={() => setShowFeedback(false)} />}
     </div>
   );
 }
