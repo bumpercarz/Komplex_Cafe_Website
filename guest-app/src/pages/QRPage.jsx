@@ -70,7 +70,12 @@ export default function QRPage() {
                 guest_id:     guestId,
                 user_id:      null,
                 items: cart.flatMap((e) => [
-                    { name: e.item?.m_name ?? "Unknown", price: e.item?.price ?? 0, qty: e.qty ?? 1 },
+                    {
+                      name: e.item?.m_name ?? "Unknown",
+                      price: e.item?.price ?? 0,
+                      qty: e.qty ?? 1,
+                      ...(e.temperature ? { temperature: e.temperature } : {}),
+                    },
                     ...(e.addons ?? []).map((a) => ({ name: a.m_name ?? "Unknown", price: a.price ?? 0, qty: e.qty ?? 1 })),
                     ...(e.dips   ?? []).map((d) => ({ name: d.m_name ?? "Unknown", price: d.price ?? 0, qty: e.qty ?? 1 })),
                     ...(e.sweetness ?? []).map((s) => ({ name: s.m_name ?? "Unknown", price: s.price ?? 0, qty: e.qty ?? 1 })),

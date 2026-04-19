@@ -95,6 +95,7 @@ export default function PaymentType() {
             name:  e.item?.m_name ?? "Unknown",
             price: e.item?.price  ?? 0,
             qty:   e.qty          ?? 1,
+            ...(e.temperature ? { temperature: e.temperature } : {}),
           },
           ...(e.addons ?? []).map((a) => ({
             name:  a.m_name ?? "Unknown",

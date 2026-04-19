@@ -18,7 +18,6 @@ export default function CheckoutPage_1() {
   (location.state?.cart ?? []).map((e) => ({
     ...e,
     qty: e.qty ?? 1,
-    // If item is missing, the entry itself is the flat item (old shape)
     item: e.item ?? {
       m_name:     e.m_name,
       price:      e.price,
@@ -28,7 +27,8 @@ export default function CheckoutPage_1() {
     },
     addons: e.addons ?? [],
     dips:   e.dips   ?? [],
-    lineTotal: e.lineTotal ?? ((e.item.e.price ?? e.price ?? 0) * (e.qty ?? 1)),
+    sweetness: e.sweetness ?? [],
+    lineTotal: e.lineTotal ?? ((e.item?.price ?? e.price ?? 0) * (e.qty ?? 1)),
   }))
 );
   const [editTarget, setEditTarget] = useState(null);
@@ -68,18 +68,29 @@ export default function CheckoutPage_1() {
             <p className="checkout-empty">Your cart is empty.</p>
           )}
           {cart.map((entry, index) => (
-            <div key={index} className="checkout-item">
+            <div key={entry.cartKey ?? index} className="checkout-item">
               <div className="checkout-item-top">
-                <span className="checkout-item-name">{entry.item.m_name}</span>
+                <span className="checkout-item-name">
+                  {entry.item.m_name
+                    .replace(/^\s*(hot|iced)\s+/i, "")
+                    .replace(/\s*\((hot|iced)\)\s*$/i, "")
+                    .trim()}
+                </span>
                 <span className="checkout-item-price">{peso(entry.lineTotal)}</span>
               </div>
               <p className="checkout-item-sub">
                 {peso(entry.item.price)} each × {entry.qty}
+                {entry.temperature && (
+                  <> · {entry.temperature === "hot" ? "☕ Hot" : "🧊 Iced"}</>
+                )}
                 {entry.addons?.length > 0 && (
                   <> · {entry.addons.map((a) => a.m_name).join(", ")}</>
                 )}
                 {entry.dips?.length > 0 && (
                   <> · {entry.dips.map((d) => d.m_name).join(", ")}</>
+                )}
+                {entry.sweetness?.length > 0 && (
+                  <> · {entry.sweetness.map((s) => s.m_name).join(", ")}</>
                 )}
               </p>
               <div className="checkout-item-controls">

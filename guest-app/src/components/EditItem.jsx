@@ -11,13 +11,29 @@ const PLACEHOLDER =
 const IS_DRINK   = (item) => item?.category?.toLowerCase() === "drink";
 const IS_CHURROS = (item) => item?.m_name?.toLowerCase().includes("churros");
 
+/** Strip "Hot " / "Iced " prefix for the popup display title */
+const getBaseName = (name = "") =>
+  name.replace(/^\s*(hot|iced)\s+/i, "").replace(/\s*\((hot|iced)\)\s*$/i, "").trim();
+
+const isHotVariant  = (n = "") => /^\s*hot\s+/i.test(n) || /\((hot)\)\s*$/i.test(n);
+const isIcedVariant = (n = "") => /^\s*iced\s+/i.test(n) || /\((iced)\)\s*$/i.test(n);
+
 export default function EditItem({ entry, entryIndex, addons, dips, onClose, onSave }) {
   const { item } = entry;
   if (!item) return null;
+
   const isDrink   = IS_DRINK(item);
   const isChurros = IS_CHURROS(item);
 
+  // Determine temperature from the stored item name
+  const storedTemp = entry.temperature
+    ?? (isHotVariant(item.m_name) ? "hot" : isIcedVariant(item.m_name) ? "iced" : null);
+  const isTagged   = isHotVariant(item.m_name) || isIcedVariant(item.m_name);
+  const displayName = getBaseName(item.m_name);
+
   const [qty, setQty] = useState(entry.qty ?? 1);
+  // Temperature is fixed in edit mode — user chose it when adding; show it read-only
+  const temperature = storedTemp;
 
   const [selectedAddons, setSelectedAddons] = useState(() => {
     const map = {};
@@ -59,6 +75,7 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
     onSave({
       ...entry,
       qty,
+      temperature,
       addons: isDrink ? addons.filter((a) => selectedAddons[a.docId]) : [],
       dips:   isChurros && selectedDip
         ? [dips.find((d) => d.docId === selectedDip)]
@@ -74,12 +91,12 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
         <div className="edit-popup-badge">Editing Item</div>
 
         <div className="popup-header">
-          <h2 className="popup-name">{item.m_name}</h2>
+          <h2 className="popup-name">{displayName}</h2>
           <span className="popup-price-tag"><strong>{peso(item.price)}</strong></span>
         </div>
 
         <div className="popup-img-wrap">
-          <img src={item.image_url || PLACEHOLDER} alt={item.m_name} className="popup-img" />
+          <img src={item.image_url || PLACEHOLDER} alt={displayName} className="popup-img" />
         </div>
 
         <div className="popup-section">
@@ -90,6 +107,18 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
             <button className="qty-btn" onClick={() => setQty((q) => q + 1)}>+</button>
           </div>
         </div>
+
+        {/* Temperature — read-only in edit mode */}
+        {isTagged && temperature && (
+          <div className="popup-section">
+            <div className="popup-section-label">Serve As</div>
+            <div className="popup-serve-row">
+              <button className="serve-btn serve-btn--active serve-btn--only" style={{ cursor: "default" }}>
+                {temperature === "hot" ? "☕ Hot" : "🧊 Iced"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {isDrink && addons.length > 0 && (
           <div className="popup-section">

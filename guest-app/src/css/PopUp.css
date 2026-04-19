@@ -144,6 +144,13 @@
   border-color: #555;
   color: #fff;
 }
+/* Auto-selected single option — shown as selected but not interactive */
+.serve-btn--only {
+  background: #f0f0f0;
+  border-color: #ccc;
+  color: #555;
+  pointer-events: none;
+}
 .serve-price {
   font-size: 11px;
   font-weight: 500;
