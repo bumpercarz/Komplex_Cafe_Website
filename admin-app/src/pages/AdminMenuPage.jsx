@@ -7,7 +7,7 @@ import AdminPageToolbar from "../components/AdminPageToolbar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
 import { getCurrentUser } from "../services/authService";
-
+import { FaTrash } from "react-icons/fa";
 import {
   MENU_CATEGORY_OPTIONS,
   MENU_AVAILABLE_OPTIONS,
@@ -17,6 +17,12 @@ import {
   deleteMenuItemRecord,
   formatMoney,
 } from "../services/adminMenuData";
+
+import {
+  notifyMenuAdd,
+  notifyMenuUpdate,
+  notifyMenuDelete
+} from "../services/adminNotificationData";
 
 function ModalShell({ children, onClose }) {
   return (
@@ -336,6 +342,14 @@ export default function AdminMenuPage() {
         setMessage(result.message);
         return;
       }
+
+      await notifyMenuAdd({
+        itemName: formValues.name,
+        category: formValues.category,
+        price: formatMoney(formValues.price),
+        actor: currentUser?.name || roleLabel
+      });
+
       closeModal();
     } catch (error) {
       console.error("Add menu item error:", error);
@@ -358,6 +372,19 @@ export default function AdminMenuPage() {
         setMessage(result.message);
         return;
       }
+
+      let changes = [];
+      if (selectedItem.price !== Number(formValues.price)) changes.push(`price to ${formatMoney(formValues.price)}`);
+      if (selectedItem.available !== formValues.available) changes.push(`availability to ${formValues.available}`);
+      if (selectedItem.category !== formValues.category) changes.push(`category to ${formValues.category}`);
+      let changesStr = changes.length > 0 ? `Changed ${changes.join(", ")}.` : "Details updated.";
+
+      await notifyMenuUpdate({
+        itemName: formValues.name,
+        changes: changesStr,
+        actor: currentUser?.name || roleLabel
+      });
+
       closeModal();
     } catch (error) {
       console.error("Edit menu item error:", error);
@@ -383,6 +410,12 @@ export default function AdminMenuPage() {
         setMessage(result.message);
         return;
       }
+
+      await notifyMenuDelete({
+        itemName: target.name,
+        actor: currentUser?.name || roleLabel
+      });
+
     } catch (error) {
       console.error("Delete menu item error:", error);
       setMessage(error?.message || "Failed to delete menu item.");
@@ -410,7 +443,6 @@ export default function AdminMenuPage() {
         {loading ? (
           <div className="amp-empty">Loading menu items...</div>
         ) : (
-          /* ADDED OUTER WRAPPER FOR CLEAN BORDERS */
           <div className="amp-tableOuter">
             <div className="amp-tableWrap">
               <table className="amp-table">
@@ -436,7 +468,6 @@ export default function AdminMenuPage() {
 
                       <td>{item.codeName}</td>
                       
-                      {/* ADDED INNER DIVS TO FORCE WRAPPING */}
                       <td className="amp-nameCell">
                         <div className="amp-wrapText amp-nameWrap">{item.name}</div>
                       </td>
@@ -463,7 +494,7 @@ export default function AdminMenuPage() {
                           onClick={() => handleDeleteItem(item.docId)}
                           aria-label={`Delete ${item.name}`}
                         >
-                          🗑
+                          <FaTrash /> 
                         </button>
                       </td>
                     </tr>

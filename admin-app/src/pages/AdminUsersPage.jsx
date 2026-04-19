@@ -6,6 +6,7 @@ import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
+import { FaTrash } from "react-icons/fa";
 
 import {
   USER_ROLE_OPTIONS,
@@ -17,6 +18,13 @@ import {
 } from "../services/adminUserData";
 
 import { getCurrentUser, setCurrentUser } from "../services/authService";
+
+// NEW: Import the user notification functions
+import {
+  notifyUserAdd,
+  notifyUserUpdate,
+  notifyUserDelete
+} from "../services/adminNotificationData";
 
 /* Modal Shell */
 function ModalShell({ children, onClose }) {
@@ -31,7 +39,6 @@ function ModalShell({ children, onClose }) {
 
 /* User Form Modal */
 function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, isSubmitting }) {
-  // NEW: Check if the user being edited is the owner
   const isEditingOwner = mode === "edit" && form.role === "OWNER";
 
   return (
@@ -44,7 +51,6 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
         <div className="amp-modalGrid">
           <div className="amp-modalLeft">
             
-            {/* FULL NAME: Limit 50 */}
             <div className="amp-formGroup">
               <div className="amp-labelRow">
                 <label>Full Name</label>
@@ -62,7 +68,6 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
               />
             </div>
 
-            {/* EMAIL: Limit 100 */}
             <div className="amp-formGroup">
               <div className="amp-labelRow">
                 <label>Email</label>
@@ -80,7 +85,6 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
               />
             </div>
 
-            {/* PASSWORD: Limit 16 */}
             <div className="amp-formGroup">
               <div className="amp-labelRow">
                 <label>{mode === "edit" ? "New Password" : "Password"}</label>
@@ -103,17 +107,15 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
 
           <div className="amp-modalRight">
             
-            {/* ROLE */}
             <div className="amp-formGroup">
               <label>Role</label>
               <select 
                 name="role" 
                 value={form.role || "STAFF"} 
                 onChange={onChange}
-                disabled={isEditingOwner} /* CHANGED: Disable if owner */
+                disabled={isEditingOwner} 
                 style={isEditingOwner ? { background: "#dddddd", color: "#666", cursor: "not-allowed" } : {}}
               >
-                {/* CHANGED: If owner, only show Owner option. Otherwise, show standard options */}
                 {isEditingOwner ? (
                   <option value="OWNER">Owner</option>
                 ) : (
@@ -126,7 +128,6 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
               </select>
             </div>
 
-            {/* CONTACT NUMBER: Limit 11 */}
             <div className="amp-formGroup">
               <div className="amp-labelRow">
                 <label>Contact Number</label>
@@ -145,7 +146,6 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
               />
             </div>
 
-            {/* DATE REGISTERED */}
             <div className="amp-formGroup">
               <label>Date Registered</label>
               <input
@@ -297,11 +297,23 @@ export default function AdminUsersPage() {
   async function confirmDelete(id) {
     setIsDeleting(true);
     try {
+      // Find the user data before deleting for the notification
+      const userToDelete = users.find(u => u.id === id);
+
       const result = await deleteUserAccount(id);
       if (!result?.ok) {
         alert(result?.message || "Delete failed.");
         return;
       }
+
+      // NEW: Trigger Notification
+      if (userToDelete) {
+        await notifyUserDelete({
+          userName: userToDelete.name,
+          actor: currentUser?.name || roleLabel
+        });
+      }
+
       await loadUsers();
       closeModal();
     } catch (error) {
@@ -318,11 +330,21 @@ export default function AdminUsersPage() {
   async function confirmTransfer(newOwnerId) {
     setIsTransferring(true);
     try {
+      const userToTransferTo = users.find(u => u.id === newOwnerId);
       const result = await transferOwnership(currentUser.id, newOwnerId);
 
       if (!result?.ok) {
         alert(result?.message || "Transfer failed.");
         return;
+      }
+
+      // NEW: Trigger Notification
+      if (userToTransferTo) {
+        await notifyUserUpdate({
+          userName: userToTransferTo.name,
+          changes: `Ownership transferred by ${currentUser.name || "Owner"}`,
+          actor: currentUser?.name || roleLabel
+        });
       }
 
       const updatedUser = { ...currentUser, role: "ADMIN" };
@@ -359,7 +381,6 @@ export default function AdminUsersPage() {
 
     const { name, email, password, role, contactNumber } = form;
 
-    // Form submission validation
     if (name.trim().length > 50) return alert("Name cannot exceed 50 characters.");
     if (email.trim().length > 100) return alert("Email cannot exceed 100 characters.");
     if (contactNumber.trim().length > 11) return alert("Contact number cannot exceed 11 characters.");
@@ -377,8 +398,33 @@ export default function AdminUsersPage() {
       let result;
       if (modal.type === "add") {
         result = await createUserAccount(form);
+
+        // NEW: Trigger Add Notification
+        if (result?.ok) {
+          await notifyUserAdd({
+            userName: form.name,
+            role: form.role,
+            actor: currentUser?.name || roleLabel
+          });
+        }
       } else {
         result = await updateUserAccount(modal.userId, form);
+
+        // NEW: Figure out what changed for the notification
+        if (result?.ok && selectedUser) {
+          let changes = [];
+          if (selectedUser.role !== form.role) changes.push(`role to ${form.role}`);
+          if (selectedUser.email !== form.email) changes.push(`email to ${form.email}`);
+          if (form.password) changes.push(`password`);
+          if (selectedUser.contactNumber !== form.contactNumber) changes.push(`contact number`);
+          let changesStr = changes.length > 0 ? `Changed ${changes.join(", ")}.` : "Details updated.";
+
+          await notifyUserUpdate({
+            userName: form.name,
+            changes: changesStr,
+            actor: currentUser?.name || roleLabel
+          });
+        }
       }
 
       if (!result?.ok) {
@@ -412,13 +458,11 @@ export default function AdminUsersPage() {
           onAdd={openAdd}
         />
 
-        {/* ADDED OUTER WRAPPER FOR CLEAN BORDERS */}
         <div className="amp-tableOuter">
           <div className="amp-tableWrap">
             <table className="amp-table">
               <thead>
                 <tr>
-                  {/* Reuse name and description cell classes to force wrapping */}
                   <th className="amp-nameCell">Name</th>
                   <th className="amp-descCell">Email</th>
                   <th>Role</th>
@@ -438,7 +482,6 @@ export default function AdminUsersPage() {
 
                   return (
                     <tr key={user.id}>
-                      {/* Wrap text in specific divs so layout respects max-width */}
                       <td className="amp-nameCell">
                         <div className="amp-wrapText amp-nameWrap">{user.name}</div>
                       </td>
@@ -462,7 +505,7 @@ export default function AdminUsersPage() {
                             className="amp-deleteBtn"
                             onClick={() => handleDelete(user.id)}
                           >
-                            🗑
+                            <FaTrash /> 
                           </button>
                         )}
                         {showTransfer && (

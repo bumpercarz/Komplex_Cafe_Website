@@ -266,6 +266,34 @@
   color: #777;
 }
 
+.amp-formGroup input::placeholder {
+  color: #777;
+}
+
+/* Custom Select Arrow Positioning - MOVED OUTSIDE MEDIA QUERY */
+.amp-formGroup select {
+  /* 1. Hide the default browser arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* 2. Add a custom arrow using an SVG */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 20px; /* Size of the arrow */
+
+  /* 3. Adjust the "35px" below to move it further left or right */
+  background-position: calc(100% - 15px) center; 
+
+  /* 4. Ensure the text doesn't overlap the new arrow */
+  padding-right: 50px; 
+  cursor: pointer;
+}
+
+.amp-imageGroup {
+  flex: 1;
+}
+
 .amp-imageGroup {
   flex: 1;
 }

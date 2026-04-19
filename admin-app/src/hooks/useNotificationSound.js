@@ -2,7 +2,9 @@ import { useEffect, useRef } from "react";
 import { collection, onSnapshot, orderBy, query, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
-// ─── Web Audio alert tone generator ──────────────────────────────────────────
+// ─── Web Audio alert tone generators ─────────────────────────────────────────
+
+// 1. Loud, 3-tone alarm for new orders (Continuous)
 function createAlertSound(audioCtx) {
   const oscillator = audioCtx.createOscillator();
   const gainNode   = audioCtx.createGain();
@@ -21,16 +23,40 @@ function createAlertSound(audioCtx) {
   oscillator.start(audioCtx.currentTime);
   oscillator.stop(audioCtx.currentTime + 0.6);
 
-  return oscillator; // caller can listen to `onended`
+  return oscillator;
+}
+
+// 2. Soft, quick up-chime for menu/system updates (Plays Once)
+function createSinglePingSound(audioCtx) {
+  const oscillator = audioCtx.createOscillator();
+  const gainNode   = audioCtx.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+  oscillator.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.1); // C6
+
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+
+  oscillator.start(audioCtx.currentTime);
+  oscillator.stop(audioCtx.currentTime + 0.3);
+
+  return oscillator;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 export function useNotificationSound() {
-  const audioCtxRef       = useRef(null);
-  const loopIntervalRef   = useRef(null);
-  const isLoopingRef      = useRef(false);
-  const permissionRef     = useRef("default"); // "default" | "granted" | "denied"
-  const prevUnreadIdsRef  = useRef(new Set());
+  const audioCtxRef         = useRef(null);
+  const loopIntervalRef     = useRef(null);
+  const isLoopingRef        = useRef(false);
+  const permissionRef       = useRef("default"); // "default" | "granted" | "denied"
+  
+  // Track IDs separately so we know what type triggered
+  const prevUnreadOrdersRef = useRef(new Set());
+  const prevUnreadOthersRef = useRef(new Set());
 
   // Request browser notification permission once on mount
   useEffect(() => {
@@ -59,21 +85,30 @@ export function useNotificationSound() {
     return audioCtxRef.current;
   }
 
-  function playOnce() {
+  function playAlarmTone() {
     try {
       const ctx = getOrCreateAudioCtx();
       createAlertSound(ctx);
     } catch (err) {
-      console.warn("[useNotificationSound] Audio playback failed:", err);
+      console.warn("[useNotificationSound] Alarm playback failed:", err);
+    }
+  }
+
+  function playSinglePing() {
+    try {
+      const ctx = getOrCreateAudioCtx();
+      createSinglePingSound(ctx);
+    } catch (err) {
+      console.warn("[useNotificationSound] Ping playback failed:", err);
     }
   }
 
   function startLoop() {
     if (isLoopingRef.current) return;
     isLoopingRef.current = true;
-    playOnce(); // immediate first beep
+    playAlarmTone(); // immediate first beep
     loopIntervalRef.current = setInterval(() => {
-      if (isLoopingRef.current) playOnce();
+      if (isLoopingRef.current) playAlarmTone();
     }, 4000); // repeat every 4 seconds
   }
 
@@ -83,24 +118,26 @@ export function useNotificationSound() {
     loopIntervalRef.current = null;
   }
 
-  // NEW: Accept notificationId to mark it as read on click
-  function sendBrowserPush(title, body, notificationId) {
+  // Generalized Browser Push Function
+  function sendBrowserPush(title, body, notificationId, isPersistent) {
     if (permissionRef.current !== "granted") return;
     try {
       const notif = new Notification(title, {
         body,
-        icon: "/favicon.ico",     // update path to your logo if needed
-        tag:  "new-order-alert",  // replaces previous notif so they don't stack
-        requireInteraction: true, // stays until admin clicks it
+        icon: "/favicon.ico", 
+        tag: isPersistent ? "new-order-alert" : `system-alert-${notificationId}`, 
+        requireInteraction: isPersistent, // Only wait for click if it's an order
       });
 
-      // NEW: Handle what happens when the admin clicks the popup
       notif.onclick = async () => {
-        window.focus(); // Bring the browser tab to the front
-        stopLoop();     // Stop the ringing immediately
-        notif.close();  // Dismiss the browser notification
+        window.focus(); 
+        
+        if (isPersistent) {
+          stopLoop(); 
+        }
+        
+        notif.close(); 
 
-        // Mark this specific notification as read in Firebase
         if (notificationId) {
           try {
             await updateDoc(doc(db, "tbl_notifs", String(notificationId)), {
@@ -126,43 +163,62 @@ export function useNotificationSound() {
 
     const unsub = onSnapshot(q, (snapshot) => {
       const docs = snapshot.docs.map((d) => ({
-        id:     d.id,
-        type:   d.data().type   ?? "order_new",
-        read:   d.data().read   ?? false,
-        title:  d.data().title  ?? "New Notification",
+        id:      d.id,
+        type:    d.data().type    ?? "order_new",
+        read:    d.data().read    ?? false,
+        title:   d.data().title   ?? "New Notification",
         message: d.data().message ?? "",
       }));
 
-      // Unread new-order notifications
-      const unreadOrderNewIds = new Set(
-        docs
-          .filter((d) => d.type === "order_new" && !d.read)
-          .map((d) => d.id)
+      // 1. Separate Unread Notifications by Type
+      const unreadOrders = docs.filter((d) => d.type === "order_new" && !d.read);
+      const unreadOthers = docs.filter((d) => d.type !== "order_new" && !d.read);
+
+      const unreadOrderIds = new Set(unreadOrders.map((d) => d.id));
+      const unreadOtherIds = new Set(unreadOthers.map((d) => d.id));
+
+      // 2. Find newly arrived IDs (not in previous snapshot)
+      const newlyArrivedOrders = unreadOrders.filter(
+        (d) => !prevUnreadOrdersRef.current.has(d.id)
+      );
+      
+      const newlyArrivedOthers = unreadOthers.filter(
+        (d) => !prevUnreadOthersRef.current.has(d.id)
       );
 
-      // Find brand-new IDs (not in previous snapshot)
-      const newlyArrivedIds = [...unreadOrderNewIds].filter(
-        (id) => !prevUnreadIdsRef.current.has(id)
-      );
-
-      // If there are newly arrived unread order_new notifs → alert
-      if (newlyArrivedIds.length > 0) {
-        const newest = docs.find((d) => d.id === newlyArrivedIds[0]);
-        // NEW: Pass the newest notification ID into the push function
+      // 3. Handle New Orders (Loop + Persistent Popup)
+      if (newlyArrivedOrders.length > 0) {
+        const newest = newlyArrivedOrders[0];
         sendBrowserPush(
           newest?.title   ?? "New Order!",
           newest?.message ?? "A table placed a new order.",
-          newest?.id 
+          newest?.id,
+          true // isPersistent = true
         );
         startLoop();
       }
 
-      // If there are NO more unread order_new notifs → stop loop
-      if (unreadOrderNewIds.size === 0) {
+      // 4. Handle Menu/System Updates (Play Once + Auto-dismiss Popup)
+      if (newlyArrivedOthers.length > 0) {
+        // Trigger a single notification for the newest system update
+        const newest = newlyArrivedOthers[0];
+        sendBrowserPush(
+          newest?.title   ?? "System Update",
+          newest?.message ?? "A new update occurred.",
+          newest?.id,
+          false // isPersistent = false
+        );
+        playSinglePing();
+      }
+
+      // 5. Stop looping if ALL new orders have been marked as read
+      if (unreadOrderIds.size === 0) {
         stopLoop();
       }
 
-      prevUnreadIdsRef.current = unreadOrderNewIds;
+      // 6. Update Refs for the next snapshot
+      prevUnreadOrdersRef.current = unreadOrderIds;
+      prevUnreadOthersRef.current = unreadOtherIds;
     });
 
     return () => {

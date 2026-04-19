@@ -6,6 +6,8 @@ import {
   orderBy,
   query,
   updateDoc,
+  addDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
 
@@ -27,7 +29,6 @@ function formatTimeLabel(date) {
   return `${days} day${days > 1 ? "s" : ""} ago`;
 }
 
-// Map icon/color hint by notification type so the UI can render badges
 const TYPE_META = {
   order_new:    { icon: "🛎️",  label: "New Order" },
   order_status: { icon: "🔄",  label: "Order Update" },
@@ -69,20 +70,6 @@ function normalizeNotification(docSnap) {
 
 // ─── Real-time listener ───────────────────────────────────────────────────────
 
-/**
- * Subscribe to live notification updates.
- * Returns an unsubscribe function — call it on component unmount.
- *
- * Usage in React:
- *   useEffect(() => {
- *     const unsub = subscribeToNotifications((notifs) => setNotifications(notifs));
- *     return () => unsub();
- *   }, []);
- *
- * @param {(notifications: object[]) => void} onUpdate
- * @param {(error: Error) => void} [onError]
- * @returns {() => void} unsubscribe
- */
 export function subscribeToNotifications(onUpdate, onError) {
   const q = query(
     collection(db, "tbl_notifs"),
@@ -112,4 +99,148 @@ export async function markNotificationAsRead(notificationId) {
 
 export async function deleteNotificationById(notificationId) {
   await deleteDoc(doc(db, "tbl_notifs", String(notificationId)));
+}
+
+// ─── Write Notifications ──────────────────────────────────────────────────────
+
+export async function writeNotification({ title, message, details = [], type, actor = "System" }) {
+  try {
+    await addDoc(collection(db, "tbl_notifs"), {
+      title,
+      message,
+      details,
+      type,
+      read: false,
+      n_timestamp: serverTimestamp(),
+      actor,
+    });
+  } catch (err) {
+    console.error("[adminNotificationData] Failed to write notification:", err);
+  }
+}
+
+export async function notifyMenuAdd({ itemName, category = "", price = "", actor = "Admin" }) {
+  await writeNotification({
+    type: "menu_add",
+    title: `Menu item added: ${itemName}`,
+    message: `${actor} added a new menu item "${itemName}".`,
+    details: [
+      { label: "Item", value: itemName },
+      { label: "Category", value: category },
+      { label: "Price", value: String(price) },
+      { label: "Added by", value: actor },
+    ],
+    actor,
+  });
+}
+
+export async function notifyMenuUpdate({ itemName, changes = "", actor = "Admin" }) {
+  await writeNotification({
+    type: "menu_update",
+    title: `Menu item updated: ${itemName}`,
+    message: `${actor} updated "${itemName}".${changes ? " " + changes : ""}`,
+    details: [
+      { label: "Item", value: itemName },
+      { label: "Changes", value: changes || "Details updated" },
+      { label: "Updated by", value: actor },
+    ],
+    actor,
+  });
+}
+
+export async function notifyMenuDelete({ itemName, actor = "Admin" }) {
+  await writeNotification({
+    type: "menu_delete",
+    title: `Menu item deleted: ${itemName}`,
+    message: `${actor} removed "${itemName}" from the menu.`,
+    details: [
+      { label: "Item", value: itemName },
+      { label: "Deleted by", value: actor },
+    ],
+    actor,
+  });
+}
+
+export async function notifyUserAdd({ userName, role = "", actor = "Admin" }) {
+  await writeNotification({
+    type: "user_add",
+    title: `New user added: ${userName}`,
+    message: `${actor} created a new ${role || "user"} account for "${userName}".`,
+    details: [
+      { label: "User", value: userName },
+      { label: "Role", value: role },
+      { label: "Added by", value: actor },
+    ],
+    actor,
+  });
+}
+
+export async function notifyUserUpdate({ userName, changes = "", actor = "Admin" }) {
+  await writeNotification({
+    type: "user_update",
+    title: `User updated: ${userName}`,
+    message: `${actor} updated details for "${userName}".${changes ? " " + changes : ""}`,
+    details: [
+      { label: "User", value: userName },
+      { label: "Changes", value: changes || "Details updated" },
+      { label: "Updated by", value: actor },
+    ],
+    actor,
+  });
+}
+
+export async function notifyUserDelete({ userName, actor = "Admin" }) {
+  await writeNotification({
+    type: "user_delete",
+    title: `User deleted: ${userName}`,
+    message: `${actor} deleted the account for "${userName}".`,
+    details: [
+      { label: "User", value: userName },
+      { label: "Deleted by", value: actor },
+    ],
+    actor,
+  });
+}
+
+// --- NEW TABLE NOTIFICATION FUNCTIONS ---
+
+export async function notifyTableAdd({ tableLabel, status = "", actor = "Admin" }) {
+  await writeNotification({
+    type: "table_add",
+    title: `Table added: ${tableLabel}`,
+    message: `${actor} added a new table "${tableLabel}".`,
+    details: [
+      { label: "Table", value: tableLabel },
+      { label: "Status", value: status },
+      { label: "Added by", value: actor },
+    ],
+    actor,
+  });
+}
+
+export async function notifyTableUpdate({ tableLabel, changes = "", actor = "Admin" }) {
+  await writeNotification({
+    type: "table_update",
+    title: `Table updated: ${tableLabel}`,
+    message: `${actor} updated table "${tableLabel}".${changes ? " " + changes : ""}`,
+    details: [
+      { label: "Table", value: tableLabel },
+      { label: "Changes", value: changes || "Details updated" },
+      { label: "Updated by", value: actor },
+    ],
+    actor,
+  });
+}
+
+export async function notifyTableDelete({ tableLabel, actor = "Admin" }) {
+  await writeNotification({
+    type: "table_delete",
+    title: `Table deleted: ${tableLabel}`,
+    message: `${actor} removed table "${tableLabel}".`,
+    details: [
+      { label: "Table", value: tableLabel },
+      { label: "Deleted by", value: actor },
+    ],
+    actor,
+  });
 }

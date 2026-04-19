@@ -8,6 +8,7 @@ import { useNotificationSound } from "../hooks/useNotificationSound";
 
 // NEW: import current user auth
 import { getCurrentUser } from "../services/authService";
+import { FaTrash } from "react-icons/fa";
 
 import {
   subscribeToNotifications,
@@ -206,7 +207,7 @@ export default function AdminNotificationsPage() {
                     onClick={() => handleDelete(notification.id)}
                     aria-label={`Delete ${notification.title}`}
                   >
-                    🗑
+                    <FaTrash /> 
                   </button>
                 </div>
               </div>

@@ -7,8 +7,8 @@ import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
-// NEW: import current user auth
 import { getCurrentUser } from "../services/authService";
+import { FaTrash } from "react-icons/fa";
 
 import {
   TABLE_STATUS_OPTIONS,
@@ -19,8 +19,14 @@ import {
   deleteTableRecord,
 } from "../services/adminTableQrData";
 
+// NEW: Import Table notification functions
+import {
+  notifyTableAdd,
+  notifyTableUpdate,
+  notifyTableDelete
+} from "../services/adminNotificationData";
+
 function getCustomerBaseUrl() {
-  // Hardcoded to the requested URL
   return "https://komplex-guest.web.app";
 }
 
@@ -42,7 +48,6 @@ function getTableQrUrl(table) {
   if (table?.qrCodeUrl) return table.qrCodeUrl;
 
   const tableNumber = getRawTableNumber(table) || "new";
-  // Updated format to /?table_id=
   return `${getCustomerBaseUrl()}/?table_id=${encodeURIComponent(
     tableNumber
   )}`;
@@ -77,7 +82,6 @@ function TableFormModal({
     tableNumber || table?.tableNumber || "new"
   );
 
-  // Updated format to /?table_id=
   const previewQrUrl = `${getCustomerBaseUrl()}/?table_id=${encodeURIComponent(
     getRawTableNumber(tableNumber || table?.tableNumber || "new")
   )}`;
@@ -223,16 +227,13 @@ export default function AdminTableQrPage() {
   const [tables, setTables] = useState([]);
   const [modal, setModal] = useState({ type: null, tableId: null });
 
-  // NEW: current user state
   const [currentUser, setCurrentUser] = useState(null);
 
-  // NEW: load current user
   useEffect(() => {
     const user = getCurrentUser();
     setCurrentUser(user);
   }, []);
 
-  // CHANGED: dynamic role instead of hardcoded ADMIN
   const role = currentUser?.role || "STAFF";
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
@@ -267,17 +268,47 @@ export default function AdminTableQrPage() {
   }, []);
 
   async function handleAddTable(formValues) {
-    await createTableRecord(tables, formValues);
-    await reloadTables();
-    closeModal();
+    try {
+      await createTableRecord(tables, formValues);
+      
+      // NEW: Trigger Add Notification
+      await notifyTableAdd({
+        tableLabel: normalizeTableId(formValues.tableNumber),
+        status: formValues.status,
+        actor: currentUser?.name || roleLabel
+      });
+
+      await reloadTables();
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to add table.");
+    }
   }
 
   async function handleEditTable(formValues) {
     if (!selectedTable) return;
 
-    await updateTableRecord(selectedTable, formValues);
-    await reloadTables();
-    closeModal();
+    try {
+      await updateTableRecord(selectedTable, formValues);
+
+      // NEW: Figure out what changed for the notification
+      let changes = [];
+      if (selectedTable.status !== formValues.status) changes.push(`status to ${formValues.status}`);
+      let changesStr = changes.length > 0 ? `Changed ${changes.join(", ")}.` : "Details updated.";
+
+      await notifyTableUpdate({
+        tableLabel: selectedTable.tableId,
+        changes: changesStr,
+        actor: currentUser?.name || roleLabel
+      });
+
+      await reloadTables();
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to edit table.");
+    }
   }
 
   async function handleDeleteTable(tableId) {
@@ -287,9 +318,21 @@ export default function AdminTableQrPage() {
     const confirmed = window.confirm(`Delete ${target.tableId}?`);
     if (!confirmed) return;
 
-    await deleteTableRecord(tableId);
-    await reloadTables();
-    closeModal();
+    try {
+      await deleteTableRecord(tableId);
+
+      // NEW: Trigger Delete Notification
+      await notifyTableDelete({
+        tableLabel: target.tableId,
+        actor: currentUser?.name || roleLabel
+      });
+
+      await reloadTables();
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "Failed to delete table.");
+    }
   }
 
   function handleDownloadQr() {
@@ -350,7 +393,6 @@ export default function AdminTableQrPage() {
           onAdd={() => setModal({ type: "add", tableId: null })}
         />
 
-        {/* ADDED OUTER WRAPPER FOR CLEAN SCROLLBARS AND BORDERS */}
         <div className="atq-tableOuter">
           <div className="atq-tableWrap">
             <table className="atq-table">
@@ -368,7 +410,6 @@ export default function AdminTableQrPage() {
                 {filteredTables.map((table) => (
                   <tr key={table.id}>
                     <td className="atq-idCell">
-                      {/* WRAP LONG IDS */}
                       <div className="atq-wrapText atq-idWrap">{table.tableId}</div>
                     </td>
 
@@ -407,7 +448,7 @@ export default function AdminTableQrPage() {
                         className="atq-deleteBtn"
                         onClick={() => handleDeleteTable(table.id)}
                       >
-                        🗑
+                        <FaTrash /> 
                       </button>
                     </td>
                   </tr>
