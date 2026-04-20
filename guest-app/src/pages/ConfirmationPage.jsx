@@ -47,29 +47,14 @@ const FALLBACK = {
   sub:    "Please save this reference number to claim your order.",
 };
 
-/* ── Addon/dip/sweetness keywords to detect indented items ── */
-const INDENT_CATEGORIES = ["add-on", "addon", "dip", "sweetness", "syrup", "extra"];
-
-/* ── Helpers to bucket raw items array from Firestore ── */
-const isIndentItem = (name = "") =>
-  INDENT_CATEGORIES.some((k) => name.toLowerCase().includes(k));
-
-/**
- * Groups the flat items array saved in Firestore into:
- * [ { main: {name,price,qty}, subs: [{name,price,qty}] } ]
- *
- * Strategy: every item whose name does NOT look like an add-on/dip/sweetness
- * starts a new group; subsequent items that do look like one are attached as subs.
- */
 const groupItems = (items = []) => {
   const groups = [];
   items.forEach((item) => {
-    if (!isIndentItem(item.name) ) {
+    if (!item.sub) {
       groups.push({ main: item, subs: [] });
     } else if (groups.length > 0) {
       groups[groups.length - 1].subs.push(item);
     } else {
-      // Edge case: sub with no parent
       groups.push({ main: item, subs: [] });
     }
   });
