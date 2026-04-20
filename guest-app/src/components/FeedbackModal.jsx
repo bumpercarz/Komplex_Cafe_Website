@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../firebase";
 import "../css/ConfirmationPage.css";
 
 export default function FeedbackModal({ onClose }) {
@@ -6,26 +8,29 @@ export default function FeedbackModal({ onClose }) {
   const [email,    setEmail]    = useState("");
   const [mobile,   setMobile]   = useState("");
   const [feedback, setFeedback] = useState("");
-  const [sent,     setSent]     = useState(false);
+  const [status,   setStatus]   = useState("idle"); // idle | sending | sent | error
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) onClose();
   };
 
-  const handleSend = () => {
-    const subject = encodeURIComponent(
-      (name.trim() ? name.trim() + " - Submitted a Feedback" : "Customer Feedback")
-    );
-    const body = encodeURIComponent(
-      `Name: ${name.trim()}\nEmail: ${email.trim()}\nMobile: ${mobile.trim() || "N/A"}\n\nFeedback:\n${feedback.trim()}`
-    );
-    const gmailUrl =
-      `https://mail.google.com/mail/?view=cm&fs=1` +
-      `&to=komplexcafe.feedback@gmail.com` +
-      `&su=${subject}` +
-      `&body=${body}`;
-    window.open(gmailUrl, "_blank", "noopener,noreferrer");
-    setSent(true);
+  const handleSend = async () => {
+    setStatus("sending");
+    setErrorMsg("");
+    try {
+      const sendFeedbackEmail = httpsCallable(functions, "sendFeedbackEmail");
+      await sendFeedbackEmail({
+        name:     name.trim(),
+        email:    email.trim(),
+        mobile:   mobile.trim(),
+        feedback: feedback.trim(),
+      });
+      setStatus("sent");
+    } catch (err) {
+      setErrorMsg(err?.message || "Something went wrong. Please try again.");
+      setStatus("error");
+    }
   };
 
   const canSend = name.trim() && email.trim() && feedback.trim();
@@ -35,10 +40,10 @@ export default function FeedbackModal({ onClose }) {
       <div className="fb-modal">
         <button className="fb-close" onClick={onClose} aria-label="Close">✕</button>
 
-        {sent ? (
+        {status === "sent" ? (
           <div className="fb-sent">
             <span className="fb-sent-icon">💌</span>
-            <p className="fb-sent-text">Gmail should have opened with your feedback ready to send. Thank you!</p>
+            <p className="fb-sent-text">Your feedback has been sent. Thank you!</p>
             <button className="fb-btn-done" onClick={onClose}>Done</button>
           </div>
         ) : (
@@ -95,12 +100,16 @@ export default function FeedbackModal({ onClose }) {
               <span className="fb-charcount">{feedback.length}/500</span>
             </div>
 
+            {status === "error" && (
+              <p className="fb-error">{errorMsg}</p>
+            )}
+
             <button
               className="fb-btn-send"
               onClick={handleSend}
-              disabled={!canSend}
+              disabled={!canSend || status === "sending"}
             >
-              Send Feedback
+              {status === "sending" ? "Sending…" : "Send Feedback"}
             </button>
           </>
         )}
