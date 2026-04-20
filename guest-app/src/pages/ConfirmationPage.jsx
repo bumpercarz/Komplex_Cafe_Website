@@ -7,12 +7,51 @@ import "../css/ConfirmationPage.css";
 import NavBar from "../components/NavBar";
 import FeedbackModal from "../components/FeedbackModal";
 
+/* ── Guest-side notification sound (plays when order status changes) ── */
+function playStatusChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Two-tone chime: low then high
+    [[523.25, 0], [783.99, 0.18]].forEach(([freq, when]) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + when);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime + when);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + 0.5);
+      osc.start(ctx.currentTime + when);
+      osc.stop(ctx.currentTime + when + 0.5);
+    });
+  } catch (_) {}
+}
+
+function sendGuestBrowserNotif(title, body) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  try {
+    new Notification(title, { body, icon: "/favicon.ico" });
+  } catch (_) {}
+}
+
+async function requestNotifPermission() {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+}
+
 /* ── Status config ── */
 const STATUS_CONFIG = {
+  "PENDING": {
+    icon:    <FaSpinner size={50} className="spin" />,
+    header:  "Processing your payment…",
+    sub:     "Please wait while we confirm your order. Please pay at the counter. Do not leave or close this page.",
+  },
   "PROCESSING PAYMENT": {
     icon:    <FaSpinner size={50} className="spin" />,
     header:  "Processing your payment…",
-    sub:     "Please wait while we confirm your payment. Please pay at the counter if applicable. Do not leave or close this page.",
+    sub:     "Please wait while we confirm your payment. Do not leave or close this page.",
   },
   "PREPARING": {
     icon:    <FaCoffee size={50} />,
@@ -79,10 +118,18 @@ export default function ConfirmationPage() {
   const [orderItems,      setOrderItems]      = useState([]);
   const [totalAmount,     setTotalAmount]     = useState(null);
   const [showFeedback,    setShowFeedback]    = useState(false);
+  const [statusToast,     setStatusToast]     = useState(null); // { message, colorClass }
+
+  const prevStatusRef = useRef(null);  // track previous status to detect changes
 
   const isDone = orderStatus === "COMPLETED" || orderStatus === "CANCELLED";
   const isDoneRef = useRef(isDone);
   useEffect(() => { isDoneRef.current = isDone; }, [isDone]);
+
+  /* ── Request browser notification permission on page load ── */
+  useEffect(() => {
+    requestNotifPermission();
+  }, []);
 
   /* ── Block browser back button until order is done ── */
   useEffect(() => {
@@ -109,6 +156,27 @@ export default function ConfirmationPage() {
       if (!snap.exists()) return;
       const data = snap.data();
       const status = data.order_status ?? null;
+
+      // ── Play chime + browser notification when status changes (not on first load) ──
+      if (prevStatusRef.current !== null && status !== prevStatusRef.current) {
+        playStatusChime();
+        const cfg = STATUS_CONFIG[status];
+        if (cfg) {
+          sendGuestBrowserNotif(cfg.header, cfg.sub);
+
+          // In-page toast
+          const colorMap = {
+            "PREPARING":       "toast-preparing",
+            "AWAITING PICK-UP":"toast-ready",
+            "COMPLETED":       "toast-done",
+            "CANCELLED":       "toast-cancelled",
+          };
+          setStatusToast({ message: cfg.header, colorClass: colorMap[status] ?? "" });
+          setTimeout(() => setStatusToast(null), 4000);
+        }
+      }
+      prevStatusRef.current = status;
+
       setOrderStatus(status);
       setOrderItems(data.items ?? []);
       setTotalAmount(data.total_amount ?? null);
@@ -142,6 +210,11 @@ export default function ConfirmationPage() {
   return (
     <div className="confirmation-wrapper">
       <NavBar />
+
+      {/* ── In-page status-change toast ── */}
+      <div className={`guest-status-toast ${statusToast?.colorClass ?? ""} ${statusToast ? "visible" : ""}`}>
+        {statusToast?.message}
+      </div>
 
       <div className="confirmation-page">
         <section className="confirmation-white">

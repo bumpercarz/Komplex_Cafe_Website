@@ -58,7 +58,9 @@ export async function notifyNewOrder({ orderId, tableLabel = "Counter Order" }) 
 
   await writeNotification({
     type: NOTIF_TYPES.ORDER_NEW,
-    title: tableLabel == "Take Out" ? `New order for ${tableLabel}` : `New order from ${tableLabel}`,
+    title: tableLabel === "Take Out" || tableLabel === "Counter Order"
+      ? `New order for ${tableLabel}`
+      : `New order from ${tableLabel}`,
     message: `${tableLabel} placed a new order that needs attention.`,
     details: [
       { label: "Order ID", value: String(orderId) },

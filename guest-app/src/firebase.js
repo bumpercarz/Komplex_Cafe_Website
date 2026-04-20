@@ -14,7 +14,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-export const storage = getStorage(app);
+
+// Use explicit bucket with fallback — matches admin app to avoid "wrong bucket" upload failures
+const storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "komplexcafeoops.firebasestorage.app";
+export const storage = getStorage(app, `gs://${storageBucket}`);
 export const functions = getFunctions(app, "us-central1");
 
 export { db };

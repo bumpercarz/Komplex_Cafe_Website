@@ -15,12 +15,57 @@ const PLACEHOLDER_IMG =
                  Called with the Firebase Storage download URL.
                  The parent is responsible for writing the order.
 ═══════════════════════════════════════════════════════════════════ */
+const MAX_RAW_BYTES = 20 * 1024 * 1024; // 20 MB raw — beyond this the canvas will likely crash
+
+/* ── Compress any image (including HEIC on iOS) to a JPEG Blob ──────────────
+   Draws into a canvas → toBlob("image/jpeg").
+   This converts HEIC → JPEG automatically since the browser decodes HEIC
+   natively but canvas always outputs standard formats.
+   Max dimension 1600px keeps receipts readable while staying under 500 KB.
+────────────────────────────────────────────────────────────────────────── */
+function compressToJpeg(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      const MAX_DIM = 1600;
+      let { naturalWidth: w, naturalHeight: h } = img;
+
+      if (w > MAX_DIM || h > MAX_DIM) {
+        if (w > h) { h = Math.round((h / w) * MAX_DIM); w = MAX_DIM; }
+        else       { w = Math.round((w / h) * MAX_DIM); h = MAX_DIM; }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width  = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+
+      canvas.toBlob(
+        (blob) => blob ? resolve(blob) : reject(new Error("Canvas toBlob failed")),
+        "image/jpeg",
+        0.85
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Image could not be decoded"));
+    };
+
+    img.src = url;
+  });
+}
+
 export default function UploadReceiptPopup({ onClose, onSubmit }) {
-  const [preview,  setPreview]  = useState(null);
-  const [file,     setFile]     = useState(null);
-  const [dragging, setDragging] = useState(false);
+  const [preview,   setPreview]   = useState(null);
+  const [file,      setFile]      = useState(null);
+  const [dragging,  setDragging]  = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error,    setError]    = useState(null);
+  const [error,     setError]     = useState(null);
 
   const fileInputRef = useRef();
   const overlayRef   = useRef();
@@ -37,7 +82,21 @@ export default function UploadReceiptPopup({ onClose, onSubmit }) {
   };
 
   const loadFile = (f) => {
-    if (!f || !f.type.startsWith("image/")) return;
+    if (!f) return;
+
+    // Accept image/* AND also HEIC/HEIF which some browsers report as "" or "image/heic"
+    const isImage = f.type.startsWith("image/") ||
+                    /\.(heic|heif)$/i.test(f.name);
+    if (!isImage) {
+      setError("Please select an image file (JPG, PNG, HEIC, etc.).");
+      return;
+    }
+
+    if (f.size > MAX_RAW_BYTES) {
+      setError("Image is too large (max 20 MB). Please use a smaller photo.");
+      return;
+    }
+
     setFile(f);
     setPreview(URL.createObjectURL(f));
     setError(null);
@@ -51,22 +110,34 @@ export default function UploadReceiptPopup({ onClose, onSubmit }) {
     loadFile(e.dataTransfer.files[0]);
   };
 
-  /* ── Upload to Firebase Storage, then hand URL to parent ── */
+  /* ── Compress → upload → hand URL to parent ── */
   const handleSubmit = async () => {
     if (!file || uploading) return;
     setUploading(true);
     setError(null);
 
     try {
-      const ext        = file.name.split(".").pop();
-      const storageRef = ref(storage, `receipt_image/${Date.now()}.${ext}`);
-      await uploadBytes(storageRef, file);
-      const receiptUrl = await getDownloadURL(storageRef);
+      // Always compress + convert to JPEG — fixes HEIC, huge camera shots, and bad extensions
+      const blob        = await compressToJpeg(file);
+      const storageRef  = ref(storage, `receipt_image/${Date.now()}.jpg`);
+      await uploadBytes(storageRef, blob, { contentType: "image/jpeg" });
+      const receiptUrl  = await getDownloadURL(storageRef);
 
-      await onSubmit(receiptUrl); // parent writes order & navigates
+      await onSubmit(receiptUrl);
     } catch (err) {
       console.error("Receipt upload failed:", err);
-      setError("Upload failed. Please try again.");
+
+      // Give a specific message where possible
+      if (err.message?.includes("decode") || err.message?.includes("toBlob")) {
+        setError("This image format isn't supported. Please take a screenshot and upload that instead.");
+      } else if (err.code === "storage/unauthorized") {
+        setError("Upload not allowed. Please contact staff.");
+      } else if (err.code === "storage/retry-limit-exceeded" || err.message?.includes("network")) {
+        setError("Network error. Check your connection and try again.");
+      } else {
+        setError("Upload failed. Please try a different image or take a screenshot.");
+      }
+
       setUploading(false);
     }
   };

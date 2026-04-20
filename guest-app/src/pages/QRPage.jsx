@@ -48,7 +48,14 @@ export default function QRPage() {
     };
 
     const totalAmount = cart.reduce((s, e) => s + e.lineTotal, 0);
-    const tableId = sessionStorage.getItem("table_id");
+
+    // Sanitize table_id — reject "null", "undefined", "NaN" strings (same guard as PaymentType)
+    let rawTableId = sessionStorage.getItem("table_id");
+    if (!rawTableId || rawTableId === "null" || rawTableId === "undefined" || rawTableId === "NaN") {
+        rawTableId = null;
+    }
+    const isTakeout = orderType && String(orderType).toLowerCase().replace(/[_ ]/g, "").includes("takeout");
+    const finalTableId = isTakeout ? null : (rawTableId ? Number(rawTableId) : null);
 
     const submitOrder = async (receiptUrl = "") => {
         const existingGuestId = getSessionGuestId();
@@ -100,7 +107,7 @@ export default function QRPage() {
                 order_type:           orderType ?? null,
                 receive_at:           receiveAt ?? null,
                 special_instructions: instructions || null,
-                table_id:             tableId ? Number(tableId) : null,
+                table_id:             finalTableId,
                 receipt_image:        receiptUrl,
                 o_timestamp:          serverTimestamp(),
             }));
@@ -132,7 +139,7 @@ export default function QRPage() {
 
         const tableLabel = orderType === "take_out"
             ? "Take Out"
-            : tableId ? `Table ${tableId}` : "Unknown Table";
+            : finalTableId ? `Table ${finalTableId}` : "Counter Order";
         await notifyNewOrder({ orderId: newOrderId, tableLabel });
 
         return { newOrderId, newPaymentId };
