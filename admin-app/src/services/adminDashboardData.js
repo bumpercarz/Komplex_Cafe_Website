@@ -53,6 +53,7 @@ export async function getLineKeys() {
 
 // ----- Dashboard summary -----
 export async function getDashboardSummary() {
+  console.log("Running Updated getDashboardSummary using tbl_orders!"); // <--- Added this to verify
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayEnd = new Date();
@@ -66,14 +67,13 @@ export async function getDashboardSummary() {
   );
   const snapshot = await getDocs(q);
 
-  const paymentsSnap = await getDocs(collection(db, "tbl_payments"));
-  const payments = paymentsSnap.docs.map(d => d.data());
-
   let todaysSales = 0;
   snapshot.forEach(doc => {
     const order = doc.data();
-    const payment = payments.find(p => p.order_id === order.order_id);
-    if (payment) todaysSales += payment.amount_paid || 0;
+    // ONLY add to sales if the order is COMPLETED
+    if (order.order_status === "COMPLETED") {
+      todaysSales += order.total_amount || 0;
+    }
   });
 
   return { todaysSales, totalOrders: snapshot.size };
@@ -82,8 +82,6 @@ export async function getDashboardSummary() {
 // ----- Online sales data -----
 export async function getOnlineSalesData(range) {
   const ordersSnap = await getDocs(collection(db, "tbl_orders"));
-  const paymentsSnap = await getDocs(collection(db, "tbl_payments"));
-  const payments = paymentsSnap.docs.map(d => d.data());
   
   const now = new Date();
   const dataPoints = [];
@@ -100,8 +98,9 @@ export async function getOnlineSalesData(range) {
         const ts = order.o_timestamp.toDate();
         if (ts.getHours() === hour && ts.toDateString() === now.toDateString()) {
           orders++;
-          const payment = payments.find(p => p.order_id === order.order_id);
-          if (payment) sales += payment.amount_paid || 0;
+          if (order.order_status === "COMPLETED") {
+            sales += order.total_amount || 0;
+          }
         }
       });
       dataPoints.push({ label, orders, sales });
@@ -118,15 +117,16 @@ export async function getOnlineSalesData(range) {
       ordersSnap.docs.forEach(doc => {
         const order = doc.data();
         const ts = order.o_timestamp.toDate();
-        // With this exact date match:
+        // Exact date match
         if (
           ts.getDate() === day.getDate() && 
           ts.getMonth() === day.getMonth() && 
           ts.getFullYear() === day.getFullYear()
         ) {
           orders++;
-          const payment = payments.find(p => p.order_id === order.order_id);
-          if (payment) sales += payment.amount_paid || 0;
+          if (order.order_status === "COMPLETED") {
+            sales += order.total_amount || 0;
+          }
         }
       });
       dataPoints.push({ label, orders, sales });
@@ -141,8 +141,9 @@ export async function getOnlineSalesData(range) {
         const ts = order.o_timestamp.toDate();
         if (Math.ceil(ts.getDate()/7) === w && ts.getMonth() === now.getMonth()) {
           orders++;
-          const payment = payments.find(p => p.order_id === order.order_id);
-          if (payment) sales += payment.amount_paid || 0;
+          if (order.order_status === "COMPLETED") {
+            sales += order.total_amount || 0;
+          }
         }
       });
       dataPoints.push({ label: `W${w}`, orders, sales });
@@ -159,8 +160,9 @@ export async function getOnlineSalesData(range) {
         const ts = order.o_timestamp.toDate();
         if (ts.getMonth() === m && ts.getFullYear() === year) {
           orders++;
-          const payment = payments.find(p => p.order_id === order.order_id);
-          if (payment) sales += payment.amount_paid || 0;
+          if (order.order_status === "COMPLETED") {
+            sales += order.total_amount || 0;
+          }
         }
       });
       dataPoints.push({ label: months[m], orders, sales });
@@ -198,7 +200,8 @@ export async function getItemPerformanceData(range) {
       if (range === "Month" && label === `W${Math.ceil(ts.getDate()/7)}`) matches = true;
       if (range === "Year" && label === ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][ts.getMonth()]) matches = true;
 
-      if (matches && order.items) {
+      // Ensure we only count items from COMPLETED orders in Item Performance too!
+      if (matches && order.items && order.order_status === "COMPLETED") {
         order.items.forEach(item => {
           const menuItem = filtered.find(m => m.m_name === item.name);
           if (!menuItem) return;
