@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   doc, runTransaction, serverTimestamp, arrayUnion,
@@ -8,7 +8,6 @@ import "../css/QRPage.css";
 import NavBar from "../components/NavBar";
 import UploadReceiptPopup from "../components/UploadReceiptPopup";
 import { notifyNewOrder } from "../services/notificationService";
-
 
 import komplexQR from "../assets/komplexQR.png";
 
@@ -31,9 +30,26 @@ export default function QRPage() {
     const [showUpload, setShowUpload] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError]           = useState(null);
+    const qrRef                       = useRef(null);
 
     const totalAmount = cart.reduce((s, e) => s + e.lineTotal, 0);
     const tableId = sessionStorage.getItem("table_id");
+
+    const handleDownloadQR = () => {
+        const img = qrRef.current;
+        if (!img) return;
+
+        const canvas = document.createElement("canvas");
+        canvas.width  = img.naturalWidth  || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        const link = document.createElement("a");
+        link.download = "komplex-cafe-qr.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    };
 
     const submitOrder = async (receiptUrl = "") => {
         const existingGuestId = getSessionGuestId();
@@ -147,14 +163,14 @@ export default function QRPage() {
             <div className="qr-page">
                 <section className="qr-white">
                     <h2 className="qr-header">Instapay</h2>
-                    <img src={komplexQR} alt="QR Code" />
+                    <img ref={qrRef} src={komplexQR} alt="QR Code" crossOrigin="anonymous" />
 
                     <p className="qr-subtitle">We accept Gcash and PayMaya!</p>
 
                     {error && <p className="qr-error">{error}</p>}
 
                     <div className="qr-btns">
-                        <button className="qr-download">Download QR</button>
+                        <button className="qr-download" onClick={handleDownloadQR}>Download QR</button>
                         <button
                             className="qr-upload"
                             disabled={submitting}
