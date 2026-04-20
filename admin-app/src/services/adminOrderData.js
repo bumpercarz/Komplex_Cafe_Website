@@ -7,7 +7,8 @@ import {
   query,
   updateDoc,
   serverTimestamp,
-  getDocs, // NEW: Added getDocs to fetch menu items
+  getDocs,
+  getDoc, // NEW: Added getDoc to fetch the current order before updating
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -109,7 +110,7 @@ function mapFirestoreOrder(docSnap) {
     id: Number(data.order_id ?? docSnap.id),
     orderId: Number(data.order_id ?? docSnap.id),
     tableNumber: tableNumber === "N/A" ? "N/A" : tableNumber.padStart(3, "0"),
-    tableLabel: tableNumber === "N/A" ? "Unknown Table" : `Table ${tableNumber}`,
+    tableLabel: tableNumber === "N/A" ? "Unknown Table" : `Table ${tableNumber.padStart(3, "0")}`,
     status: String(data.order_status || "PENDING"),
     items: itemsWithCategories, // Use the updated items array
     totalAmount: Number(data.total_amount ?? calcOrderTotal(itemsWithCategories)),
@@ -172,14 +173,39 @@ export async function updateOrderStatusRecord(
   orderId,
   newStatus,
   receiptFile,
-  { oldStatus = "UNKNOWN", tableLabel = "Unknown Table", actor = "Admin" } = {}
+  options = {}
 ) {
   try {
+    const actor = options.actor || "Admin";
     let receiptUrl = "";
 
     if (receiptFile instanceof File) {
       receiptUrl = await uploadReceiptImage(receiptFile, orderId);
     }
+
+    // --- NEW: Fetch the current order so we KNOW the exact previous status and table! ---
+    const orderRef = doc(db, "tbl_orders", String(orderId));
+    const orderSnap = await getDoc(orderRef);
+    
+    let oldStatus = "UNKNOWN";
+    let tableLabel = "Unknown Table";
+
+    if (orderSnap.exists()) {
+      const data = orderSnap.data();
+      oldStatus = data.order_status || "PENDING";
+      
+      let tableNumber = "N/A";
+      if (data.table_id !== undefined && data.table_id !== null) {
+        tableNumber = String(data.table_id);
+      } else if (data.receive_at && data.receive_at !== "table") {
+        tableNumber = String(data.receive_at);
+      }
+      
+      tableLabel = tableNumber === "N/A" 
+        ? "Unknown Table" 
+        : `Table ${tableNumber.padStart(3, "0")}`;
+    }
+    // ------------------------------------------------------------------------------------
 
     const updatePayload = {
       order_status: newStatus,
@@ -192,8 +218,9 @@ export async function updateOrderStatusRecord(
       updatePayload.completed_at = serverTimestamp();
     }
 
-    await updateDoc(doc(db, "tbl_orders", String(orderId)), updatePayload);
+    await updateDoc(orderRef, updatePayload);
 
+    // Pass the real values into the notification service
     await notifyOrderStatusUpdate({
       orderId,
       tableLabel,

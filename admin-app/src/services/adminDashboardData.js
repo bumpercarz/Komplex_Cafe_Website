@@ -3,7 +3,7 @@ import { db } from "../firebase";
 import { collection, getDocs, Timestamp, query, where } from "firebase/firestore";
 
 // ----- Categories excluded from Item Sales Performance -----
-const EXCLUDED_PERFORMANCE_CATEGORIES = ["Add-on", "Dip"];
+const EXCLUDED_PERFORMANCE_CATEGORIES = ["Add-on", "Dip", "Sweetness"];
 
 // ----- Cache menu items -----
 let MENU_ITEMS_CACHE = null;
@@ -118,7 +118,12 @@ export async function getOnlineSalesData(range) {
       ordersSnap.docs.forEach(doc => {
         const order = doc.data();
         const ts = order.o_timestamp.toDate();
-        if (ts.getDay() === day.getDay() && ts.getMonth() === day.getMonth()) {
+        // With this exact date match:
+        if (
+          ts.getDate() === day.getDate() && 
+          ts.getMonth() === day.getMonth() && 
+          ts.getFullYear() === day.getFullYear()
+        ) {
           orders++;
           const payment = payments.find(p => p.order_id === order.order_id);
           if (payment) sales += payment.amount_paid || 0;

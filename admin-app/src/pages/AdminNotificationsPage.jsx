@@ -34,8 +34,15 @@ function NotificationModal({ notification, onClose }) {
 
         <div className="an-modalBody">
           <div className="an-modalTop">
-            <div className={`an-modalAvatar ${notification.isRead ? "is-read" : ""}`}>
-              <span className="an-modalAvatarIcon">{notification.typeIcon}</span>
+            <div className={`an-modalAvatar ${notification.isRead ? "is-read" : ""}`} style={{ overflow: "hidden", position: "relative" }}>
+              <img 
+                src={notification.picture} 
+                alt="Notification Avatar" 
+                style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+              />
+              <span className="an-modalAvatarIcon" style={{ position: "absolute", top: -5, left: -5 }}>
+                {notification.typeIcon}
+              </span>
             </div>
             <div>
               <span className="an-typeBadge">{notification.typeLabel}</span>
@@ -190,8 +197,15 @@ export default function AdminNotificationsPage() {
                 className={`an-card ${notification.isRead ? "is-read" : ""}`}
               >
                 <div className="an-cardLeft">
-                  <div className={`an-avatar ${notification.isRead ? "is-read" : ""}`}>
-                    <span className="an-avatarIcon">{notification.typeIcon}</span>
+                  <div className={`an-avatar ${notification.isRead ? "is-read" : ""}`} style={{ overflow: "hidden", position: "relative" }}>
+                    <img 
+                      src={notification.picture} 
+                      alt="Notification Avatar" 
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                    />
+                    <span className="an-avatarIcon" style={{ position: "absolute", top: -5, left: -5 }}>
+                      {notification.typeIcon}
+                    </span>
                   </div>
 
                   <div className="an-content">

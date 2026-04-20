@@ -9,7 +9,6 @@ import OrderTabs from "../components/orders/OrderTabs";
 import OrderCard from "../components/orders/OrderCard";
 
 import { useNotificationSound } from "../hooks/useNotificationSound";
-
 import { getCurrentUser } from "../services/authService";
 
 import {
@@ -17,7 +16,7 @@ import {
   STATUS_OPTIONS,
   getOrdersByTab,
   updateOrderStatusRecord,
-  loadMenuCategories, // NEW: Import the loading function
+  loadMenuCategories,
   subscribeToOrders,
 } from "../services/adminOrderData";
 
@@ -32,28 +31,26 @@ export default function AdminOrderPage() {
 
   const [currentUser, setCurrentUser] = useState(null);
 
+  // Use the hook and pull out the syncing variables
+  const { unreadOrderNotifs, dismissToast } = useNotificationSound("ADMIN");
+
   useEffect(() => {
     const user = getCurrentUser();
     setCurrentUser(user);
   }, []);
 
-  const role = currentUser?.role || "STAFF";
+  const role = currentUser?.role || "ADMIN";
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
-  // UPDATED: Fetch categories first, then subscribe to orders
   useEffect(() => {
     let isMounted = true;
     let unsubscribe = null;
 
     async function initializeData() {
       setLoading(true);
-      
-      // Load the category dictionary first
       await loadMenuCategories();
-      
       if (!isMounted) return;
 
-      // Now subscribe to orders (which will use the dictionary)
       unsubscribe = subscribeToOrders(
         (data) => {
           setOrdersSource(data);
@@ -78,7 +75,6 @@ export default function AdminOrderPage() {
   const orders = useMemo(() => {
     const byTab = getOrdersByTab(ordersSource, activeTab);
     const q = search.trim().toLowerCase();
-
     if (!q) return byTab;
 
     return byTab.filter((o) => {
@@ -129,7 +125,19 @@ export default function AdminOrderPage() {
     }
   }
 
-  useNotificationSound();
+  async function handleToggleCard(orderId, isOpen) {
+    if (!isOpen) {
+      setExpandedId(orderId);
+      const relatedNotifs = unreadOrderNotifs.filter(
+        (n) => String(n.order_id) === String(orderId)
+      );
+      for (const notif of relatedNotifs) {
+        await dismissToast(notif.id);
+      }
+    } else {
+      setExpandedId(null);
+    }
+  }
 
   return (
     <div className="ad-root">
@@ -157,6 +165,9 @@ export default function AdminOrderPage() {
           <div className="ao-list">
             {orders.map((o) => {
               const open = expandedId === o.id;
+              const isNewOrder = unreadOrderNotifs.some(
+                (n) => String(n.order_id) === String(o.id)
+              );
 
               return (
                 <OrderCard
@@ -165,7 +176,8 @@ export default function AdminOrderPage() {
                   activeTab={activeTab}
                   isOpen={open}
                   status={o.status}
-                  onToggle={() => setExpandedId(open ? null : o.id)}
+                  isNew={isNewOrder}
+                  onToggle={() => handleToggleCard(o.id, open)}
                   statusOptions={STATUS_OPTIONS}
                   onStatusChange={handleStatusChange}
                 />

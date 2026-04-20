@@ -3,7 +3,6 @@ import "../css/AdminOrderPage.css";
 
 import StaffTopbar from "../components/StaffTopbar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
-
 import OrderTabs from "../components/orders/OrderTabs";
 import OrderCard from "../components/orders/OrderCard";
 
@@ -15,6 +14,8 @@ import {
   updateOrderStatusRecord,
 } from "../services/adminOrderData";
 
+import { useNotificationSound } from "../hooks/useNotificationSound";
+
 export default function StaffDashboard() {
   const [activeTab, setActiveTab] = useState("Pending");
   const [expandedId, setExpandedId] = useState(null);
@@ -23,10 +24,11 @@ export default function StaffDashboard() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
+  const { unreadOrderNotifs, dismissToast } = useNotificationSound("STAFF");
+
   useEffect(() => {
     setLoading(true);
-
-    const unsubscribe = subscribeToOrders(
+    const unsubscribeOrders = subscribeToOrders(
       (data) => {
         setOrdersSource(data);
         setLoading(false);
@@ -38,13 +40,12 @@ export default function StaffDashboard() {
       }
     );
 
-    return () => unsubscribe();
+    return () => unsubscribeOrders();
   }, []);
 
   const orders = useMemo(() => {
     const byTab = getOrdersByTab(ordersSource, activeTab);
     const q = search.trim().toLowerCase();
-
     if (!q) return byTab;
 
     return byTab.filter((o) => {
@@ -60,7 +61,6 @@ export default function StaffDashboard() {
   async function handleStatusChange(orderId, newStatus) {
     try {
       const result = await updateOrderStatusRecord(orderId, newStatus);
-
       if (!result.ok) {
         setMessage(result.message);
         return;
@@ -83,10 +83,23 @@ export default function StaffDashboard() {
     }
   }
 
+  async function handleToggleCard(orderId, isOpen) {
+    if (!isOpen) {
+      setExpandedId(orderId);
+      const relatedNotifs = unreadOrderNotifs.filter(
+        (n) => String(n.order_id) === String(orderId)
+      );
+      for (const notif of relatedNotifs) {
+        await dismissToast(notif.id);
+      }
+    } else {
+      setExpandedId(null);
+    }
+  }
+
   return (
     <div className="ad-root">
       <StaffTopbar roleLabel="STAFF" />
-
       <main className="ao-main">
         <AdminPageToolbar
           title="Orders"
@@ -108,6 +121,9 @@ export default function StaffDashboard() {
           <div className="ao-list">
             {orders.map((o) => {
               const open = expandedId === o.id;
+              const isNewOrder = unreadOrderNotifs.some(
+                (n) => String(n.order_id) === String(o.id)
+              );
 
               return (
                 <OrderCard
@@ -116,7 +132,8 @@ export default function StaffDashboard() {
                   activeTab={activeTab}
                   isOpen={open}
                   status={o.status}
-                  onToggle={() => setExpandedId(open ? null : o.id)}
+                  isNew={isNewOrder}
+                  onToggle={() => handleToggleCard(o.id, open)}
                   statusOptions={STATUS_OPTIONS}
                   onStatusChange={handleStatusChange}
                 />

@@ -2,16 +2,14 @@ import React, { useState, useEffect } from "react";
 import OrderDetails from "./OrderDetails";
 import { formatDate, formatTime } from "../../services/adminOrderData";
 
-// --- NEW LIVE STOPWATCH COMPONENT ---
+// --- LIVE STOPWATCH COMPONENT ---
 function OrderStopwatch({ status, preparingAt, completedAt }) {
   const [elapsed, setElapsed] = useState("00:00");
 
   useEffect(() => {
-    // If it hasn't started preparing yet, do nothing
     if (!preparingAt) return;
 
     const interval = setInterval(() => {
-      // If completed, lock the end time. Otherwise, keep ticking with the current time.
       const endTime = completedAt ? completedAt : new Date();
       const startTime = preparingAt;
       
@@ -26,7 +24,6 @@ function OrderStopwatch({ status, preparingAt, completedAt }) {
       );
     }, 1000);
 
-    // Clean up the interval when the component unmounts
     return () => clearInterval(interval);
   }, [preparingAt, completedAt, status]);
 
@@ -40,7 +37,6 @@ function OrderStopwatch({ status, preparingAt, completedAt }) {
     </div>
   );
 }
-// -------------------------------------
 
 export default function OrderCard({
   order,
@@ -50,17 +46,38 @@ export default function OrderCard({
   activeTab,
   statusOptions,
   onStatusChange,
+  isNew, // --- NEW PROP ---
 }) {
   return (
-    <section className="ao-card">
-      {/* Orange header strip */}
-      <button type="button" className="ao-cardTop" onClick={onToggle}>
+    <section className={`ao-card ${isNew ? "ao-card--new" : ""}`}>
+      {/* Orange header strip - With Dynamic Highlights for Unread Orders */}
+      <button 
+        type="button" 
+        className="ao-cardTop" 
+        onClick={onToggle}
+        style={isNew ? { borderLeft: "6px solid #df4735", backgroundColor: "#fff8f6" } : {}}
+      >
         <div className="ao-cardTopLeft">
-          <div className="ao-orderId">ORDER ID: {order.id}</div>
+          
+          <div className="ao-orderId" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>ORDER ID: {order.id}</span>
+            {isNew && (
+              <span style={{
+                backgroundColor: '#df4735',
+                color: '#fff',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                fontSize: '0.75rem',
+                fontWeight: 'bold',
+                boxShadow: '0 0 8px rgba(223, 71, 53, 0.4)'
+              }}>
+                NEW
+              </span>
+            )}
+          </div>
 
           <div className="ao-row">
             <span className="ao-label">TABLE ID:</span>
-            {/* Added fallback for null tables and multiple property names */}
             <span className="ao-value">
               {order.tableId || order.tableNumber || order.table_id || "N/A"}
             </span>
@@ -73,17 +90,14 @@ export default function OrderCard({
         </div>
 
         <div className="ao-cardTopRight">
-          {/* Grouped Time Section */}
           <div className="ao-timeGroup">
             
-            {/* Live Stopwatch component added here */}
             <OrderStopwatch 
               status={status} 
               preparingAt={order.preparingAt} 
               completedAt={order.completedAt} 
             />
 
-            {/* Created At */}
             <div className="ao-time">
               <span className="ao-clock">🕘</span>
               <span className="ao-timeLabel">Created:</span>
@@ -91,7 +105,6 @@ export default function OrderCard({
               <span className="ao-date">{formatDate(order.createdAt)}</span>
             </div>
 
-            {/* Preparing At (Only shows if it exists in Firebase) */}
             {order.preparingAt && (
               <div className="ao-time">
                 <span className="ao-clock">🍳</span>
@@ -101,7 +114,6 @@ export default function OrderCard({
               </div>
             )}
 
-            {/* Completed At (Only shows if it exists in Firebase) */}
             {order.completedAt && (
               <div className="ao-time">
                 <span className="ao-clock">✅</span>

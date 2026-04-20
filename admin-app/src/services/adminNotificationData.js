@@ -11,6 +11,9 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 
+// NEW: Import your default logo
+import defaultLogo from "../assets/komplexLogoPlain.png";
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTimeLabel(date) {
@@ -30,19 +33,19 @@ function formatTimeLabel(date) {
 }
 
 const TYPE_META = {
-  order_new:    { icon: "🛎️",  label: "New Order" },
-  order_status: { icon: "🔄",  label: "Order Update" },
-  order_delete: { icon: "🗑️",  label: "Order Deleted" },
-  menu_add:     { icon: "➕",  label: "Menu Added" },
-  menu_update:  { icon: "✏️",  label: "Menu Updated" },
-  menu_delete:  { icon: "🗑️",  label: "Menu Deleted" },
-  user_add:     { icon: "👤",  label: "User Added" },
-  user_update:  { icon: "✏️",  label: "User Updated" },
-  user_delete:  { icon: "🗑️",  label: "User Deleted" },
-  table_add:    { icon: "🪑",  label: "Table Added" },
-  table_update: { icon: "✏️",  label: "Table Updated" },
-  table_delete: { icon: "🗑️",  label: "Table Deleted" },
-  qr_update:    { icon: "📲",  label: "QR Updated" },
+  order_new:    { icon: "🛎️",  label: "New Order " },
+  order_status: { icon: "🔄",  label: "Order Update " },
+  order_delete: { icon: "🗑️",  label: "Order Deleted " },
+  menu_add:     { icon: "➕",  label: "Menu Added " },
+  menu_update:  { icon: "✏️",  label: "Menu Updated " },
+  menu_delete:  { icon: "🗑️",  label: "Menu Deleted " },
+  user_add:     { icon: "👤",  label: "User Added " },
+  user_update:  { icon: "✏️",  label: "User Updated " },
+  user_delete:  { icon: "🗑️",  label: "User Deleted " },
+  table_add:    { icon: "🪑",  label: "Table Added " },
+  table_update: { icon: "✏️",  label: "Table Updated " },
+  table_delete: { icon: "🗑️",  label: "Table Deleted " },
+  qr_update:    { icon: "📲",  label: "QR Updated " },
 };
 
 function normalizeNotification(docSnap) {
@@ -65,6 +68,9 @@ function normalizeNotification(docSnap) {
     isRead:      Boolean(data?.read),
     timeLabel:   formatTimeLabel(date),
     n_timestamp: date,
+    
+    // NEW: Add the default picture fallback here
+    picture:     data?.picture ?? defaultLogo,
   };
 }
 
