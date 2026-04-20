@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase.js";
 import { FaCoffee, FaCheckCircle, FaSpinner, FaBell, FaTimesCircle, FaClock } from "react-icons/fa";
@@ -50,11 +50,35 @@ const FALLBACK = {
 /* ── Feedback Modal ── */
 export default function ConfirmationPage() {
   const location  = useLocation();
+  const navigate  = useNavigate();
   const { orderId, paymentId } = location.state ?? {};
 
   const [orderStatus,     setOrderStatus]     = useState(null);
   const [referenceNumber, setReferenceNumber] = useState(null);
   const [showFeedback,    setShowFeedback]    = useState(false);
+
+  const isDone = orderStatus === "COMPLETED" || orderStatus === "CANCELLED";
+  const isDoneRef = useRef(isDone);
+  useEffect(() => { isDoneRef.current = isDone; }, [isDone]);
+
+  /* ── Block browser back button until order is done ── */
+  useEffect(() => {
+    // Push an extra history entry so the first "back" just re-lands here
+    window.history.pushState(null, "", window.location.href);
+
+    const handlePopState = () => {
+      if (isDoneRef.current) {
+        // Order is done — allow navigation but send to menu
+        navigate("/menu", { replace: true });
+      } else {
+        // Not done — push state again to trap them here
+        window.history.pushState(null, "", window.location.href);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate]);
 
   /* ── Real-time listener on tbl_orders ── */
   useEffect(() => {
@@ -107,7 +131,7 @@ export default function ConfirmationPage() {
 
             <p className="confirmation-subtitle">{sub}</p>
 
-            {(orderStatus === "COMPLETED" || orderStatus === "CANCELLED") && (
+            {isDone && (
               <div className="fb-trigger-wrap">
                 <p className="fb-trigger-label">How was your experience?</p>
                 <button
@@ -115,6 +139,12 @@ export default function ConfirmationPage() {
                   onClick={() => setShowFeedback(true)}
                 >
                   Send Feedback
+                </button>
+                <button
+                  className="fb-trigger-btn fb-back-btn"
+                  onClick={() => navigate("/menu", { replace: true })}
+                >
+                  Back to Menu
                 </button>
               </div>
             )}

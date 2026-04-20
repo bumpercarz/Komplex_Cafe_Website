@@ -117,6 +117,19 @@
     background: #c4640e;
 }
 
+.fb-back-btn {
+    background: transparent;
+    color: #e07820;
+    border: 2px solid #e07820;
+    margin-top: 4px;
+}
+
+.fb-back-btn:hover {
+    background: #fff4ec;
+    color: #c4640e;
+    border-color: #c4640e;
+}
+
 /* ─── Feedback modal overlay ────────────────────────────────── */
 .fb-overlay {
     position: fixed;
