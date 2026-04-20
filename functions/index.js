@@ -14,7 +14,9 @@ app.use(express.json());
 // ─── Send Feedback Email ───────────────────────────────────────────────────
 // Uses Gmail SMTP. Set these in Firebase config:
 //   firebase functions:config:set gmail.user="your@gmail.com" gmail.pass="app-password"
-exports.sendFeedbackEmail = functions.https.onCall(async (data) => {
+exports.sendFeedbackEmail = functions.https.onCall({
+  cors: ["https://komplex-guest.web.app", "https://komplex-guest.firebaseapp.com"],
+}, async (data) => {
   const {name, email, mobile, feedback} = data;
 
   if (!name || !email || !feedback) {

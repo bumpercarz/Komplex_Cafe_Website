@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../firebase";
 import "../css/ConfirmationPage.css";
 
 export default function FeedbackModal({ onClose }) {
@@ -18,7 +19,6 @@ export default function FeedbackModal({ onClose }) {
     setStatus("sending");
     setErrorMsg("");
     try {
-      const functions = getFunctions();
       const sendFeedbackEmail = httpsCallable(functions, "sendFeedbackEmail");
       await sendFeedbackEmail({
         name:     name.trim(),

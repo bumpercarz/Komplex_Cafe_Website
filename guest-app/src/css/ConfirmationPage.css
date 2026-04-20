@@ -7,7 +7,7 @@
 /* ─── Outer wrapper — full orange background ────────────────── */
 .confirmation-wrapper {
     font-family: 'Golos', sans-serif;
-    height: 100vh;
+    min-height: 100vh;
     width: 100%;
     background: #e07820;
     display: flex;
@@ -19,22 +19,21 @@
 .confirmation-page {
     flex: 1;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     background-color: #EF7828;
+    padding: 24px 0;
 }
  
 /* ─── White card ────────────────────────────────────────────── */
 .confirmation-white {
     background: #fff;
-    height: 80vh;
     width: 85%;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-content: center;
     justify-content: center;
-    overflow-y: auto;
 }
 
 /* ─── Border ──────────────────────────────────────────────── */
