@@ -190,10 +190,13 @@
   padding: 30px 20px;
   gap: 12px;
   overflow: hidden;
+  height: 340px;
 }
 
 .booking_copy {
-  flex: 1;
+  display: inherit;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .booking_text {
@@ -326,12 +329,19 @@
     font-size: 1.35em;
   }
 
-  .about_img-wrap,
-  .booking_img-wrap {
+  .about_img-wrap {
     width: 200px !important;
     height: 200px !important;
     scale: 1.5;
   }
+
+  .booking_img-wrap {
+    width: 200px !important;
+    height: 200px !important;
+    scale: 1.5;
+    margin-right: 40px;
+  }
+
 
   .about {
     padding: 7% 4% 7% 7%;

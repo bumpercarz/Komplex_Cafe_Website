@@ -95,7 +95,7 @@ export default function CheckoutPage_1() {
               </p>
               <div className="checkout-item-controls">
                 <button className="btn-remove-item" onClick={() => handleRemove(index)}>
-                  <FaTrash /> Remove
+                  <FaTrash className="btn-trash"/> Remove
                 </button>
                 <button className="btn-edit-item" onClick={() => setEditTarget({ entry, index })}>
                   Edit

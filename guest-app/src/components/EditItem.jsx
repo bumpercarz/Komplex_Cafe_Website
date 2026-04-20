@@ -107,18 +107,19 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
               className="qty-input"
               type="number"
               min="1"
+              max="99"
               value={qty}
               onChange={(e) => {
                 const val = parseInt(e.target.value, 10);
-                if (!isNaN(val) && val >= 1) setQty(val);
+                if (!isNaN(val) && val >= 1 && val <= 99) setQty(val);
                 else if (e.target.value === "") setQty("");
               }}
               onBlur={(e) => {
                 const val = parseInt(e.target.value, 10);
-                setQty(!isNaN(val) && val >= 1 ? val : 1);
+                setQty(!isNaN(val) ? Math.min(99, Math.max(1, val)) : 1);
               }}
             />
-            <button className="qty-btn" onClick={() => setQty((q) => Math.max(1, (parseInt(q) || 1) + 1))}>+</button>
+            <button className="qty-btn" onClick={() => setQty((q) => Math.min(99, (parseInt(q) || 1) + 1))}>+</button>
           </div>
         </div>
 
