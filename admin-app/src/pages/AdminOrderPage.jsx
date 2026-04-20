@@ -9,9 +9,7 @@ import OrderTabs from "../components/orders/OrderTabs";
 import OrderCard from "../components/orders/OrderCard";
 
 import { useNotificationSound } from "../hooks/useNotificationSound";
-import { subscribeToOrders } from "../services/adminOrderData";
 
-// NEW: import current user auth
 import { getCurrentUser } from "../services/authService";
 
 import {
@@ -19,6 +17,8 @@ import {
   STATUS_OPTIONS,
   getOrdersByTab,
   updateOrderStatusRecord,
+  loadMenuCategories, // NEW: Import the loading function
+  subscribeToOrders,
 } from "../services/adminOrderData";
 
 export default function AdminOrderPage() {
@@ -30,35 +30,49 @@ export default function AdminOrderPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  // NEW: current user state
   const [currentUser, setCurrentUser] = useState(null);
 
-  // NEW: load current user
   useEffect(() => {
     const user = getCurrentUser();
     setCurrentUser(user);
   }, []);
 
-  // CHANGED: dynamic role instead of hardcoded ADMIN
   const role = currentUser?.role || "STAFF";
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
+  // UPDATED: Fetch categories first, then subscribe to orders
   useEffect(() => {
-    setLoading(true);
+    let isMounted = true;
+    let unsubscribe = null;
 
-    const unsubscribe = subscribeToOrders(
-      (data) => {
-        setOrdersSource(data);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Orders listener error:", error);
-        setMessage(error?.message || "Failed to listen to orders.");
-        setLoading(false);
-      }
-    );
+    async function initializeData() {
+      setLoading(true);
+      
+      // Load the category dictionary first
+      await loadMenuCategories();
+      
+      if (!isMounted) return;
 
-    return () => unsubscribe();
+      // Now subscribe to orders (which will use the dictionary)
+      unsubscribe = subscribeToOrders(
+        (data) => {
+          setOrdersSource(data);
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Orders listener error:", error);
+          setMessage(error?.message || "Failed to listen to orders.");
+          setLoading(false);
+        }
+      );
+    }
+
+    initializeData();
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const orders = useMemo(() => {
@@ -119,7 +133,6 @@ export default function AdminOrderPage() {
 
   return (
     <div className="ad-root">
-      {/* CHANGED: dynamic roleLabel instead of "ADMIN" */}
       <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 

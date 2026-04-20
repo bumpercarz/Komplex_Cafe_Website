@@ -17,13 +17,34 @@ export default function OrderDetails({
         <div className="ao-sectionTitle">Order Information:</div>
 
         <div className="ao-items">
-          {order.items.map((it, idx) => (
-            <div className="ao-itemRow" key={idx}>
-              <div className="ao-itemQty">{it.qty}x</div>
-              <div className="ao-itemName">{it.name}</div>
-              <div className="ao-itemPrice">{formatMoney(it.qty * it.price)}</div>
-            </div>
-          ))}
+          {order.items.map((it, idx) => {
+            // Bulletproof check: convert to lowercase and remove spaces
+            const itemCategory = String(it.category || "").trim().toLowerCase();
+            const isSpecialCategory = ["add-on", "add_on", "dip", "sweetness"].includes(
+              itemCategory
+            );
+
+            return (
+              <div
+                className={`ao-itemRow ${
+                  isSpecialCategory ? "ao-specialItem" : ""
+                }`}
+                key={idx}
+              >
+                <div className="ao-itemQty">{it.qty}x</div>
+                <div className="ao-itemName">
+                  {it.name}
+                  {/* Optional: Add-on category label. Remove if you prefer it completely clean. */}
+                  {isSpecialCategory && (
+                    <span className="ao-categoryTag"> ({it.category})</span>
+                  )}
+                </div>
+                <div className="ao-itemPrice">
+                  {formatMoney(it.qty * it.price)}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className="ao-divider" />
@@ -73,8 +94,8 @@ export default function OrderDetails({
 
         <div className="ao-meta">
           <div className="ao-metaRow">
-            {/* Added fallback for null tables and multiple property names */}
-            <b>Table:</b> {order.tableNumber || order.tableId || order.table_id || "N/A"}
+            <b>Table:</b>{" "}
+            {order.tableNumber || order.tableId || order.table_id || "N/A"}
           </div>
           <div className="ao-metaRow">
             <b>Order Type:</b> {order.orderType}

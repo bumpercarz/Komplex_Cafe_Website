@@ -4,9 +4,7 @@ import "../css/AdminNotificationsPage.css";
 import AdminTopbar from "../components/AdminTopbar";
 import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
-import { useNotificationSound } from "../hooks/useNotificationSound";
 
-// NEW: import current user auth
 import { getCurrentUser } from "../services/authService";
 import { FaTrash } from "react-icons/fa";
 
@@ -83,26 +81,50 @@ function NotificationModal({ notification, onClose }) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminNotificationsPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
+  const [menuOpen, setMenuOpen]                     = useState(false);
+  const [notifications, setNotifications]           = useState([]);
   const [selectedNotificationId, setSelectedNotificationId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loading, setLoading]                       = useState(true);
+  const [error, setError]                           = useState("");
+  const [currentUser, setCurrentUser]               = useState(null);
 
-  // NEW: current user state
-  const [currentUser, setCurrentUser] = useState(null);
-
-  // NEW: load current user
+  // ── Load current user ──────────────────────────────────────────────────────
   useEffect(() => {
     const user = getCurrentUser();
     setCurrentUser(user);
   }, []);
 
-  // CHANGED: dynamic role instead of hardcoded ADMIN
-  const role = currentUser?.role || "STAFF";
+  const role      = currentUser?.role || "STAFF";
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
-  // Real-time subscription — replaces the old getDocs + reloadNotifications pattern
+  // ── Audio unlock on first tap ──────────────────────────────────────────────
+  //
+  // Mobile browsers (Android, iOS) require a user gesture before AudioContext
+  // can play sound. We listen for the first tap anywhere on this page and
+  // create/resume the AudioContext at that moment so the hook can play sounds
+  // when a notification arrives later.
+  //
+  useEffect(() => {
+    function unlockAudio() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        ctx.resume().then(() => ctx.close());
+      } catch (_) {}
+    }
+
+    // once:true means the listener removes itself after the first call
+    window.addEventListener("pointerdown", unlockAudio, { once: true });
+    window.addEventListener("touchstart",  unlockAudio, { once: true, passive: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("touchstart",  unlockAudio);
+    };
+  }, []);
+
+  // ── Real-time notification subscription ───────────────────────────────────
   useEffect(() => {
     const unsub = subscribeToNotifications(
       (data) => {
@@ -131,7 +153,6 @@ export default function AdminNotificationsPage() {
   async function handleView(notification) {
     if (!notification.isRead) {
       await markNotificationAsRead(notification.id);
-      // No need to reload — onSnapshot updates state automatically
     }
     setSelectedNotificationId(notification.id);
   }
@@ -141,14 +162,10 @@ export default function AdminNotificationsPage() {
       setSelectedNotificationId(null);
     }
     await deleteNotificationById(notificationId);
-    // onSnapshot will update the list automatically
   }
-  
-  useNotificationSound();
-  
+
   return (
     <div className="ad-root">
-      {/* CHANGED: dynamic roleLabel */}
       <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
       <AdminSidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
@@ -173,7 +190,6 @@ export default function AdminNotificationsPage() {
                 className={`an-card ${notification.isRead ? "is-read" : ""}`}
               >
                 <div className="an-cardLeft">
-                  {/* Type icon replaces the plain avatar dot */}
                   <div className={`an-avatar ${notification.isRead ? "is-read" : ""}`}>
                     <span className="an-avatarIcon">{notification.typeIcon}</span>
                   </div>
@@ -207,7 +223,7 @@ export default function AdminNotificationsPage() {
                     onClick={() => handleDelete(notification.id)}
                     aria-label={`Delete ${notification.title}`}
                   >
-                    <FaTrash /> 
+                    <FaTrash />
                   </button>
                 </div>
               </div>

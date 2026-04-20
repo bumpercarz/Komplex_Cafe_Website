@@ -1,5 +1,7 @@
 import { Navigate, Routes, Route } from "react-router-dom";
-import { getCurrentUser } from "./services/authService"; // adjust path as needed
+import { getCurrentUser, logoutUser } from "./services/authService";
+import { useEffect, useState } from "react";
+
 import LoginPage from "./pages/LoginPage";
 import AdminDashboard from "./pages/AdminDashboard";
 import StaffDashboard from "./pages/StaffDashboard";
@@ -17,8 +19,6 @@ import FirestoreMenuSeedPage from "./pages/FirestoreMenuSeedPage";
 import FirestoreNotifSeedPage from "./pages/FirestoreNotifSeedPage";
 import FirestoreTableSeedPage from "./pages/FirestoreTableSeedPage";
 import FirestorePaymentSeedPage from "./pages/FirestorePaymentSeedPage";
-import { logoutUser } from "./services/authService";
-import { useEffect } from "react";
 
 function ProtectedRoute({ element, allowedRoles }) {
   const user = getCurrentUser();
@@ -28,7 +28,6 @@ function ProtectedRoute({ element, allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // User is logged in but wrong role — send them to their own dashboard
     const home = user.role === "STAFF" ? "/staff" : "/admin";
     return <Navigate to={home} replace />;
   }
@@ -37,13 +36,47 @@ function ProtectedRoute({ element, allowedRoles }) {
 }
 
 export default function App() {
+  const [isBooting, setIsBooting] = useState(true);
+
   useEffect(() => {
-    const hasBooted = sessionStorage.getItem("app_booted");
-    if (!hasBooted) {
-      logoutUser();
-      sessionStorage.setItem("app_booted", "true");
-    }
+    const initializeSession = async () => {
+      const hasBooted = sessionStorage.getItem("app_booted");
+
+      // ── Fix: When the app is opened by tapping a push notification, the
+      // Service Worker launches a NEW window/tab. That new window has a fresh
+      // sessionStorage (empty), so the old logout-on-boot logic would wipe the
+      // localStorage session and force the user to log in again.
+      //
+      // Solution: We only clear the session on a true fresh browser open, NOT
+      // when the app is launched from a notification click. We detect a
+      // notification launch via a custom URL parameter (?from=notification)
+      // that we set in sw.js, OR simply by checking if the user is already
+      // logged in — if they are, we never clear the session.
+      //
+      if (!hasBooted) {
+        const user = getCurrentUser(); // check localStorage session first
+        const launchedFromNotification =
+          new URLSearchParams(window.location.search).get("from") === "notification";
+
+        // Only log out if there is no active session AND this is not a
+        // notification-launched window
+        if (!user && !launchedFromNotification) {
+          await logoutUser();
+        }
+
+        sessionStorage.setItem("app_booted", "true");
+      }
+
+      setIsBooting(false);
+    };
+
+    initializeSession();
   }, []);
+
+  if (isBooting) {
+    return null;
+  }
+
   return (
     <>
       <Routes>

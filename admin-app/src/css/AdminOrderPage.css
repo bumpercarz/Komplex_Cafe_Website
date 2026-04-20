@@ -492,3 +492,38 @@
 .ao-receipt-img:hover {
   transform: scale(1.03);
 }
+
+/* =========================
+   Special Item Categories (Add-on, Dip, Sweetness)
+========================= */
+
+/* Combine classes so it overrides the default 22px font size */
+.ao-itemRow.ao-specialItem {
+  color: #555; /* A clean, subdued grey for add-ons */
+  font-style: italic;
+  font-size: 18px; /* Make it smaller */
+  padding-left: 40px; /* Indent the entire line */
+  margin-top: -4px; /* Pull it slightly closer to the parent drink */
+}
+
+.ao-categoryTag {
+  font-size: 14px;
+  color: #999;
+  font-style: normal;
+  margin-left: 5px;
+}
+
+/* Ensure they scale down correctly on mobile screens */
+@media (max-width: 900px) {
+  .ao-itemRow.ao-specialItem {
+    font-size: 15px; 
+    padding-left: 30px; /* Slightly less indent on medium screens */
+  }
+}
+
+@media (max-width: 600px) {
+  .ao-itemRow.ao-specialItem {
+    font-size: 14px; 
+    padding-left: 24px; /* Slightly less indent on mobile */
+  }
+}

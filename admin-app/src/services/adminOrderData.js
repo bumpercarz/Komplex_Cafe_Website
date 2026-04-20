@@ -6,15 +6,15 @@ import {
   orderBy,
   query,
   updateDoc,
-  serverTimestamp, // NEW: Added serverTimestamp to write exact times to DB
+  serverTimestamp,
+  getDocs, // NEW: Added getDocs to fetch menu items
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-// ✅ Only import what this file actually uses
 import { notifyOrderStatusUpdate } from "../../../guest-app/src/services/notificationService";
 
 export const ORDER_TABS = [
-  { key: "Pending",  label: "Pending Orders"  },
+  { key: "Pending", label: "Pending Orders" },
   { key: "Finished", label: "Finished Orders" },
 ];
 
@@ -66,9 +66,35 @@ async function uploadReceiptImage(file, orderId) {
   return getDownloadURL(fileRef);
 }
 
+/* =========================
+   Menu Item Dictionary
+========================= */
+// NEW: We will store the categories here so we don't have to fetch them constantly
+export let menuCategoryMap = {};
+
+export async function loadMenuCategories() {
+  try {
+    const snap = await getDocs(collection(db, "tbl_menuItems"));
+    snap.forEach((d) => {
+      const data = d.data();
+      if (data.m_name && data.category) {
+        menuCategoryMap[data.m_name] = data.category;
+      }
+    });
+  } catch (error) {
+    console.error("Failed to load menu categories:", error);
+  }
+}
+
 function mapFirestoreOrder(docSnap) {
   const data = docSnap.data() || {};
-  const items = Array.isArray(data.items) ? data.items : [];
+  
+  // NEW: Map over the raw items and attach the category from our dictionary if it's missing
+  const rawItems = Array.isArray(data.items) ? data.items : [];
+  const itemsWithCategories = rawItems.map((it) => ({
+    ...it,
+    category: it.category || menuCategoryMap[it.name] || "Uncategorized",
+  }));
 
   let tableNumber = "";
   if (data.table_id !== undefined && data.table_id !== null) {
@@ -80,25 +106,24 @@ function mapFirestoreOrder(docSnap) {
   }
 
   return {
-    id:          Number(data.order_id ?? docSnap.id),
-    orderId:     Number(data.order_id ?? docSnap.id),
+    id: Number(data.order_id ?? docSnap.id),
+    orderId: Number(data.order_id ?? docSnap.id),
     tableNumber: tableNumber === "N/A" ? "N/A" : tableNumber.padStart(3, "0"),
-    tableLabel:  tableNumber === "N/A" ? "Unknown Table" : `Table ${tableNumber}`, // ✅ added for notifications
-    status:      String(data.order_status || "PENDING"),
-    items,
-    totalAmount: Number(data.total_amount ?? calcOrderTotal(items)),
+    tableLabel: tableNumber === "N/A" ? "Unknown Table" : `Table ${tableNumber}`,
+    status: String(data.order_status || "PENDING"),
+    items: itemsWithCategories, // Use the updated items array
+    totalAmount: Number(data.total_amount ?? calcOrderTotal(itemsWithCategories)),
 
     createdAt:
       typeof data.o_timestamp?.toDate === "function"
         ? data.o_timestamp.toDate()
         : new Date(),
 
-    // NEW: Pull the new timestamps if they exist in the DB
     preparingAt:
       typeof data.preparing_at?.toDate === "function"
         ? data.preparing_at.toDate()
         : null,
-    
+
     completedAt:
       typeof data.completed_at?.toDate === "function"
         ? data.completed_at.toDate()
@@ -108,9 +133,9 @@ function mapFirestoreOrder(docSnap) {
       ? `User #${data.user_id}`
       : `Guest #${data.guest_id ?? "N/A"}`,
 
-    orderType:    data.order_type || "N/A",
+    orderType: data.order_type || "N/A",
     instructions: data.special_instructions || "",
-    receiptUrl:   data.receipt_image || "",
+    receiptUrl: data.receipt_image || "",
   };
 }
 
@@ -156,7 +181,6 @@ export async function updateOrderStatusRecord(
       receiptUrl = await uploadReceiptImage(receiptFile, orderId);
     }
 
-    // NEW: Construct the payload and add timestamps automatically
     const updatePayload = {
       order_status: newStatus,
       ...(receiptUrl && { receipt_image: receiptUrl }),
@@ -168,10 +192,8 @@ export async function updateOrderStatusRecord(
       updatePayload.completed_at = serverTimestamp();
     }
 
-    // Write to Firebase
     await updateDoc(doc(db, "tbl_orders", String(orderId)), updatePayload);
 
-    // ✅ Fire notification after successful Firestore update
     await notifyOrderStatusUpdate({
       orderId,
       tableLabel,
