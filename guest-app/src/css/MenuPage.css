@@ -212,13 +212,13 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 550px;
+  width: 1000px;
   max-width: 100%;
   background: #fff;
   border-top: 1px solid #e5e5e5;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: end;
   padding: 12px 20px;
   z-index: 10;
   box-shadow: 0 -2px 8px rgba(0,0,0,.07);

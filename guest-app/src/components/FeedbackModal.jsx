@@ -13,11 +13,18 @@ export default function FeedbackModal({ onClose }) {
   };
 
   const handleSend = () => {
-    const subject = encodeURIComponent(name.trim() + " - Submitted a Feedback" || "Customer Feedback");
-    const body = encodeURIComponent(
-      `Name: ${name.trim()}\nEmail: ${email.trim()}\nMobile: ${mobile.trim()}\n\nFeedback:\n${feedback.trim()}`
+    const subject = encodeURIComponent(
+      (name.trim() ? name.trim() + " - Submitted a Feedback" : "Customer Feedback")
     );
-    window.location.href = `mailto:komplexcafe.feedback@gmail.com?subject=${subject}&body=${body}`;
+    const body = encodeURIComponent(
+      `Name: ${name.trim()}\nEmail: ${email.trim()}\nMobile: ${mobile.trim() || "N/A"}\n\nFeedback:\n${feedback.trim()}`
+    );
+    const gmailUrl =
+      `https://mail.google.com/mail/?view=cm&fs=1` +
+      `&to=komplexcafe.feedback@gmail.com` +
+      `&su=${subject}` +
+      `&body=${body}`;
+    window.open(gmailUrl, "_blank", "noopener,noreferrer");
     setSent(true);
   };
 
@@ -31,7 +38,7 @@ export default function FeedbackModal({ onClose }) {
         {sent ? (
           <div className="fb-sent">
             <span className="fb-sent-icon">💌</span>
-            <p className="fb-sent-text">Your mail app should have opened with your feedback. Thank you!</p>
+            <p className="fb-sent-text">Gmail should have opened with your feedback ready to send. Thank you!</p>
             <button className="fb-btn-done" onClick={onClose}>Done</button>
           </div>
         ) : (

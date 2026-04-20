@@ -154,7 +154,7 @@ export default function PaymentType() {
 
     const tableLabel = orderType === "take_out"
       ? "Take Out"
-      : tableId ? `Table ${tableId}` : "Unknown Table";
+      : finalTableId ? `Table ${finalTableId}` : "Unknown Table";
     await notifyNewOrder({ orderId: newOrderId, tableLabel });
 
     return { newOrderId, newPaymentId };
