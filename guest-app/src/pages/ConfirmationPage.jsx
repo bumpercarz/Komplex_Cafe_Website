@@ -47,6 +47,37 @@ const FALLBACK = {
   sub:    "Please save this reference number to claim your order.",
 };
 
+/* ── Addon/dip/sweetness keywords to detect indented items ── */
+const INDENT_CATEGORIES = ["add-on", "addon", "dip", "sweetness", "syrup", "extra"];
+
+/* ── Helpers to bucket raw items array from Firestore ── */
+const isIndentItem = (name = "") =>
+  INDENT_CATEGORIES.some((k) => name.toLowerCase().includes(k));
+
+/**
+ * Groups the flat items array saved in Firestore into:
+ * [ { main: {name,price,qty}, subs: [{name,price,qty}] } ]
+ *
+ * Strategy: every item whose name does NOT look like an add-on/dip/sweetness
+ * starts a new group; subsequent items that do look like one are attached as subs.
+ */
+const groupItems = (items = []) => {
+  const groups = [];
+  items.forEach((item) => {
+    if (!isIndentItem(item.name) ) {
+      groups.push({ main: item, subs: [] });
+    } else if (groups.length > 0) {
+      groups[groups.length - 1].subs.push(item);
+    } else {
+      // Edge case: sub with no parent
+      groups.push({ main: item, subs: [] });
+    }
+  });
+  return groups;
+};
+
+const fmt = (n) => `₱${Number(n ?? 0).toFixed(2)}`;
+
 /* ── Feedback Modal ── */
 export default function ConfirmationPage() {
   const location  = useLocation();
@@ -55,6 +86,8 @@ export default function ConfirmationPage() {
 
   const [orderStatus,     setOrderStatus]     = useState(null);
   const [referenceNumber, setReferenceNumber] = useState(null);
+  const [orderItems,      setOrderItems]      = useState([]);
+  const [totalAmount,     setTotalAmount]     = useState(null);
   const [showFeedback,    setShowFeedback]    = useState(false);
 
   const isDone = orderStatus === "COMPLETED" || orderStatus === "CANCELLED";
@@ -63,15 +96,12 @@ export default function ConfirmationPage() {
 
   /* ── Block browser back button until order is done ── */
   useEffect(() => {
-    // Push an extra history entry so the first "back" just re-lands here
     window.history.pushState(null, "", window.location.href);
 
     const handlePopState = () => {
       if (isDoneRef.current) {
-        // Order is done — allow navigation but send to menu
         navigate("/menu", { replace: true });
       } else {
-        // Not done — push state again to trap them here
         window.history.pushState(null, "", window.location.href);
       }
     };
@@ -87,10 +117,12 @@ export default function ConfirmationPage() {
     const orderRef = doc(db, "tbl_orders", String(orderId));
     const unsub = onSnapshot(orderRef, (snap) => {
       if (!snap.exists()) return;
-      const status = snap.data().order_status ?? null;
+      const data = snap.data();
+      const status = data.order_status ?? null;
       setOrderStatus(status);
+      setOrderItems(data.items ?? []);
+      setTotalAmount(data.total_amount ?? null);
 
-      // Clear active order from session when done
       if (status === "COMPLETED" || status === "CANCELLED") {
         sessionStorage.removeItem("active_order_id");
       }
@@ -113,6 +145,7 @@ export default function ConfirmationPage() {
   }, [paymentId]);
 
   const { icon, header, sub } = STATUS_CONFIG[orderStatus] ?? FALLBACK;
+  const groups = groupItems(orderItems);
 
   return (
     <div className="confirmation-wrapper">
@@ -130,6 +163,37 @@ export default function ConfirmationPage() {
             )}
 
             <p className="confirmation-subtitle">{sub}</p>
+
+            {/* ── Order Summary ── */}
+            {groups.length > 0 && (
+              <div className="order-summary">
+                <h3 className="order-summary-title">Order Summary</h3>
+                <div className="order-summary-list">
+                  {groups.map((group, i) => (
+                    <div key={i} className="order-summary-group">
+                      {/* Main item */}
+                      <div className="order-summary-row order-summary-main">
+                        <span className="order-summary-qty">×{group.main.qty ?? 1}</span>
+                        <span className="order-summary-name">{group.main.name}</span>
+                        <span className="order-summary-price">{fmt(group.main.price * (group.main.qty ?? 1))}</span>
+                      </div>
+                      {/* Indented subs */}
+                      {group.subs.map((sub, j) => (
+                        <div key={j} className="order-summary-row order-summary-sub">
+                          <span className="order-summary-qty">×{sub.qty ?? 1}</span>
+                          <span className="order-summary-name">{sub.name}</span>
+                          <span className="order-summary-price">{fmt(sub.price * (sub.qty ?? 1))}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+                <div className="order-summary-total">
+                  <span>Total</span>
+                  <span>{fmt(totalAmount)}</span>
+                </div>
+              </div>
+            )}
 
             {isDone && (
               <div className="fb-trigger-wrap">

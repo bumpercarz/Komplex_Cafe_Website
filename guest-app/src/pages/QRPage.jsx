@@ -9,6 +9,9 @@ import NavBar from "../components/NavBar";
 import UploadReceiptPopup from "../components/UploadReceiptPopup";
 import { notifyNewOrder } from "../services/notificationService";
 
+
+import komplexQR from "../assets/komplexQR.png";
+
 const getSessionGuestId = () => {
   const existing = sessionStorage.getItem("guest_id");
   return existing ? Number(existing) : null;
@@ -31,9 +34,6 @@ export default function QRPage() {
 
     const totalAmount = cart.reduce((s, e) => s + e.lineTotal, 0);
     const tableId = sessionStorage.getItem("table_id");
-
-    const PLACEHOLDER =
-        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='80' height='80' fill='%23666769'/%3E%3C/svg%3E";
 
     const submitOrder = async (receiptUrl = "") => {
         const existingGuestId = getSessionGuestId();
@@ -147,7 +147,7 @@ export default function QRPage() {
             <div className="qr-page">
                 <section className="qr-white">
                     <h2 className="qr-header">Instapay</h2>
-                    <img src={PLACEHOLDER} alt="QR Code" />
+                    <img src={komplexQR} alt="QR Code" />
 
                     <p className="qr-subtitle">We accept Gcash and PayMaya!</p>
 

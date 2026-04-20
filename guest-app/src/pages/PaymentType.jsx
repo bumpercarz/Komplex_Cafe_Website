@@ -9,7 +9,6 @@ import {
 import { db } from "../firebase.js";
 import "../css/PaymentTypePage.css";
 import NavBar from "../components/NavBar";
-import UploadReceiptPopup from "../components/UploadReceiptPopup";
 
 import cashCounter from "../assets/cashcounter.png";
 import onlinePayment from "../assets/onlinepayment.png";
@@ -39,9 +38,8 @@ export default function PaymentType() {
   const { cart = [], orderType, receiveAt, instructions = "" } =
     location.state ?? {};
 
-  const [submitting, setSubmitting]             = useState(false);
-  const [error, setError]                       = useState(null);
-  const [showReceiptPopup, setShowReceiptPopup] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError]           = useState(null);
 
   const totalAmount = cart.reduce((s, e) => s + e.lineTotal, 0);
   
@@ -176,23 +174,6 @@ export default function PaymentType() {
     }
   };
 
-  const handleReceiptSubmit = async (receiptUrl) => {
-    setSubmitting(true);
-    setError(null);
-    try {
-      const { newOrderId, newPaymentId } = await submitOrder(1, receiptUrl);
-      setShowReceiptPopup(false);
-      navigate("/confirmation", {
-        state: { orderId: newOrderId, paymentId: newPaymentId },
-      });
-    } catch (err) {
-      console.error("Failed to submit order:", err);
-      setError("Something went wrong. Please try again.");
-      setSubmitting(false);
-      throw err;
-    }
-  };
-
   return (
     <div className="wrapper">
       <NavBar />
@@ -224,7 +205,7 @@ export default function PaymentType() {
               id="online"
               value={1}
               disabled={submitting}
-              onClick={() => setShowReceiptPopup(true)}
+              onClick={() => navigate("/qrpage", { state: { cart, orderType, receiveAt, instructions } })}
             >
               <img src={onlinePayment} alt="Online Payment" />
               <p className="btn-text">Online Payment</p>
@@ -232,13 +213,6 @@ export default function PaymentType() {
           </div>
         </section>
       </div>
-
-      {showReceiptPopup && (
-        <UploadReceiptPopup
-          onClose={() => setShowReceiptPopup(false)}
-          onSubmit={handleReceiptSubmit}
-        />
-      )}
     </div>
   );
 }
