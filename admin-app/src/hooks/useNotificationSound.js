@@ -74,6 +74,7 @@ export function useNotificationSound(role = "ADMIN") {
     registerServiceWorkerPush().then((sub) => { swSubscriptionRef.current = sub; });
   }, []);
 
+  // Unlock Audio on user interaction to bypass browser autoplay blocks
   useEffect(() => {
     function unlock() {
       if (audioUnlockedRef.current) return;
@@ -183,8 +184,26 @@ export function useNotificationSound(role = "ADMIN") {
 
       const urgentTypes = ["order_new"];
 
-      const unreadOrders = docs.filter((d) =>  urgentTypes.includes(d.type) && !d.read);
-      const unreadOthers = docs.filter((d) => !urgentTypes.includes(d.type) && !d.read);
+      // --- THE NEW FIX IS HERE ---
+      // Check if it's explicitly 'order_new' OR if the title/message contains 'PENDING'
+      const unreadOrders = docs.filter((d) => {
+        const isUrgentType = urgentTypes.includes(d.type);
+        const isPendingStatus = 
+          String(d.title).toUpperCase().includes("PENDING") || 
+          String(d.message).toUpperCase().includes("PENDING");
+          
+        return (isUrgentType || isPendingStatus) && !d.read;
+      });
+
+      const unreadOthers = docs.filter((d) => {
+        const isUrgentType = urgentTypes.includes(d.type);
+        const isPendingStatus = 
+          String(d.title).toUpperCase().includes("PENDING") || 
+          String(d.message).toUpperCase().includes("PENDING");
+          
+        return !(isUrgentType || isPendingStatus) && !d.read;
+      });
+      // ----------------------------
 
       setUnreadOrderNotifs(unreadOrders);
 

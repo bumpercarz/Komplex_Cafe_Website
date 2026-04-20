@@ -31,7 +31,6 @@ export default function AdminOrderPage() {
 
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Use the hook and pull out the syncing variables
   const { unreadOrderNotifs, dismissToast } = useNotificationSound("ADMIN");
 
   useEffect(() => {
