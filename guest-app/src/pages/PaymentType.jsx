@@ -115,7 +115,7 @@ export default function PaymentType() {
           })),
         ]),
         total_amount:  totalAmount,
-        order_status:  paymentType === 1 ? "PROCESSING PAYMENT" : "PENDING",
+        order_status:  "PROCESSING PAYMENT",
         order_type:    orderType ?? null,
         receive_at:    receiveAt ?? null,
         special_instructions:  instructions || null,

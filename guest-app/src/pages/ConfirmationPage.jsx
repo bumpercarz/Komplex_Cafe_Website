@@ -9,15 +9,10 @@ import FeedbackModal from "../components/FeedbackModal";
 
 /* ── Status config ── */
 const STATUS_CONFIG = {
-  "PENDING": {
-    icon:    <FaClock size={50} />,
-    header:  "Your order has been placed!",
-    sub:     "We're waiting to confirm your order. Please pay at the counter. Do not leave or close this page.",
-  },
   "PROCESSING PAYMENT": {
     icon:    <FaSpinner size={50} className="spin" />,
     header:  "Processing your payment…",
-    sub:     "Please wait while we verify your payment. Do not leave or close this page.",
+    sub:     "Please wait while we confirm your payment. Please pay at the counter if applicable. Do not leave or close this page.",
   },
   "PREPARING": {
     icon:    <FaCoffee size={50} />,
@@ -67,7 +62,17 @@ const fmt = (n) => `₱${Number(n ?? 0).toFixed(2)}`;
 export default function ConfirmationPage() {
   const location  = useLocation();
   const navigate  = useNavigate();
-  const { orderId, paymentId } = location.state ?? {};
+  const { orderId: stateOrderId, paymentId: statePaymentId } = location.state ?? {};
+
+  // Fall back to sessionStorage on refresh
+  const orderId   = stateOrderId   ?? (sessionStorage.getItem("confirmation_order_id")   ? Number(sessionStorage.getItem("confirmation_order_id"))   : null);
+  const paymentId = statePaymentId ?? (sessionStorage.getItem("confirmation_payment_id") ? Number(sessionStorage.getItem("confirmation_payment_id")) : null);
+
+  // Persist whenever we have fresh values from navigation state
+  useEffect(() => {
+    if (stateOrderId)   sessionStorage.setItem("confirmation_order_id",   String(stateOrderId));
+    if (statePaymentId) sessionStorage.setItem("confirmation_payment_id", String(statePaymentId));
+  }, [stateOrderId, statePaymentId]);
 
   const [orderStatus,     setOrderStatus]     = useState(null);
   const [referenceNumber, setReferenceNumber] = useState(null);
@@ -110,6 +115,8 @@ export default function ConfirmationPage() {
 
       if (status === "COMPLETED" || status === "CANCELLED") {
         sessionStorage.removeItem("active_order_id");
+        sessionStorage.removeItem("confirmation_order_id");
+        sessionStorage.removeItem("confirmation_payment_id");
       }
     });
 

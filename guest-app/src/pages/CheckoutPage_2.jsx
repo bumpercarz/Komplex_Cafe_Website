@@ -19,7 +19,7 @@ export default function CheckoutPage_2() {
     const tableId = sessionStorage.getItem("table_id");
 
     const [orderType, setOrderType] = useState(!tableId ? "take_out" : null);
-    const [receiveAt, setReceiveAt] = useState(null);
+    const [receiveAt, setReceiveAt] = useState(!tableId ? "counter" : null);
     const [instructions, setInstructions] = useState("");
 
     const canContinue = orderType === "take_out" || (orderType === "dine_in" && receiveAt);
