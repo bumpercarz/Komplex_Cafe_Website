@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { getFunctions } from "firebase/functions"; // NEW: Import Cloud Functions
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -23,6 +24,9 @@ export const auth = getAuth(app);
 // Changed: Use storage bucket from environment variables or default
 const storageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "komplexcafeoops.firebasestorage.app";
 export const storage = getStorage(app, `gs://${storageBucket}`);
+
+// NEW: Initialize Functions
+export const functions = getFunctions(app);
 
 // Added: Export app for use in other files if needed
 export default app;
