@@ -9,7 +9,7 @@ import NavBar from "../components/NavBar";
 import UploadReceiptPopup from "../components/UploadReceiptPopup";
 import { notifyNewOrder } from "../services/notificationService";
 
-import komplexQR from "../assets/komplexQR.png";
+import komplexQR from "../assets/komplexQR.jpg";
 
 const getSessionGuestId = () => {
   const existing = sessionStorage.getItem("guest_id");
