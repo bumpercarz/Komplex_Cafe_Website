@@ -203,6 +203,28 @@
   min-width: 20px;
   text-align: center;
 }
+.qty-input {
+  font-size: 16px;
+  font-weight: 700;
+  width: 52px;
+  text-align: center;
+  border: 2px solid #e07820;
+  border-radius: 8px;
+  padding: 3px 6px;
+  outline: none;
+  background: #fff;
+  color: #1a1a1a;
+  -moz-appearance: textfield;
+}
+.qty-input::-webkit-inner-spin-button,
+.qty-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.qty-input:focus {
+  border-color: #c96a18;
+  box-shadow: 0 0 0 3px rgba(224, 120, 32, 0.18);
+}
 
 /* ─── Add-ons & Dips shared row styles ─────────────────────── */
 .popup-addons,

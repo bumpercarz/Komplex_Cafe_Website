@@ -138,8 +138,22 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
           <div className="popup-section-label">Quantity</div>
           <div className="popup-qty-row">
             <button className="qty-btn" onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
-            <span className="qty-display">{qty}</span>
-            <button className="qty-btn" onClick={() => setQty((q) => q + 1)}>+</button>
+            <input
+              className="qty-input"
+              type="number"
+              min="1"
+              value={qty}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val) && val >= 1) setQty(val);
+                else if (e.target.value === "") setQty("");
+              }}
+              onBlur={(e) => {
+                const val = parseInt(e.target.value, 10);
+                setQty(!isNaN(val) && val >= 1 ? val : 1);
+              }}
+            />
+            <button className="qty-btn" onClick={() => setQty((q) => Math.max(1, (parseInt(q) || 1) + 1))}>+</button>
           </div>
         </div>
 
