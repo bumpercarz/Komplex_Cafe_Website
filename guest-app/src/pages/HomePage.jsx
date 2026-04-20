@@ -10,7 +10,7 @@ import NavBar from "../components/NavBar";
 // ✅ Image imports
 import homepageAbout from "../assets/homepageAbout.png";
 import homepageOpenbg from "../assets/homePageOpenbg.png";
-import homePageContact from "../assets/homePageContact.png";
+import homePageContact from "../assets/homePageContact.jpg";
 
 const HOURS = [
   ["Weekdays:", "10:00 AM - 2:00 AM"],
