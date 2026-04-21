@@ -40,6 +40,7 @@ function ModalShell({ children, onClose }) {
 /* User Form Modal */
 function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, isSubmitting }) {
   const isEditingOwner = mode === "edit" && form.role === "OWNER";
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <ModalShell onClose={onClose}>
@@ -92,13 +93,35 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
                   {(form.password || "").length}/16
                 </span>
               </div>
-              <input 
-                type="password" 
-                name="password" 
-                value={form.password || ""} 
-                onChange={onChange} 
-                maxLength={16}
-              />
+              <div className="password-wrapper">
+                <input 
+                  type={showPassword ? "text" : "password"}
+                  name="password" 
+                  value={form.password || ""} 
+                  onChange={onChange} 
+                  maxLength={16}
+                  className="password-input"
+                />
+                <button
+                  type="button"
+                  className="toggle-password-btn"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label="Toggle password visibility"
+                  tabIndex="-1"
+                >
+                  {showPassword ? (
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                      <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                  )}
+                </button>
+              </div>
               <small style={{ marginTop: "-6px", color: "#666" }}>
                 {mode === "edit" ? "Leave blank to keep current. (8-16 chars)" : "Must be 8-16 characters"}
               </small>
@@ -297,7 +320,6 @@ export default function AdminUsersPage() {
   async function confirmDelete(id) {
     setIsDeleting(true);
     try {
-      // Find the user data before deleting for the notification
       const userToDelete = users.find(u => u.id === id);
 
       const result = await deleteUserAccount(id);
@@ -306,7 +328,6 @@ export default function AdminUsersPage() {
         return;
       }
 
-      // NEW: Trigger Notification
       if (userToDelete) {
         await notifyUserDelete({
           userName: userToDelete.name,
@@ -338,7 +359,6 @@ export default function AdminUsersPage() {
         return;
       }
 
-      // NEW: Trigger Notification
       if (userToTransferTo) {
         await notifyUserUpdate({
           userName: userToTransferTo.name,
@@ -365,7 +385,7 @@ export default function AdminUsersPage() {
     let newValue = value;
 
     if (name === "contactNumber") {
-      newValue = newValue.replace(/\D/g, ""); // Allow only digits
+      newValue = newValue.replace(/\D/g, "");
       if (newValue.length > 11) newValue = newValue.slice(0, 11);
     }
 
@@ -399,7 +419,6 @@ export default function AdminUsersPage() {
       if (modal.type === "add") {
         result = await createUserAccount(form);
 
-        // NEW: Trigger Add Notification
         if (result?.ok) {
           await notifyUserAdd({
             userName: form.name,
@@ -410,7 +429,6 @@ export default function AdminUsersPage() {
       } else {
         result = await updateUserAccount(modal.userId, form);
 
-        // NEW: Figure out what changed for the notification
         if (result?.ok && selectedUser) {
           let changes = [];
           if (selectedUser.role !== form.role) changes.push(`role to ${form.role}`);

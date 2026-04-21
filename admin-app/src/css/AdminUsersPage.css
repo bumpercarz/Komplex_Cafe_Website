@@ -317,8 +317,6 @@
   background: #c03528;
 }
 
-/* FIX: match amp classes used in JSX */
-
 .amp-modalBackdrop {
   position: fixed;
   inset: 0;
@@ -439,20 +437,45 @@
     width: 100%;
   }
 }
+/* ==================================
+   Password Visibility Toggle
+================================== */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  display: block;
+}
 
-.amp-labelRow {
+.password-input {
+  width: 100% !important;
+  height: 44px !important; /* Restores the tall input height */
+  background: #ececec !important; /* Restores the grey background */
+  border: none !important;
+  outline: none !important;
+  border-radius: 10px !important; /* Restores rounded corners */
+  font-size: 16px !important;
+  color: #333 !important;
+  /* 14px left padding to match others, 45px right padding so text doesn't hit the eye icon */
+  padding: 0 45px 0 14px !important; 
+  box-sizing: border-box !important;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent !important; /* Fixes the weird square border */
+  border: none !important;            /* Fixes the weird square border */
+  outline: none !important;
+  padding: 0;
+  color: rgb(114, 114, 114);
+  cursor: pointer;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
 }
 
-.amp-charCount {
-  font-size: 13px;
-  color: #777;
-  margin-bottom: 2px;
-}
-
-.amp-charCountMax {
-  color: #df4735;
-  font-weight: 700;
+.toggle-password-btn:hover {
+  color: #333;
 }
