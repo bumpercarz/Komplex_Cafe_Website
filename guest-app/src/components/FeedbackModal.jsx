@@ -1,65 +1,82 @@
 import { useState } from "react";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "../firebase";
+import emailjs from '@emailjs/browser';
 import "../css/ConfirmationPage.css";
 
 export default function FeedbackModal({ onClose }) {
-  const [name,     setName]     = useState("");
-  const [email,    setEmail]    = useState("");
-  const [mobile,   setMobile]   = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
   const [feedback, setFeedback] = useState("");
-  const [status,   setStatus]   = useState("idle"); // idle | sending | sent | error
+  const [status, setStatus] = useState("idle"); // idle | sending | sent | error
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) onClose();
   };
 
+  // 1. Restrict input to numbers only
+  const handleMobileChange = (e) => {
+    const numericValue = e.target.value.replace(/[^0-9]/g, "");
+    setMobile(numericValue);
+  };
+
   const handleSend = async () => {
     setStatus("sending");
     setErrorMsg("");
+    
     try {
-      const sendFeedbackEmail = httpsCallable(functions, "sendFeedbackEmail");
-      await sendFeedbackEmail({
-        name:     name.trim(),
-        email:    email.trim(),
-        mobile:   mobile.trim(),
-        feedback: feedback.trim(),
-      });
+      // 🔴 REPLACE THESE WITH YOUR ACTUAL EMAILJS KEYS 🔴
+      const serviceId = "service_q1glt0o"; 
+      const templateId = "template_85cpp7w";
+      const publicKey = "N0JSU43_LIisNJ4Yb";
+
+      const templateParams = {
+        user_name: name.trim() || "Guest",
+        user_email: email.trim() || "No email provided",
+        user_mobile: mobile.trim() || "No mobile provided",
+        user_message: feedback.trim(),
+      };
+
+      await emailjs.send(serviceId, templateId, templateParams, publicKey);
+      
       setStatus("sent");
     } catch (err) {
-      setErrorMsg(err?.message || "Something went wrong. Please try again.");
+      console.error("EmailJS Error:", err);
+      setErrorMsg(err?.text || "Something went wrong. Please try again.");
       setStatus("error");
     }
   };
 
-  const canSend = name.trim() && email.trim() && feedback.trim();
+  // 2. Validation Logic: It is valid if it's empty OR (starts with 09 AND is 11 digits)
+  const isMobileValid = mobile === "" || (mobile.startsWith("09") && mobile.length === 11);
+  const canSend = name.trim() && email.trim() && feedback.trim() && isMobileValid;
 
   return (
     <div className="fb-overlay" onClick={handleOverlayClick}>
       <div className="fb-modal">
-        <button className="fb-close" onClick={onClose} aria-label="Close">✕</button>
-
         {status === "sent" ? (
-          <div className="fb-sent">
-            <span className="fb-sent-icon">💌</span>
-            <p className="fb-sent-text">Your feedback has been sent. Thank you!</p>
-            <button className="fb-btn-done" onClick={onClose}>Done</button>
+          <div className="fb-success-view" style={{ textAlign: "center", padding: "20px 0" }}>
+            <h3>Thank You! ☕</h3>
+            <p>Your feedback has been sent successfully.</p>
+            <button 
+              className="fb-btn-send" 
+              style={{ marginTop: "15px" }} 
+              onClick={onClose}
+            >
+              Close
+            </button>
           </div>
         ) : (
           <>
-            <h3 className="fb-title">Share Your Experience</h3>
-            <p className="fb-subtitle">We'd love to hear from you!</p>
-
             <div className="fb-field">
               <label className="fb-label">Name <span className="fb-required">*</span></label>
               <input
                 className="fb-input"
                 type="text"
-                placeholder="Your name"
+                placeholder="Juan Dela Cruz"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                maxLength={80}
+                maxLength={100}
               />
             </div>
 
@@ -68,7 +85,7 @@ export default function FeedbackModal({ onClose }) {
               <input
                 className="fb-input"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="juan@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 maxLength={100}
@@ -82,9 +99,16 @@ export default function FeedbackModal({ onClose }) {
                 type="tel"
                 placeholder="09XX XXX XXXX"
                 value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
-                maxLength={20}
+                onChange={handleMobileChange}
+                maxLength={11} // 3. Enforce max length HTML constraint
               />
+              
+              {/* 4. Display warning if user starts typing an invalid number */}
+              {mobile.length > 0 && (!mobile.startsWith("09") || mobile.length !== 11) && (
+                <span style={{ color: "#d9534f", fontSize: "12px", marginTop: "4px", display: "block" }}>
+                  Must start with 09 and be exactly 11 digits.
+                </span>
+              )}
             </div>
 
             <div className="fb-field">

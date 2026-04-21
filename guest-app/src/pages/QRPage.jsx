@@ -31,7 +31,7 @@ export default function QRPage() {
     const [error, setError]           = useState(null);
     const qrRef                       = useRef(null);
 
-    const handleDownloadQR = () => {
+    const handleDownloadQR = async () => {
         const img = qrRef.current;
         if (!img) return;
 
@@ -41,6 +41,28 @@ export default function QRPage() {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
 
+        // 1. Try the Native Web Share API (Mobile Devices)
+        try {
+            // Convert the canvas to a Blob (file data)
+            const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+            const file = new File([blob], "komplex-cafe-qr.png", { type: "image/png" });
+
+            // Check if the device's browser supports sharing files
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: "Komplex Cafe QR",
+                });
+                return; // Stop here if the native share sheet successfully opened
+            }
+        } catch (error) {
+            console.log("Web Share API failed or user cancelled:", error);
+            // If the user just hit 'cancel' on the share sheet, we don't necessarily 
+            // want to force the fallback download, but you can leave this empty to fail gracefully.
+        }
+
+        // 2. Fallback for Desktop / Older Browsers
+        // If the Web Share API isn't supported, do the standard browser download
         const link = document.createElement("a");
         link.download = "komplex-cafe-qr.png";
         link.href = canvas.toDataURL("image/png");
