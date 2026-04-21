@@ -26,7 +26,7 @@ const ContactUs = () => {
             {/* Contact Us Header */}
             <section className="contacts">
                 <h1 className="contacts_Title">Contact Us</h1>
-                <p className="contacts_text">
+                <p className="contacts_description">
                     Reach out to us through our contacts below. 
                     We will try and send a reply as soon as we are 
                     available.

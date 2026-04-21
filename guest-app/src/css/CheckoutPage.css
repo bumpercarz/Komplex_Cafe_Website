@@ -224,7 +224,8 @@
 /* ─── Sticky footer ─────────────────────────────────────────── */
 .checkout-footer {
     flex-shrink: 0;           /* never squish the footer */
-    width: 100%;
+    width: 1000px;
+    max-width: 100%;
     background: #fff;
     border-top: 1px solid #e5e5e5;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, .07);
@@ -403,6 +404,7 @@
 /* ─── Responsive ────────────────────────────────────────────── */
 @media (min-width: 501px) {
     .checkout-page   { max-width: 100%; }
+    .checkout-footer { max-width: 100%; }
     .checkout-footer-buttons {
         align-items: end;
         justify-content: end;

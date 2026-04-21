@@ -1,7 +1,7 @@
 .wrapperContact {
   font-family: 'Golos', sans-serif;
-  width: 100%;
-  /* max-width: 550px; */
+  width: 1000px;
+  max-width: 100%;
   left: 50%;
   margin: 0 auto;
   background-color: white;
@@ -20,6 +20,7 @@
 }
 
 .contacts_email_text {
+  margin-top: 10px;
   font-weight: bold;
 }
 
@@ -48,5 +49,11 @@ a, a:visited, a:hover, a:active {
     font-size: 15px;
     font-family: 'inter', sans-serif;
     font-style: italic;
+  }
+}
+
+@media (min-width: 501px) {
+  .contacts {
+    font-size: 1.21em;
   }
 }

@@ -17,6 +17,8 @@ for react icons to display properly in the website
 `npm install firebase`
 to implement firebase
 
+`npm install @emailjs/browser`
+for emails in feedbackmodal
 
 ## How to run
 Use the command in the terminal:
