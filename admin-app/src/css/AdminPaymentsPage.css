@@ -169,8 +169,11 @@
   max-width: 520px;
   background: #efefef;
   border-radius: 12px;
-  overflow: hidden;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+  
+  /* SCROLL FIX APPLIED HERE */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
 .ap-modalSectionTitle {
@@ -265,6 +268,22 @@
 @media (max-width: 600px) {
   .ap-main {
     padding: 0 16px 24px;
+  }
+
+  /* 1. Stop flexbox from clipping the modal off-screen */
+  .ap-modalBackdrop {
+    padding: 16px;
+    align-items: flex-start; 
+    overflow-y: auto; 
+  }
+
+  /* 2. Use dvh (Dynamic Viewport Height) to account for the mobile URL bar */
+  .ap-modal {
+    margin: auto; /* Keeps it centered vertically if the content is short */
+    max-height: calc(100dvh - 120px); 
+    
+    /* Fallback for older phones that don't support dvh */
+    height: auto;
   }
 
   .ap-modalSectionTitle {

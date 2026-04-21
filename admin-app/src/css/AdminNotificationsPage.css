@@ -344,6 +344,20 @@
     font-size: 22px;
   }
 
+  /* == MODAL SCROLL FIX START == */
+  .an-modalBackdrop {
+    padding: 16px;
+    align-items: flex-start; /* Stops flexbox from chopping off the top/bottom */
+  }
+
+  .an-modal {
+    margin: auto;
+    max-height: calc(100dvh - 120px); /* Your winning calculation! */
+    overflow-y: auto; /* Enables internal scrolling */
+    height: auto;
+  }
+  /* == MODAL SCROLL FIX END == */
+
   .an-modalBody {
     padding: 18px;
   }
