@@ -12,11 +12,10 @@ const IS_CHURROS = (item) => item?.m_name?.toLowerCase().includes("churros");
 const IS_SWEETENED_DRINK = (item) => {
   if (!IS_DRINK(item)) return false;
   const base = item?.baseName?.toLowerCase() ?? item?.m_name?.toLowerCase() ?? "";
-  return (
-    base.includes("americano") ||
-    base.includes("amerikano") ||
-    base.includes("latte")
-  );
+  const isAmericano = base.includes("americano") || base.includes("amerikano");
+  // Match plain "Latte" only — not flavored variants like Spanish Latte, Oreo Latte, etc.
+  const isPlainLatte = /^latte$/.test(base.trim());
+  return isAmericano || isPlainLatte;
 };
 
 /**
