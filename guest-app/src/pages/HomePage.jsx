@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
+import { TbFileSad } from "react-icons/tb";
 // ✅ Ensure this path points to your actual Firebase configuration file
 import { db } from "../firebase";
 import "../css/Fonts.css";
@@ -77,13 +78,13 @@ const HomePage = () => {
         justifyContent: "center",
         height: "100vh",
         textAlign: "center",
-        backgroundColor: "#1a1a1a",
-        color: "#fff",
+        backgroundColor: "rgb(221, 221, 221)",
         fontFamily: "sans-serif",
-        padding: "20px"
+        padding: "20px" 
       }}>
-        <h1 style={{ color: "#ff4d4d" }}>Access Denied</h1>
-        <p style={{ fontSize: "1.2rem", maxWidth: "400px" }}>{errorMsg}</p>
+        <TbFileSad size={100} />
+        <h1 style={{ color: "#e2491f", fontFamily: "gliker", fontSize: "50px" }}>Access Denied</h1>
+        <p style={{ fontSize: "1.2rem", maxWidth: "400px", color: "black" }}>{errorMsg}</p>
         <button
           className="btn--orange"
           style={{ marginTop: "20px" }}
