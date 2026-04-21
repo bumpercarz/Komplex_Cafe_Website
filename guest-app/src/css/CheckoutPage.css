@@ -408,6 +408,6 @@
     .checkout-footer-buttons {
         align-items: end;
         justify-content: end;
-        gap: 50px;
+        gap: 12px;
     }
 }

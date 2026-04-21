@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 // ✅ Ensure this path points to your actual Firebase configuration file
-import { db } from "../firebase"; 
+import { db } from "../firebase";
 import "../css/Fonts.css";
 import "../css/HomePage.css";
 import NavBar from "../components/NavBar";
@@ -21,7 +21,7 @@ const HOURS = [
 const HomePage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  
+
   // New States for Verification
   const [isVerifying, setIsVerifying] = useState(true);
   const [errorMsg, setErrorMsg] = useState(null);
@@ -71,11 +71,11 @@ const HomePage = () => {
   if (errorMsg) {
     return (
       <div style={{
-        display: "flex", 
-        flexDirection: "column", 
-        alignItems: "center", 
-        justifyContent: "center", 
-        height: "100vh", 
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
         textAlign: "center",
         backgroundColor: "#1a1a1a",
         color: "#fff",
@@ -84,8 +84,8 @@ const HomePage = () => {
       }}>
         <h1 style={{ color: "#ff4d4d" }}>Access Denied</h1>
         <p style={{ fontSize: "1.2rem", maxWidth: "400px" }}>{errorMsg}</p>
-        <button 
-          className="btn--orange" 
+        <button
+          className="btn--orange"
           style={{ marginTop: "20px" }}
           onClick={() => window.location.reload()}
         >
@@ -100,9 +100,9 @@ const HomePage = () => {
   if (isVerifying) {
     return (
       <div style={{
-        display: "flex", 
-        height: "100vh", 
-        alignItems: "center", 
+        display: "flex",
+        height: "100vh",
+        alignItems: "center",
         justifyContent: "center",
         backgroundColor: "#1a1a1a",
         color: "#fff"
@@ -141,7 +141,7 @@ const HomePage = () => {
       {/* ── About ── */}
       <section className="about">
         <div className="about_img-wrap">
-          <img src={homepageAbout} alt="Coffee drinks" /> 
+          <img src={homepageAbout} alt="Coffee drinks" />
         </div>
         <p className="about_text">
           Here at Komplex Cafe, you can focus on your work while enjoying
