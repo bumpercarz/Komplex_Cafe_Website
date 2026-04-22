@@ -448,10 +448,10 @@
 .password-input {
   width: 100% !important;
   height: 44px !important; /* Restores the tall input height */
-  background: #dcdcdc !important; /* Restores the grey background */
+  background: white !important; /* Restores the grey background */
   border: none !important;
   outline: none !important;
-  border-radius: 10px !important; /* Restores rounded corners */
+  border-radius: 25px !important; /* Restores rounded corners */
   font-size: 16px !important;
   color: #333 !important;
   /* 14px left padding to match others, 45px right padding so text doesn't hit the eye icon */
