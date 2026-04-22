@@ -63,7 +63,7 @@
 /* Titles */
 .title {
   font-family: 'gliker', sans-serif;
-  font-size: 60px;
+  font-size: 48px;
   font-weight: 700;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -77,7 +77,7 @@
   font-weight: 600;
   margin-top: -8px;
   margin-bottom: 30px;
-  margin-left: 240px;
+  margin-left: 160px;
   opacity: 0.9;
   white-space: nowrap;
 }
