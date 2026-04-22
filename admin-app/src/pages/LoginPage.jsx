@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../css/LoginPage.css";
-import bg from "../assets/login-bg.png";
+import bg from "../assets/login-bg.jpg";
 import { validateCredentials } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
