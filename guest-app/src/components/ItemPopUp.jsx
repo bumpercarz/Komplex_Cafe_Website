@@ -188,6 +188,32 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
             </div>
           </div>
         )}
+        
+        {/* Sweetness — americanos & lattes only */}
+        {isSweetenedDrink && sweetness.length > 0 && (
+          <div className="popup-section">
+            <div className="popup-section-label">
+              Sweetness <span className="dip-required">*</span>
+            </div>
+            <div className="popup-dips">
+              {sweetness.map((s) => (
+                <label key={s.docId} className="dip-row">
+                  <input
+                    type="radio"
+                    name="sweetness"
+                    checked={selectedSweetness === s.docId}
+                    onChange={() => setSelectedSweetness(s.docId)}
+                    className="dip-radio"
+                  />
+                  <span className="addon-label">{s.m_name}</span>
+                  <span className="addon-price">
+                    {s.price === 0 ? "Free" : `+${peso(s.price)}`}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Add-ons — drinks only */}
         {isDrink && addons.length > 0 && (
@@ -236,31 +262,7 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
           </div>
         )}
 
-        {/* Sweetness — americanos & lattes only */}
-        {isSweetenedDrink && sweetness.length > 0 && (
-          <div className="popup-section">
-            <div className="popup-section-label">
-              Sweetness <span className="dip-required">*</span>
-            </div>
-            <div className="popup-dips">
-              {sweetness.map((s) => (
-                <label key={s.docId} className="dip-row">
-                  <input
-                    type="radio"
-                    name="sweetness"
-                    checked={selectedSweetness === s.docId}
-                    onChange={() => setSelectedSweetness(s.docId)}
-                    className="dip-radio"
-                  />
-                  <span className="addon-label">{s.m_name}</span>
-                  <span className="addon-price">
-                    {s.price === 0 ? "Free" : `+${peso(s.price)}`}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
+
 
         <div className="popup-footer">
           <span className="popup-total-label">
