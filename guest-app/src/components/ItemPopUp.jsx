@@ -9,6 +9,7 @@ const PLACEHOLDER =
 
 const IS_DRINK   = (item) => item?.category?.toLowerCase() === "drink";
 const IS_CHURROS = (item) => item?.m_name?.toLowerCase().includes("churros");
+const IS_FRAPPE  = (item) => item?.m_name?.toLowerCase().includes("frappe");
 const IS_SWEETENED_DRINK = (item) => {
   if (!IS_DRINK(item)) return false;
   const base = item?.baseName?.toLowerCase() ?? item?.m_name?.toLowerCase() ?? "";
@@ -56,6 +57,7 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
 
   const isDrink         = IS_DRINK(card);
   const isChurros       = IS_CHURROS(card);
+  const isFrappe        = IS_FRAPPE(card);
   const isSweetenedDrink = activeItem ? IS_SWEETENED_DRINK({ ...activeItem, baseName: card.m_name }) : false;
 
   const overlayRef = useRef();
@@ -73,7 +75,7 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
     setSelectedAddons((prev) => ({ ...prev, [docId]: !prev[docId] }));
 
   const basePrice    = activeItem?.price ?? card.price ?? 0;
-  const addonTotal   = isDrink
+  const addonTotal   = isFrappe
     ? addons.filter((a) => selectedAddons[a.docId]).reduce((s, a) => s + a.price, 0)
     : 0;
   const dipTotal     = isChurros && selectedDip
@@ -95,7 +97,7 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
       item:        activeItem,           // actual Firestore item (hot or iced)
       qty,
       temperature: isTagged ? temperature : null,
-      addons:      isDrink ? addons.filter((a) => selectedAddons[a.docId]) : [],
+      addons:      isFrappe ? addons.filter((a) => selectedAddons[a.docId]) : [],
       dips:        isChurros && selectedDip
         ? [dips.find((d) => d.docId === selectedDip)]
         : [],
@@ -215,8 +217,8 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
           </div>
         )}
 
-        {/* Add-ons — drinks only */}
-        {isDrink && addons.length > 0 && (
+        {/* Add-ons — frappes only */}
+        {isFrappe && addons.length > 0 && (
           <div className="popup-section">
             <div className="popup-section-label">Add-ons</div>
             <div className="popup-addons">
