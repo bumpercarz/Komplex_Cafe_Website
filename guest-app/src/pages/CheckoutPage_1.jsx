@@ -67,42 +67,81 @@ export default function CheckoutPage_1() {
           {cart.length === 0 && (
             <p className="checkout-empty">Your cart is empty.</p>
           )}
-          {cart.map((entry, index) => (
-            <div key={entry.cartKey ?? index} className="checkout-item">
-              <div className="checkout-item-top">
-                <span className="checkout-item-name">
-                  {entry.item.m_name
-                    .replace(/^\s*(hot|iced)\s+/i, "")
-                    .replace(/\s*\((hot|iced)\)\s*$/i, "")
-                    .trim()}
-                </span>
-                <span className="checkout-item-price">{peso(entry.lineTotal)}</span>
-              </div>
-              <p className="checkout-item-sub">
-                {peso(entry.item.price)} each × {entry.qty}
-                {entry.temperature && (
-                  <> · {entry.temperature === "hot" ? "☕ Hot" : "🧊 Iced"}</>
-                )}
+          {cart.map((entry, index) => {
+            const baseTotal = entry.item.price * entry.qty;
+            const hasExtras = (entry.addons?.length > 0) || (entry.dips?.length > 0);
+
+            return (
+              <div key={entry.cartKey ?? index} className="checkout-item">
+                {/* ── Main item row ── */}
+                <div className="checkout-item-top">
+                  <span className="checkout-item-name">
+                    {entry.item.m_name
+                      .replace(/^\s*(hot|iced)\s+/i, "")
+                      .replace(/\s*\((hot|iced)\)\s*$/i, "")
+                      .trim()}
+                  </span>
+                  <span className="checkout-item-price">{peso(baseTotal)}</span>
+                </div>
+
+                {/* ── Base price sub-line ── */}
+                <p className="checkout-item-sub">
+                  {peso(entry.item.price)} each × {entry.qty}
+                  {entry.temperature && (
+                    <> · {entry.temperature === "hot" ? "☕ Hot" : "🧊 Iced"}</>
+                  )}
+                  {entry.sweetness?.length > 0 && (
+                    <> · {entry.sweetness.map((s) => s.m_name).join(", ")}</>
+                  )}
+                </p>
+
+                {/* ── Add-ons breakdown ── */}
                 {entry.addons?.length > 0 && (
-                  <> · {entry.addons.map((a) => a.m_name).join(", ")}</>
+                  <div className="checkout-extras">
+                    {entry.addons.map((a, i) => (
+                      <div key={i} className="checkout-extra-row">
+                        <span className="checkout-extra-name">+ {a.m_name}</span>
+                        <span className="checkout-extra-price">
+                          {peso((a.price ?? 0) * entry.qty)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 )}
+
+                {/* ── Dips breakdown ── */}
                 {entry.dips?.length > 0 && (
-                  <> · {entry.dips.map((d) => d.m_name).join(", ")}</>
+                  <div className="checkout-extras">
+                    {entry.dips.map((d, i) => (
+                      <div key={i} className="checkout-extra-row">
+                        <span className="checkout-extra-name">+ {d.m_name}</span>
+                        <span className="checkout-extra-price">
+                          {peso((d.price ?? 0) * entry.qty)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 )}
-                {entry.sweetness?.length > 0 && (
-                  <> · {entry.sweetness.map((s) => s.m_name).join(", ")}</>
+
+                {/* ── Line total (only shown when there are extras) ── */}
+                {hasExtras && (
+                  <div className="checkout-line-total">
+                    <span>Item total</span>
+                    <span>{peso(entry.lineTotal)}</span>
+                  </div>
                 )}
-              </p>
-              <div className="checkout-item-controls">
-                <button className="btn-remove-item" onClick={() => handleRemove(index)}>
-                  <FaTrash className="btn-trash"/> Remove
-                </button>
-                <button className="btn-edit-item" onClick={() => setEditTarget({ entry, index })}>
-                  Edit
-                </button>
+
+                <div className="checkout-item-controls">
+                  <button className="btn-remove-item" onClick={() => handleRemove(index)}>
+                    <FaTrash className="btn-trash"/> Remove
+                  </button>
+                  <button className="btn-edit-item" onClick={() => setEditTarget({ entry, index })}>
+                    Edit
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="checkout-footer">

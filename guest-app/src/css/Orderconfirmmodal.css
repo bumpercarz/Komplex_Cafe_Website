@@ -1,0 +1,230 @@
+/* ══════════════════════════════════════════════════════════════
+   OrderConfirmModal.css — Komplex Cafe
+══════════════════════════════════════════════════════════════ */
+
+/* ─── Overlay ───────────────────────────────────────────────── */
+.ocm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.50);
+  z-index: 1100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: ocmFadeIn 0.2s ease;
+}
+@keyframes ocmFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Bottom sheet ──────────────────────────────────────────── */
+.ocm-sheet {
+  background: #fff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 20px 20px 0 0;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  animation: ocmSlideUp 0.25s ease;
+  overflow: hidden;
+}
+@keyframes ocmSlideUp {
+  from { transform: translateY(60px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ─── Header ────────────────────────────────────────────────── */
+.ocm-header {
+  padding: 20px 20px 10px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #eee;
+}
+.ocm-title {
+  font-family: 'gliker', sans-serif;
+  font-size: 24px;
+  color: #111;
+  margin-bottom: 2px;
+}
+.ocm-subtitle {
+  font-size: 13px;
+  color: #888;
+}
+
+/* ─── Scrollable item list ──────────────────────────────────── */
+.ocm-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: none;
+}
+.ocm-list::-webkit-scrollbar { display: none; }
+
+/* ─── Item card ─────────────────────────────────────────────── */
+.ocm-item {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid #eee;
+}
+
+.ocm-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.ocm-item-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  flex: 1;
+}
+.ocm-item-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  white-space: nowrap;
+}
+.ocm-item-sub {
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+/* ─── Add-on / Dip sub-rows ─────────────────────────────────── */
+.ocm-extras {
+  margin: 2px 0 2px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 2px solid #e07820;
+  padding-left: 8px;
+}
+.ocm-extra-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.ocm-extra-name {
+  font-size: 12px;
+  color: #555;
+  flex: 1;
+}
+.ocm-extra-price {
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+}
+
+/* ─── Item subtotal divider ─────────────────────────────────── */
+.ocm-line-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #ddd;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+}
+
+/* ─── Order details strip ───────────────────────────────────── */
+.ocm-details {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #fafafa;
+}
+.ocm-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.ocm-detail-label {
+  font-size: 12px;
+  color: #888;
+  flex-shrink: 0;
+}
+.ocm-detail-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111;
+  text-align: right;
+}
+.ocm-detail-instructions {
+  align-items: flex-start;
+}
+.ocm-instructions-text {
+  max-width: 70%;
+  text-align: right;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* ─── Sticky footer ─────────────────────────────────────────── */
+.ocm-footer {
+  flex-shrink: 0;
+  border-top: 1px solid #e5e5e5;
+}
+.ocm-total {
+  background: #e07820;
+  color: #fff;
+  font-size: 15px;
+  padding: 12px 20px;
+}
+.ocm-total strong {
+  font-weight: 700;
+  color: #fff;
+}
+.ocm-footer-btns {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 20px 24px;
+  gap: 12px;
+}
+
+.ocm-btn-back {
+  background: #e0e0e0;
+  color: #1e1e1e;
+  border: 1px solid #5b5b5b;
+  border-radius: 999px;
+  padding: 10px 0;
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ocm-btn-back:hover { background: #ccc; }
+
+.ocm-btn-confirm {
+  background: #e07820;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 0;
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ocm-btn-confirm:hover { background: #c96a18; }
+
+/* ─── Responsive ────────────────────────────────────────────── */
+@media (min-width: 501px) {
+  .ocm-sheet { max-width: 480px; }
+}

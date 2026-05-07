@@ -4,6 +4,7 @@ import { MdOutlineTableRestaurant } from "react-icons/md";
 import "../css/CheckoutPage.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import NavBar from "../components/NavBar";
+import OrderConfirmModal from "../components/OrderConfirmModal";
 
 const peso = (n) =>
     "₱" + Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2 });
@@ -24,11 +25,16 @@ export default function CheckoutPage_2() {
 
     const canContinue = orderType === "take_out" || (orderType === "dine_in" && receiveAt);
 
+    const [showConfirm, setShowConfirm] = useState(false);
+
     const handleCheckout = () => {
         if (!canContinue) return;
+        setShowConfirm(true);
+    };
 
+    const handleConfirmed = () => {
+        setShowConfirm(false);
         if (orderType === "take_out") {
-            // Skip payment type selection, go straight to online payment
             navigate("/qrpage", {
                 state: { cart, orderType, receiveAt, instructions },
             });
@@ -147,6 +153,17 @@ export default function CheckoutPage_2() {
                 </div>
 
             </div>
+
+            {showConfirm && (
+                <OrderConfirmModal
+                    cart={cart}
+                    orderType={orderType}
+                    receiveAt={receiveAt}
+                    instructions={instructions}
+                    onClose={() => setShowConfirm(false)}
+                    onConfirm={handleConfirmed}
+                />
+            )}
         </div>
     );
 }
