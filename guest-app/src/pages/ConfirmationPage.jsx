@@ -61,7 +61,7 @@ const STATUS_CONFIG = {
   "AWAITING PICK-UP": {
     icon:    <FaBell size={50} />,
     header:  "Your order is ready!",
-    sub:     "Please proceed to the counter to pick up your order. Do not close this page.",
+    sub:     "Please proceed to the counter to pick up your order.  Do not leave or close this page.",
   },
   "COMPLETED": {
     icon:    <FaCheckCircle size={50} />,
@@ -95,7 +95,7 @@ const groupItems = (items = []) => {
   return groups;
 };
 
-const fmt = (n) => `₱${Number(n ?? 0).toFixed(2)}`;
+const fmt = (n) => "₱" + Number(n ?? 0).toLocaleString("en-PH", { minimumFractionDigits: 2 });
 
 /* ── Feedback Modal ── */
 export default function ConfirmationPage() {

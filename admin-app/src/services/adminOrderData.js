@@ -21,8 +21,9 @@ export const ORDER_TABS = [
 
 export const STATUS_OPTIONS = [
   "PENDING",
-  "PREPARING",
   "PROCESSING PAYMENT",
+  "PREPARING",
+  "AWAITING PICK-UP",
   "COMPLETED",
   "CANCELLED",
 ];
