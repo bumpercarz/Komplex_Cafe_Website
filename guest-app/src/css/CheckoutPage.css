@@ -286,6 +286,7 @@
     font-size: 15px;
     color: #fff;
     padding: 15px 20px;
+    text-align: right;
 }
 
 .btn-trash path{

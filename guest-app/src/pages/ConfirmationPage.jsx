@@ -61,7 +61,7 @@ const STATUS_CONFIG = {
   "AWAITING PICK-UP": {
     icon:    <FaBell size={50} />,
     header:  "Your order is ready!",
-    sub:     "Please proceed to the counter to pick up your order. You are free to close this page.",
+    sub:     "Please proceed to the counter to pick up your order. Do not close this page.",
   },
   "COMPLETED": {
     icon:    <FaCheckCircle size={50} />,
