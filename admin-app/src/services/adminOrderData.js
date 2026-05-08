@@ -215,7 +215,7 @@ export async function updateOrderStatusRecord(
 
     if (newStatus === "PREPARING") {
       updatePayload.preparing_at = serverTimestamp();
-    } else if (newStatus === "COMPLETED") {
+    } else if (newStatus === "AWAITING PICK-UP") {
       updatePayload.completed_at = serverTimestamp();
     }
 
