@@ -94,7 +94,7 @@ export default function OrderDetails({
 
         <div className="ao-meta">
           <div className="ao-metaRow">
-            <b>Table:</b>{" "}
+            <b>Table ID:</b>{" "}
             {order.tableNumber || order.tableId || order.table_id || "N/A"}
           </div>
           <div className="ao-metaRow">
