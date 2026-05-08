@@ -280,7 +280,10 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
 
         {qtyToast && (
           <div className="qty-toast">
-            Maximum of 20 per food item only.
+            {isDrink
+              ? "You can order up to 99 drinks at a time."
+              : "You can only order up to 20 of this food item."
+            }
           </div>
         )}
 
