@@ -1,0 +1,239 @@
+.admin-feedback-container {
+  padding: 20px 40px;
+  background-color: #fff;
+  min-height: 100vh;
+  
+  /* FIX 1: Prevent the container from bleeding off the screen */
+  width: 100%;
+  box-sizing: border-box; 
+  
+  /* FIX 2: Override Vite's default centering */
+  text-align: left; 
+}
+
+.admin-feedback-container h2 {
+  font-size: 24px;
+  margin-bottom: 5px;
+  color: #333;
+  text-align: left;
+}
+
+.subtitle {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+  
+  /* FIX 3: Lock the subtitle text to the left and force it to wrap */
+  text-align: left;
+  display: block;
+  width: 100%;
+  white-space: normal; 
+}
+
+/* =========================
+   Table & Scrollbars (Mobile Fixes)
+========================= */
+
+.table-wrapper {
+  border: 1px solid #e0dcd3;
+  border-radius: 8px;
+  
+  /* Scrolling Logic applied from AdminMenuPage */
+  max-height: calc(100vh - 210px); 
+  overflow-x: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #dcdcdc;
+}
+
+/* Custom Webkit Scrollbars */
+.table-wrapper::-webkit-scrollbar {
+  width: 14px; 
+  height: 14px; 
+}
+.table-wrapper::-webkit-scrollbar-track {
+  background: #dcdcdc;
+}
+.table-wrapper::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+  border: 3px solid #dcdcdc; 
+}
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.feedback-table {
+  width: 100%;
+  min-width: 850px; /* Forces horizontal scroll on smaller screens */
+  border-collapse: separate; /* Works better with sticky headers */
+  border-spacing: 0;
+  text-align: left;
+}
+
+.feedback-table th {
+  background-color: #db7634; /* Mockup Orange */
+  color: #fff; 
+  padding: 15px;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap; /* Prevents text stacking */
+
+  /* STICKY HEADER */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.feedback-table td {
+  padding: 15px;
+  border-bottom: 1px solid #e0dcd3;
+  font-size: 14px;
+  color: #333;
+}
+
+.main-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.main-row:hover {
+  background-color: #faf9f5;
+}
+
+.guest-name {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+
+.chevron {
+  color: #888;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.rating-badge {
+  background-color: #faead6;
+  color: #a8581d;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.rating-badge.sm {
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+.comment-preview {
+  color: #555;
+  min-width: 200px;
+  max-width: 250px;
+  white-space: normal; /* Allows the comment preview to wrap slightly */
+}
+
+/* =========================
+   EXPANDED SECTION
+========================= */
+
+.expanded-row td {
+  padding: 0;
+  border-bottom: 2px solid #e0dcd3;
+}
+
+.expanded-content {
+  background-color: #f5f4f0;
+  padding: 20px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.detail-card {
+  background: #fff;
+  border: 1px solid #e0dcd3;
+  border-radius: 6px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-card h4, .comment-card h4 {
+  font-size: 12px;
+  color: #d16b27;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+.rating-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px 0;
+  flex-grow: 1;
+}
+
+.rating-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #444;
+}
+
+.card-footer {
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+  font-size: 13px;
+  color: #333;
+}
+
+.comment-card {
+  margin-top: 10px;
+}
+
+.comment-box {
+  background: #fff;
+  border: 1px solid #e0dcd3;
+  border-radius: 6px;
+  padding: 15px;
+  font-size: 14px;
+  color: #444;
+  white-space: normal; /* Ensures long paragraphs wrap correctly */
+}
+
+/* =========================
+   Mobile Responsiveness
+========================= */
+
+@media (max-width: 1024px) {
+  /* Removed the cards-grid override. 
+     The container is locked to 850px, so 5 columns will always fit perfectly! */
+}
+
+@media (max-width: 768px) {
+  .admin-feedback-container {
+    padding: 16px 16px; /* Tightened so it aligns perfectly with the Toolbar */
+  }
+
+  .subtitle {
+    font-size: 13px; /* Slightly smaller text for mobile */
+    margin-bottom: 15px;
+  }
+
+  .feedback-table th, .feedback-table td {
+    padding: 12px 10px; /* Slight reduction for tighter fit */
+  }
+  
+  /* We purposefully DO NOT change .cards-grid here anymore. 
+     It will remain 5 columns wide to match the scrollable table width above it. */
+}

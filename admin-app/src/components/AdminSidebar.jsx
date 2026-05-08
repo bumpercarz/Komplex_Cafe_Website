@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { label: "PAYMENTS", to: "/admin/payments" },
   { label: "TABLES & QRs", to: "/admin/tables" },
   { label: "NOTIFICATIONS", to: "/admin/notifications" },
+  { label: "FEEDBACK", to: "/admin/feedback" },
 ];
 
 export default function AdminSidebar({ open, onClose }) {

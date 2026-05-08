@@ -11,6 +11,7 @@ import AdminTableQrPage from "./pages/AdminTableQrPage";
 import AdminMenuPage from "./pages/AdminMenuPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminNotificationsPage from "./pages/AdminNotificationsPage";
+import AdminFeedbackPage from './pages/AdminFeedbackPage';
 import ProfilePage from "./pages/ProfilePage";
 import FirestoreSeedPage from "./pages/FirestoreSeedPage";
 import GuestTestPage from "./pages/GuestTestPage";
@@ -19,6 +20,7 @@ import FirestoreMenuSeedPage from "./pages/FirestoreMenuSeedPage";
 import FirestoreNotifSeedPage from "./pages/FirestoreNotifSeedPage";
 import FirestoreTableSeedPage from "./pages/FirestoreTableSeedPage";
 import FirestorePaymentSeedPage from "./pages/FirestorePaymentSeedPage";
+import FirestoreFeedbackSeedPage from "./pages/FirestoreFeedbackSeedPage";
 
 function ProtectedRoute({ element, allowedRoles }) {
   const user = getCurrentUser();
@@ -167,6 +169,15 @@ export default function App() {
           }
         />
         <Route
+          path="/admin/feedback"
+          element={
+            <ProtectedRoute
+              element={<AdminFeedbackPage />}
+              allowedRoles={["ADMIN", "OWNER"]}
+            />
+          }
+        />
+        <Route
           path="/admin/profile"
           element={
             <ProtectedRoute
@@ -184,6 +195,7 @@ export default function App() {
         <Route path="/seed-notifs" element={<FirestoreNotifSeedPage />} />
         <Route path="/seed-tables" element={<FirestoreTableSeedPage />} />
         <Route path="/seed-payments" element={<FirestorePaymentSeedPage />} />
+        <Route path="/seed-feedback" element={<FirestoreFeedbackSeedPage />} />
       </Routes>
     </>
   );
