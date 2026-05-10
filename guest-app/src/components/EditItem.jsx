@@ -10,6 +10,7 @@ const PLACEHOLDER =
 
 const IS_DRINK   = (item) => item?.category?.toLowerCase() === "drink";
 const IS_CHURROS = (item) => item?.m_name?.toLowerCase().includes("churros");
+const IS_FRAPPE  = (item) => item?.m_name?.toLowerCase().includes("frappe");
 
 /** Strip "Hot " / "Iced " prefix for the popup display title */
 const getBaseName = (name = "") =>
@@ -24,6 +25,7 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
 
   const isDrink   = IS_DRINK(item);
   const isChurros = IS_CHURROS(item);
+  const isFrappe  = IS_FRAPPE(item);
 
   // Determine temperature from the stored item name
   const storedTemp = entry.temperature
@@ -67,7 +69,7 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
   const toggleAddon = (docId) =>
     setSelectedAddons((prev) => ({ ...prev, [docId]: !prev[docId] }));
 
-  const addonTotal = isDrink
+  const addonTotal = isFrappe
     ? addons.filter((a) => selectedAddons[a.docId]).reduce((s, a) => s + a.price, 0)
     : 0;
 
@@ -84,7 +86,7 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
       ...entry,
       qty,
       temperature,
-      addons: isDrink ? addons.filter((a) => selectedAddons[a.docId]) : [],
+      addons: isFrappe ? addons.filter((a) => selectedAddons[a.docId]) : [],
       dips:   isChurros && selectedDip
         ? [dips.find((d) => d.docId === selectedDip)]
         : [],
@@ -147,7 +149,7 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
           </div>
         )}
 
-        {isDrink && addons.length > 0 && (
+        {isFrappe && addons.length > 0 && (
           <div className="popup-section">
             <div className="popup-section-label">Add-ons</div>
             <div className="popup-addons">
