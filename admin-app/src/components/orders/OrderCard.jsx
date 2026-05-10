@@ -29,10 +29,12 @@ function OrderStopwatch({ status, preparingAt, completedAt }) {
 
   if (!preparingAt) return null;
 
+  const isDone = status === "AWAITING PICK-UP" || status === "COMPLETED";
+
   return (
-    <div className="ao-time" style={{ color: status === "COMPLETED" ? "#2e7d32" : "#df4735", fontWeight: "bold" }}>
+    <div className="ao-time" style={{ color: isDone ? "#2e7d32" : "#df4735", fontWeight: "bold" }}>
       <span className="ao-clock">⏱️</span>
-      <span className="ao-timeLabel">{status === "COMPLETED" ? "Prep Time:" : "Live Timer:"}</span>
+      <span className="ao-timeLabel">{isDone ? "Prep Time:" : "Live Timer:"}</span>
       <span>{elapsed}</span>
     </div>
   );
@@ -117,7 +119,7 @@ export default function OrderCard({
             {order.completedAt && (
               <div className="ao-time">
                 <span className="ao-clock">✅</span>
-                <span className="ao-timeLabel">Finished:</span>
+                <span className="ao-timeLabel">Ready:</span>
                 <span>{formatTime(order.completedAt)}</span>
                 <span className="ao-date">{formatDate(order.completedAt)}</span>
               </div>

@@ -34,6 +34,14 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
   const [qty, setQty] = useState(entry.qty ?? 1);
   // Temperature is fixed in edit mode — user chose it when adding; show it read-only
   const temperature = storedTemp;
+  const [qtyToast, setQtyToast] = useState(false);
+
+  const qtyLimit = isDrink ? 99 : 20;
+
+  const showQtyToast = () => {
+    setQtyToast(true);
+    setTimeout(() => setQtyToast(false), 2500);
+  };
 
   const [selectedAddons, setSelectedAddons] = useState(() => {
     const map = {};
@@ -107,19 +115,23 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
               className="qty-input"
               type="number"
               min="1"
-              max="99"
+              max={qtyLimit}
               value={qty}
               onChange={(e) => {
                 const val = parseInt(e.target.value, 10);
-                if (!isNaN(val) && val >= 1 && val <= 99) setQty(val);
+                if (!isNaN(val) && val >= 1 && val <= qtyLimit) setQty(val);
+                else if (!isNaN(val) && val > qtyLimit) { setQty(qtyLimit); showQtyToast(); }
                 else if (e.target.value === "") setQty("");
               }}
               onBlur={(e) => {
                 const val = parseInt(e.target.value, 10);
-                setQty(!isNaN(val) ? Math.min(99, Math.max(1, val)) : 1);
+                setQty(!isNaN(val) ? Math.min(qtyLimit, Math.max(1, val)) : 1);
               }}
             />
-            <button className="qty-btn" onClick={() => setQty((q) => Math.min(99, (parseInt(q) || 1) + 1))}>+</button>
+            <button className="qty-btn" onClick={() => {
+              if ((parseInt(qty) || 1) >= qtyLimit) { showQtyToast(); }
+              else setQty((q) => Math.min(qtyLimit, (parseInt(q) || 1) + 1));
+            }}>+</button>
           </div>
         </div>
 
@@ -177,6 +189,15 @@ export default function EditItem({ entry, entryIndex, addons, dips, onClose, onS
                 </label>
               ))}
             </div>
+          </div>
+        )}
+
+        {qtyToast && (
+          <div className="qty-toast">
+            {isDrink
+              ? "You can order up to 99 drinks at a time."
+              : "You can only order up to 20 of this food item."
+            }
           </div>
         )}
 

@@ -21,8 +21,9 @@ export const ORDER_TABS = [
 
 export const STATUS_OPTIONS = [
   "PENDING",
-  "PREPARING",
   "PROCESSING PAYMENT",
+  "PREPARING",
+  "AWAITING PICK-UP",
   "COMPLETED",
   "CANCELLED",
 ];
@@ -215,7 +216,7 @@ export async function updateOrderStatusRecord(
 
     if (newStatus === "PREPARING") {
       updatePayload.preparing_at = serverTimestamp();
-    } else if (newStatus === "COMPLETED") {
+    } else if (newStatus === "AWAITING PICK-UP") {
       updatePayload.completed_at = serverTimestamp();
     } else if (newStatus === "CANCELLED" && cancelReason) {
       // NEW: Tell Firebase to actually save the reason!

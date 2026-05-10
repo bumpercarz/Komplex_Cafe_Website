@@ -49,6 +49,7 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
   const [selectedAddons, setSelectedAddons] = useState({});
   const [selectedDip, setSelectedDip]       = useState(null);
   const [selectedSweetness, setSelectedSweetness] = useState(null);
+  const [qtyToast, setQtyToast] = useState(false);
 
   // The active Firestore item based on chosen temperature
   const activeItem = isTagged
@@ -59,6 +60,13 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
   const isChurros       = IS_CHURROS(card);
   const isFrappe        = IS_FRAPPE(card);
   const isSweetenedDrink = activeItem ? IS_SWEETENED_DRINK({ ...activeItem, baseName: card.m_name }) : false;
+
+  const qtyLimit = isDrink ? 99 : 20;
+
+  const showQtyToast = () => {
+    setQtyToast(true);
+    setTimeout(() => setQtyToast(false), 2500);
+  };
 
   const overlayRef = useRef();
 
@@ -143,19 +151,23 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
               className="qty-input"
               type="number"
               min="1"
-              max="99"
+              max={qtyLimit}
               value={qty}
               onChange={(e) => {
                 const val = parseInt(e.target.value, 10);
-                if (!isNaN(val) && val >= 1 && val <= 99) setQty(val);
+                if (!isNaN(val) && val >= 1 && val <= qtyLimit) setQty(val);
+                else if (!isNaN(val) && val > qtyLimit) { setQty(qtyLimit); showQtyToast(); }
                 else if (e.target.value === "") setQty("");
               }}
               onBlur={(e) => {
                 const val = parseInt(e.target.value, 10);
-                setQty(!isNaN(val) ? Math.min(99, Math.max(1, val)) : 1);
+                setQty(!isNaN(val) ? Math.min(qtyLimit, Math.max(1, val)) : 1);
               }}
             />
-            <button className="qty-btn" onClick={() => setQty((q) => Math.min(99, (parseInt(q) || 1) + 1))}>+</button>
+            <button className="qty-btn" onClick={() => {
+              if ((parseInt(qty) || 1) >= qtyLimit) { showQtyToast(); }
+              else setQty((q) => Math.min(qtyLimit, (parseInt(q) || 1) + 1));
+            }}>+</button>
           </div>
         </div>
 
@@ -265,6 +277,15 @@ export default function ItemPopup({ card, addons, dips, sweetness = [], onClose,
         )}
 
 
+
+        {qtyToast && (
+          <div className="qty-toast">
+            {isDrink
+              ? "You can order up to 99 drinks at a time."
+              : "You can only order up to 20 of this food item."
+            }
+          </div>
+        )}
 
         <div className="popup-footer">
           <span className="popup-total-label">
