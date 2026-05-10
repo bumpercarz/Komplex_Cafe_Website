@@ -163,7 +163,7 @@ function UserFormModal({ mode, form, editingUser, onChange, onSubmit, onClose, i
                 name="contactNumber"
                 value={form.contactNumber || ""}
                 onChange={onChange}
-                placeholder="Numbers only (max 11)"
+                placeholder="09XXXXXXXXX"
                 maxLength={11}
                 required
               />
@@ -384,11 +384,34 @@ export default function AdminUsersPage() {
     const { name, value } = e.target;
     let newValue = value;
 
+    // --- AUTO-FORMAT CONTACT NUMBER ---
     if (name === "contactNumber") {
-      newValue = newValue.replace(/\D/g, "");
-      if (newValue.length > 11) newValue = newValue.slice(0, 11);
+      newValue = newValue.replace(/\D/g, ""); // Strip non-numbers
+      
+      if (newValue.length > 0) {
+        if (newValue.startsWith("639")) {
+          // If they paste +639..., swap it to 09...
+          newValue = "0" + newValue.slice(2);
+        } else if (newValue === "0") {
+          // If they type 0, wait for them to type 9
+        } else if (newValue === "9") {
+          // If they jump straight to typing 9, auto-prepend the 0
+          newValue = "09";
+        } else if (newValue.startsWith("09")) {
+          // If it already perfectly starts with 09, leave it alone
+        } else if (newValue.startsWith("0") && newValue.length > 1) {
+          // If they type 0 and then something other than 9 (like 08), force the 9
+          newValue = "09" + newValue.slice(1);
+        } else {
+          // If they type any other number entirely, force 09 at the front
+          newValue = "09" + newValue;
+        }
+      }
+
+      if (newValue.length > 11) newValue = newValue.slice(0, 11); // Lock at 11 chars
     }
 
+    // Standard length limiters
     if (name === "name" && newValue.length > 50) newValue = newValue.slice(0, 50);
     if (name === "email" && newValue.length > 100) newValue = newValue.slice(0, 100);
     if (name === "password" && newValue.length > 16) newValue = newValue.slice(0, 16);
@@ -403,7 +426,12 @@ export default function AdminUsersPage() {
 
     if (name.trim().length > 50) return alert("Name cannot exceed 50 characters.");
     if (email.trim().length > 100) return alert("Email cannot exceed 100 characters.");
-    if (contactNumber.trim().length > 11) return alert("Contact number cannot exceed 11 characters.");
+    
+    // --- STRICT CONTACT NUMBER VALIDATION ---
+    if (!contactNumber.startsWith("09") || contactNumber.length !== 11) {
+      return alert("Contact number must be exactly 11 digits and start with '09'.");
+    }
+
     if (!['ADMIN', 'STAFF', 'OWNER'].includes(role)) return alert("Invalid role selected.");
 
     if (modal.type === "add" && (password.length < 8 || password.length > 16)) {

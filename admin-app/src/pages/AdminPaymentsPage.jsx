@@ -6,7 +6,7 @@ import AdminSidebar from "../components/AdminSidebar";
 import AdminPageToolbar from "../components/AdminPageToolbar";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 
-// NEW: import current user auth
+// Auth
 import { getCurrentUser } from "../services/authService";
 
 import {
@@ -31,56 +31,54 @@ function PaymentDetailsModal({ payment, onClose }) {
 
           <div className="ap-detailsRows">
             {payment.orderDetails.items.length > 0 ? (
-              payment.orderDetails.items.map((item, index) => (
-                <React.Fragment key={`${item.name}-${index}`}>
-                  <div className="ap-itemName">
-                    {item.quantity} {item.name}
-                  </div>
-                  <div className="ap-itemPriceQty">
-                    {formatMoney(item.price)} × {item.quantity}
-                  </div>
-                  <div className="ap-itemTotal ap-right">
-                    {formatMoney(item.price * item.quantity)}
-                  </div>
-                </React.Fragment>
-              ))
+              payment.orderDetails.items.map((item, index) => {
+                // Determine if item is an extra based on category
+                const isAddon = ["Add-on", "Dip", "Sweetness"].includes(item.category);
+                
+                return (
+                  <React.Fragment key={`${item.name}-${index}`}>
+                    <div className={`ap-itemName ${isAddon ? "ap-is-addon" : ""}`}>
+                      {item.quantity} {item.name}
+                    </div>
+                    <div className={`ap-itemPriceQty ${isAddon ? "ap-is-addon" : ""}`}>
+                      {formatMoney(item.price)} x {item.quantity}
+                    </div>
+                    <div className={`ap-itemTotal ap-right ${isAddon ? "ap-is-addon" : ""}`}>
+                      {formatMoney(item.price * item.quantity)}
+                    </div>
+                  </React.Fragment>
+                );
+              })
             ) : (
-              <div style={{ gridColumn: "1 / -1", padding: "12px 0" }}>
-                No order item details found.
+              <div className="ap-itemName" style={{ gridColumn: "1 / -1" }}>
+                No items available
               </div>
             )}
           </div>
 
-          <div className="ap-totalDivider" />
-
-          <div className="ap-totalRow">
-            <span>Total</span>
-            <strong>{formatMoney(payment.amount)}</strong>
-          </div>
-        </div>
-
-        <div className="ap-modalSectionTitle">Payment Details</div>
-
-        <div className="ap-paymentBody">
+          <div className="ap-modalSectionTitle">Payment Details</div>
           <div className="ap-paymentRow">
             <span>Method</span>
             <strong>{payment.paymentDetails.method}</strong>
           </div>
-
-          <div className="ap-paymentRow">
-            <span>Total</span>
-            <strong>{formatMoney(payment.paymentDetails.total)}</strong>
-          </div>
-
-          <div className="ap-paymentRow">
-            <span>Transaction Date &amp; Time</span>
-            <strong>{payment.paymentDetails.transactionDateTime}</strong>
-          </div>
-
           <div className="ap-paymentRow">
             <span>Reference Number</span>
             <strong>{payment.paymentDetails.referenceNumber}</strong>
           </div>
+          <div className="ap-paymentRow">
+            <span>Transaction Date & Time</span>
+            <strong>{payment.paymentDetails.transactionDateTime}</strong>
+          </div>
+          <div className="ap-paymentRow">
+            <span>Total Amount Paid</span>
+            <strong>{formatMoney(payment.paymentDetails.total)}</strong>
+          </div>
+        </div>
+
+        <div className="ap-modalActions">
+          <button className="ap-exitBtn" onClick={onClose}>
+            Exit
+          </button>
         </div>
       </div>
     </div>
@@ -90,12 +88,12 @@ function PaymentDetailsModal({ payment, onClose }) {
 export default function AdminPaymentsPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedPaymentId, setSelectedPaymentId] = useState(null);
   const [payments, setPayments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
-
+  const [selectedPaymentId, setSelectedPaymentId] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  
+  // Custom Date Range State
+  const [customDates, setCustomDates] = useState({ start: "", end: "" });
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -105,47 +103,47 @@ export default function AdminPaymentsPage() {
   const role = currentUser?.role || "STAFF";
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
-  async function reloadPayments() {
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const data = await getAllPayments();
-      setPayments(data);
-    } catch (error) {
-      console.error("Load payments error:", error);
-      setMessage(error?.message || "Failed to load payments.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  useNotificationSound();
 
   useEffect(() => {
-    reloadPayments();
+    getAllPayments().then((data) => setPayments(data));
   }, []);
 
   const filteredPayments = useMemo(() => {
-    const keyword = search.trim().toLowerCase();
+    let result = payments;
+    const isCustomDateActive = customDates.start || customDates.end;
 
-    if (!keyword) return payments;
+    // Filter by Custom Date Range
+    if (customDates.start) {
+      const startDate = new Date(`${customDates.start}T00:00:00`);
+      result = result.filter(p => p.transactionDate && p.transactionDate >= startDate);
+    }
+    if (customDates.end) {
+      const endDate = new Date(`${customDates.end}T23:59:59`);
+      result = result.filter(p => p.transactionDate && p.transactionDate <= endDate);
+    }
 
-    return payments.filter((payment) => {
-      return (
-        payment.paymentId.toLowerCase().includes(keyword) ||
-        payment.orderId.toLowerCase().includes(keyword) ||
-        payment.method.toLowerCase().includes(keyword) ||
-        payment.timestamp.toLowerCase().includes(keyword) ||
-        String(payment.amount).includes(keyword)
+    // Filter by Search Query
+    const keyword = search.toLowerCase();
+    if (keyword) {
+      result = result.filter((p) =>
+        Object.values(p).join(" ").toLowerCase().includes(keyword)
       );
-    });
-  }, [payments, search]);
+    }
 
-  const selectedPayment = useMemo(() => {
-    return payments.find((payment) => payment.id === selectedPaymentId) || null;
-  }, [payments, selectedPaymentId]);
-  
-  useNotificationSound();
-  
+    // Limit to 100 records if no custom date range is applied
+    if (!isCustomDateActive) {
+      result = result.slice(0, 100);
+    }
+
+    return result;
+  }, [payments, search, customDates]);
+
+  const selectedPayment = useMemo(
+    () => payments.find((p) => p.id === selectedPaymentId) || null,
+    [payments, selectedPaymentId]
+  );
+
   return (
     <div className="ad-root">
       <AdminTopbar roleLabel={roleLabel} onMenuClick={() => setMenuOpen(true)} />
@@ -156,64 +154,87 @@ export default function AdminPaymentsPage() {
           title="Payments"
           searchValue={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search"
+          searchPlaceholder="Search payments..."
         />
 
-        {message ? <div className="ap-empty">{message}</div> : null}
-        {loading ? <div className="ap-empty">Loading payments...</div> : null}
+        {/* Custom Calendar Date Filter */}
+        <div className="ap-dateFilterWrapper">
+          <label>Filter by Date: </label>
+          <input
+            type="date"
+            className="ap-dateInput"
+            value={customDates.start}
+            onChange={(e) => setCustomDates(prev => ({ ...prev, start: e.target.value }))}
+          />
+          <span>to</span>
+          <input
+            type="date"
+            className="ap-dateInput"
+            value={customDates.end}
+            onChange={(e) => setCustomDates(prev => ({ ...prev, end: e.target.value }))}
+          />
+          <button
+            className="ap-clearDateBtn"
+            onClick={() => setCustomDates({ start: "", end: "" })}
+          >
+            Clear Range
+          </button>
+          
+          {/* Helper text showing if the limit is currently active */}
+          {!customDates.start && !customDates.end && (
+            <span style={{ marginLeft: "auto", fontSize: "12px", color: "#666" }}>
+              Showing latest 100 records. Select a date range to view older data.
+            </span>
+          )}
+        </div>
 
-        {!loading && (
-          /* ADDED OUTER WRAPPER FOR CLEAN SCROLLBARS AND BORDERS */
-          <div className="ap-tableOuter">
-            <div className="ap-tableWrap">
-              <table className="ap-table">
-                <thead>
-                  <tr>
-                    <th className="ap-idCell">Payment ID</th>
-                    <th className="ap-idCell">Order ID</th>
-                    <th>Method</th>
-                    <th>Amount</th>
-                    <th>Timestamp</th>
-                    <th>Details</th>
+        <div className="ap-tableOuter">
+          <div className="ap-tableWrap">
+            <table className="ap-table">
+              <thead>
+                <tr>
+                  <th>Payment ID</th>
+                  <th>Order ID</th>
+                  <th>Method</th>
+                  <th>Amount</th>
+                  <th>Date & Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredPayments.map((payment) => (
+                  <tr key={payment.id}>
+                    <td className="ap-idCell">
+                      <div className="ap-wrapText ap-idWrap">{payment.paymentId}</div>
+                    </td>
+                    <td className="ap-idCell">
+                      <div className="ap-wrapText ap-idWrap">{payment.orderId}</div>
+                    </td>
+                    <td>{payment.method}</td>
+                    <td>{formatMoney(payment.amount)}</td>
+                    <td>{payment.timestamp}</td>
+                    <td className="ap-detailsCell">
+                      <button
+                        className="ap-viewBtn"
+                        onClick={() => setSelectedPaymentId(payment.id)}
+                      >
+                        View Details
+                      </button>
+                    </td>
                   </tr>
-                </thead>
+                ))}
 
-                <tbody>
-                  {filteredPayments.map((payment) => (
-                    <tr key={payment.id}>
-                      {/* Wrap text in specific divs to respect max-width and force wrap on long IDs */}
-                      <td className="ap-idCell">
-                        <div className="ap-wrapText ap-idWrap">{payment.paymentId}</div>
-                      </td>
-                      <td className="ap-idCell">
-                        <div className="ap-wrapText ap-idWrap">{payment.orderId}</div>
-                      </td>
-                      <td>{payment.method}</td>
-                      <td>{formatMoney(payment.amount)}</td>
-                      <td>{payment.timestamp}</td>
-                      <td className="ap-detailsCell">
-                        <button
-                          className="ap-viewBtn"
-                          onClick={() => setSelectedPaymentId(payment.id)}
-                        >
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-
-                  {filteredPayments.length === 0 && (
-                    <tr>
-                      <td colSpan="6" className="ap-empty">
-                        No payments found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                {filteredPayments.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="ap-empty">
+                      No payments found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
       </main>
 
       <PaymentDetailsModal

@@ -8,7 +8,7 @@ import {
   updateDoc,
   serverTimestamp,
   getDocs,
-  getDoc, // NEW: Added getDoc to fetch the current order before updating
+  getDoc, 
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -70,7 +70,6 @@ async function uploadReceiptImage(file, orderId) {
 /* =========================
    Menu Item Dictionary
 ========================= */
-// NEW: We will store the categories here so we don't have to fetch them constantly
 export let menuCategoryMap = {};
 
 export async function loadMenuCategories() {
@@ -90,7 +89,6 @@ export async function loadMenuCategories() {
 function mapFirestoreOrder(docSnap) {
   const data = docSnap.data() || {};
   
-  // NEW: Map over the raw items and attach the category from our dictionary if it's missing
   const rawItems = Array.isArray(data.items) ? data.items : [];
   const itemsWithCategories = rawItems.map((it) => ({
     ...it,
@@ -112,7 +110,7 @@ function mapFirestoreOrder(docSnap) {
     tableNumber: tableNumber === "N/A" ? "N/A" : tableNumber.padStart(3, "0"),
     tableLabel: tableNumber === "N/A" ? "Unknown Table" : `Table ${tableNumber.padStart(3, "0")}`,
     status: String(data.order_status || "PENDING"),
-    items: itemsWithCategories, // Use the updated items array
+    items: itemsWithCategories, 
     totalAmount: Number(data.total_amount ?? calcOrderTotal(itemsWithCategories)),
 
     createdAt:
@@ -129,6 +127,9 @@ function mapFirestoreOrder(docSnap) {
       typeof data.completed_at?.toDate === "function"
         ? data.completed_at.toDate()
         : null,
+    
+    // NEW: Properly fetch cancel_reason from database to frontend
+    cancelReason: data.cancel_reason || null, 
 
     customerName: data.user_id
       ? `User #${data.user_id}`
@@ -169,11 +170,13 @@ export function getOrdersByTab(orders, activeTab) {
 /* =========================
    Update Status + Receipt
 ========================= */
+// NEW: Added cancelReason as 5th parameter so it doesn't break your receiptFile parameter
 export async function updateOrderStatusRecord(
   orderId,
   newStatus,
   receiptFile,
-  options = {}
+  options = {},
+  cancelReason = null 
 ) {
   try {
     const actor = options.actor || "Admin";
@@ -183,7 +186,6 @@ export async function updateOrderStatusRecord(
       receiptUrl = await uploadReceiptImage(receiptFile, orderId);
     }
 
-    // --- NEW: Fetch the current order so we KNOW the exact previous status and table! ---
     const orderRef = doc(db, "tbl_orders", String(orderId));
     const orderSnap = await getDoc(orderRef);
     
@@ -205,7 +207,6 @@ export async function updateOrderStatusRecord(
         ? "Unknown Table" 
         : `Table ${tableNumber.padStart(3, "0")}`;
     }
-    // ------------------------------------------------------------------------------------
 
     const updatePayload = {
       order_status: newStatus,
@@ -216,11 +217,13 @@ export async function updateOrderStatusRecord(
       updatePayload.preparing_at = serverTimestamp();
     } else if (newStatus === "COMPLETED") {
       updatePayload.completed_at = serverTimestamp();
+    } else if (newStatus === "CANCELLED" && cancelReason) {
+      // NEW: Tell Firebase to actually save the reason!
+      updatePayload.cancel_reason = cancelReason; 
     }
 
     await updateDoc(orderRef, updatePayload);
 
-    // Pass the real values into the notification service
     await notifyOrderStatusUpdate({
       orderId,
       tableLabel,

@@ -33,22 +33,26 @@ function getOrderItems(orderData) {
 }
 
 export async function getAllPayments() {
-  const [paymentsSnapshot, ordersSnapshot] = await Promise.all([
+  // Fetch payments, orders, AND menu items to map item categories
+  const [paymentsSnapshot, ordersSnapshot, menuSnapshot] = await Promise.all([
     getDocs(collection(db, "tbl_payments")),
     getDocs(collection(db, "tbl_orders")),
+    getDocs(collection(db, "tbl_menuItems"))
   ]);
 
   const ordersMap = new Map();
+  ordersSnapshot.docs.forEach((doc) => {
+    ordersMap.set(doc.id, doc.data());
+  });
 
-  ordersSnapshot.docs.forEach((docSnap) => {
-    const data = docSnap.data();
-    const orderId = data?.order_id ?? docSnap.id;
-    ordersMap.set(String(orderId), data);
+  const menuMap = new Map();
+  menuSnapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    menuMap.set(data.m_name, data.category);
   });
 
   const payments = paymentsSnapshot.docs.map((docSnap) => {
     const data = docSnap.data();
-
     const paymentIdRaw = data?.payment_id ?? docSnap.id;
     const orderIdRaw = data?.order_id ?? "";
     const amount = Number(data?.amount_paid ?? 0);
@@ -63,11 +67,15 @@ export async function getAllPayments() {
       ordersMap.get(String(Number(orderIdRaw))) ||
       null;
 
-    const items = getOrderItems(matchingOrder).map((item) => ({
-      name: item?.name ?? "Unknown Item",
-      price: Number(item?.price ?? 0),
-      quantity: Number(item?.quantity ?? item?.qty ?? 1),
-    }));
+    const items = getOrderItems(matchingOrder).map((item) => {
+      const name = item?.name ?? "Unknown Item";
+      return {
+        name,
+        price: Number(item?.price ?? 0),
+        quantity: Number(item?.quantity ?? item?.qty ?? 1),
+        category: menuMap.get(name) || "Uncategorized", // Attach category for UI formatting
+      };
+    });
 
     return {
       id: docSnap.id,
@@ -94,9 +102,4 @@ export async function getAllPayments() {
     const bTime = b.transactionDate ? b.transactionDate.getTime() : 0;
     return bTime - aTime;
   });
-}
-
-export async function getPaymentById(id) {
-  const payments = await getAllPayments();
-  return payments.find((payment) => payment.id === id) || null;
 }

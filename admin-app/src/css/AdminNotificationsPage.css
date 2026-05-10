@@ -375,3 +375,50 @@
     text-align: left;
   }
 }
+
+/* =========================
+   Date Filter Styles
+========================= */
+
+.an-dateFilterWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: #fff;
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong, #d9d9d9);
+  font-size: 14px;
+  color: #333;
+  flex-wrap: wrap; /* Helps handle very small mobile screens */
+}
+
+.an-dateFilterWrapper label {
+  font-weight: 600;
+}
+
+.an-dateInput {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.an-clearDateBtn {
+  background: #f1f1f1;
+  border: 1px solid #ddd;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #555;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.an-clearDateBtn:hover {
+  background: #e0e0e0;
+}

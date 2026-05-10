@@ -92,8 +92,9 @@ function MenuFormModal({
       return;
     }
 
-    if (!price || Number.isNaN(numericPrice) || numericPrice < 0) {
-      alert("Please enter a valid price (Must be 0 or greater).");
+    // STRICT PRICE VALIDATION
+    if (price === "" || Number.isNaN(numericPrice) || numericPrice < 0 || numericPrice > 1000) {
+      alert("Please enter a valid price between 0 and 1,000.");
       return;
     }
 
@@ -211,10 +212,25 @@ function MenuFormModal({
               <input
                 type="number"
                 min="0"
+                max="100000"
                 step="0.01"
                 placeholder="120"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onKeyDown={(e) => {
+                  // Physically block minus sign and 'e' from being typed
+                  if (e.key === "-" || e.key === "e" || e.key === "E") {
+                    e.preventDefault();
+                  }
+                }}
+                onChange={(e) => {
+                  let val = e.target.value;
+                  // Strip minus signs just in case of copy/paste
+                  val = val.replace(/-/g, "");
+                  // Enforce maximum limit
+                  if (Number(val) > 1000) val = "1000";
+                  
+                  setPrice(val);
+                }}
                 disabled={saving}
               />
             </div>

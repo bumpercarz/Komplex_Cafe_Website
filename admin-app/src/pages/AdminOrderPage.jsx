@@ -14,9 +14,7 @@ import { getCurrentUser } from "../services/authService";
 import {
   ORDER_TABS,
   STATUS_OPTIONS,
-  getOrdersByTab,
   updateOrderStatusRecord,
-  loadMenuCategories,
   subscribeToOrders,
 } from "../services/adminOrderData";
 
@@ -38,103 +36,90 @@ export default function AdminOrderPage() {
     setCurrentUser(user);
   }, []);
 
-  const role = currentUser?.role || "ADMIN";
+  const role = currentUser?.role || "STAFF";
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
   useEffect(() => {
-    let isMounted = true;
-    let unsubscribe = null;
-
-    async function initializeData() {
-      setLoading(true);
-      await loadMenuCategories();
-      if (!isMounted) return;
-
-      unsubscribe = subscribeToOrders(
-        (data) => {
-          setOrdersSource(data);
-          setLoading(false);
-        },
-        (error) => {
-          console.error("Orders listener error:", error);
-          setMessage(error?.message || "Failed to listen to orders.");
-          setLoading(false);
-        }
-      );
-    }
-
-    initializeData();
-
-    return () => {
-      isMounted = false;
-      if (unsubscribe) unsubscribe();
-    };
+    setLoading(true);
+    const unsubscribe = subscribeToOrders(
+      (data) => {
+        setOrdersSource(data);
+        setLoading(false);
+        setMessage("");
+      },
+      (error) => {
+        console.error("Load orders error:", error);
+        setMessage(error?.message || "Failed to load orders.");
+        setLoading(false);
+      }
+    );
+    return () => unsubscribe();
   }, []);
 
   const orders = useMemo(() => {
-    const byTab = getOrdersByTab(ordersSource, activeTab);
-    const q = search.trim().toLowerCase();
-    if (!q) return byTab;
+    let filtered = ordersSource;
 
-    return byTab.filter((o) => {
-      return (
-        String(o.id ?? "").toLowerCase().includes(q) ||
-        String(o.customerName ?? "").toLowerCase().includes(q) ||
-        String(o.tableNumber ?? "").toLowerCase().includes(q) ||
-        String(o.status ?? "").toLowerCase().includes(q)
+    if (activeTab === "Pending") {
+      filtered = filtered.filter(
+        (o) => o.status !== "COMPLETED" && o.status !== "CANCELLED"
       );
-    });
+    } else {
+      filtered = filtered.filter(
+        (o) => o.status === "COMPLETED" || o.status === "CANCELLED"
+      );
+    }
+
+    const keyword = search.trim().toLowerCase();
+    if (keyword) {
+      filtered = filtered.filter((o) => {
+        const idStr = String(o.id || "").toLowerCase();
+        const statStr = String(o.status || "").toLowerCase();
+        const typeStr = String(o.orderType || "").toLowerCase();
+        const tblStr = String(o.tableNumber || "").toLowerCase();
+
+        const itemStr = (o.items || [])
+          .map((it) => it.name)
+          .join(" ")
+          .toLowerCase();
+
+        return (
+          idStr.includes(keyword) ||
+          statStr.includes(keyword) ||
+          typeStr.includes(keyword) ||
+          tblStr.includes(keyword) ||
+          itemStr.includes(keyword)
+        );
+      });
+    }
+
+    return filtered;
   }, [ordersSource, activeTab, search]);
 
-  async function handleStatusChange(orderId, newStatus, receiptFile) {
-    try {
-      const result = await updateOrderStatusRecord(
-        orderId,
-        newStatus,
-        receiptFile
-      );
-
-      if (!result.ok) {
-        setMessage(result.message);
-        return;
-      }
-
-      setOrdersSource((prev) =>
-        prev.map((order) =>
-          order.id === orderId
-            ? {
-                ...order,
-                status: newStatus,
-                ...(receiptFile && {
-                  receiptImage: URL.createObjectURL(receiptFile),
-                }),
-              }
-            : order
-        )
-      );
-
-      setExpandedId((prev) => (prev === orderId ? null : prev));
-
-      if (newStatus === "COMPLETED" || newStatus === "CANCELLED") {
-        setActiveTab("Finished");
-      }
-    } catch (error) {
-      console.error("Update status error:", error);
-      setMessage(error?.message || "Failed to update order status.");
+  function handleToggleCard(id, currentlyOpen) {
+    if (currentlyOpen) {
+      setExpandedId(null);
+    } else {
+      setExpandedId(id);
+      dismissToast(id);
     }
   }
 
-  async function handleToggleCard(orderId, isOpen) {
-    if (!isOpen) {
-      setExpandedId(orderId);
-      const relatedNotifs = unreadOrderNotifs.filter(
-        (n) => String(n.order_id) === String(orderId)
-      );
-      for (const notif of relatedNotifs) {
-        await dismissToast(notif.id);
-      }
-    } else {
-      setExpandedId(null);
+  // NEW: Added the cancelReason parameter
+  async function handleStatusChange(orderId, newStatus, cancelReason = null) {
+    const currentOrder = ordersSource.find((o) => o.id === orderId);
+    if (!currentOrder) return;
+
+    // Pass the reason into the database function
+    const result = await updateOrderStatusRecord(
+      orderId,
+      newStatus,
+      currentUser?.name || roleLabel,
+      currentOrder.status,
+      cancelReason 
+    );
+
+    if (!result.ok) {
+      alert(result.message);
     }
   }
 

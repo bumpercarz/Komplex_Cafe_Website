@@ -9,6 +9,31 @@ export default function OrderDetails({
 }) {
   const total = calcOrderTotal(order.items);
   const [lightboxSrc, setLightboxSrc] = useState(null);
+  
+  // States for the Cancel Reason Modal
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+
+  const handleSelectChange = (e) => {
+    const val = e.target.value;
+    // Intercept if they select CANCELLED
+    if (val === "CANCELLED" && status !== "CANCELLED") {
+      setShowCancelModal(true);
+    } else {
+      onStatusChange(order.id, val);
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    if (!cancelReason.trim()) {
+      alert("Please enter a reason for cancellation.");
+      return;
+    }
+    // Pass the third parameter (reason) up through OrderCard to the Admin Page!
+    onStatusChange(order.id, "CANCELLED", cancelReason.trim());
+    setShowCancelModal(false);
+    setCancelReason("");
+  };
 
   return (
     <div className="ao-cardBody">
@@ -18,7 +43,6 @@ export default function OrderDetails({
 
         <div className="ao-items">
           {order.items.map((it, idx) => {
-            // Bulletproof check: convert to lowercase and remove spaces
             const itemCategory = String(it.category || "").trim().toLowerCase();
             const isSpecialCategory = ["add-on", "add_on", "dip", "sweetness"].includes(
               itemCategory
@@ -34,7 +58,6 @@ export default function OrderDetails({
                 <div className="ao-itemQty">{it.qty}x</div>
                 <div className="ao-itemName">
                   {it.name}
-                  {/* Optional: Add-on category label. Remove if you prefer it completely clean. */}
                   {isSpecialCategory && (
                     <span className="ao-categoryTag"> ({it.category})</span>
                   )}
@@ -46,11 +69,22 @@ export default function OrderDetails({
             );
           })}
         </div>
+        
+        <div style={{ width: "100%", height: "1px", backgroundColor: "#d9d9d9", margin: "16px 0" }} />
 
-        <div className="ao-divider" />
-
-        <div className="ao-totalRow">
-          <div className="ao-totalPrice">{formatMoney(total)}</div>
+        <div 
+          className="ao-totalRow" 
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            fontSize: '16px'
+          }}
+        >
+          <strong>Total Amount:</strong>
+          <strong className="ao-totalPrice" style={{ fontSize: '18px', color: '#db7634' }}>
+            {formatMoney(total)}
+          </strong>
         </div>
 
         {/* Receipt Preview */}
@@ -82,7 +116,7 @@ export default function OrderDetails({
           <select
             className="ao-select"
             value={status}
-            onChange={(e) => onStatusChange(order.id, e.target.value)}
+            onChange={handleSelectChange}
           >
             {statusOptions.map((s) => (
               <option key={s} value={s}>
@@ -108,8 +142,50 @@ export default function OrderDetails({
                 : "N/A"}
             </div>
           </div>
+          
+          {/* THE CANCEL REASON DISPLAY (Appears only if cancelReason exists) */}
+          {order.cancelReason && (
+            <div className="ao-metaRow" style={{ marginTop: '16px', background: '#fdf0ee', padding: '12px', borderRadius: '8px', border: '1px solid #fad2cd' }}>
+              <b style={{ color: "#df4735", display: 'block', marginBottom: '4px' }}>Cancellation Reason:</b>
+              <div className="ao-instructions" style={{ color: "#df4735", fontWeight: '500' }}>
+                {order.cancelReason}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* CANCEL REASON MODAL */}
+      {showCancelModal && (
+        <div className="ao-cancel-modal-backdrop" onClick={() => setShowCancelModal(false)}>
+          <div className="ao-cancel-modal" onClick={(e) => e.stopPropagation()}>
+            <h4 style={{ margin: "0 0 16px 0", color: "#333", fontSize: "18px" }}>Reason for Cancellation</h4>
+            <textarea
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="e.g. Customer requested cancel, out of stock, etc."
+              rows={4}
+            />
+            <div className="ao-cancel-modal-actions">
+              <button 
+                className="ao-cancel-btn-back" 
+                onClick={() => {
+                  setShowCancelModal(false);
+                  setCancelReason("");
+                }}
+              >
+                Back
+              </button>
+              <button 
+                className="ao-cancel-btn-confirm" 
+                onClick={handleConfirmCancel}
+              >
+                Confirm Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Lightbox Overlay */}
       {lightboxSrc && (
@@ -118,16 +194,10 @@ export default function OrderDetails({
           onClick={() => setLightboxSrc(null)}
           style={{
             position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.8)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 9999,
-            cursor: "zoom-out",
+            top: 0, left: 0, width: "100vw", height: "100vh",
+            background: "rgba(0,0,0,0.8)", display: "flex",
+            justifyContent: "center", alignItems: "center",
+            zIndex: 9999, cursor: "zoom-out",
           }}
         >
           <img

@@ -38,137 +38,145 @@ function NotificationModal({ notification, onClose }) {
               <img 
                 src={notification.picture} 
                 alt="Notification Avatar" 
-                style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
               />
-              <span className="an-modalAvatarIcon" style={{ position: "absolute", top: -5, left: -5 }}>
-                {notification.typeIcon}
-              </span>
             </div>
-            <div>
-              <span className="an-typeBadge">{notification.typeLabel}</span>
-              <h2 className="an-modalHeadline">{notification.title}</h2>
-              <p className="an-modalTime">
-                {notification.timeLabel}
-                {notification.actor && notification.actor !== "System"
-                  ? ` · by ${notification.actor}`
-                  : ""}
-              </p>
+            <div className="an-modalMeta">
+              <div className="an-modalTime">{notification.timeLabel}</div>
+              <div className="an-modalType">{notification.typeLabel}</div>
+              {notification.actor && notification.actor !== "System" && (
+                <div className="an-modalActor">Actor: {notification.actor}</div>
+              )}
             </div>
           </div>
 
-          <div className="an-modalSection">
-            <h3>Message</h3>
-            <p>{notification.description}</p>
-          </div>
+          <h3 className="an-modalHeadline">{notification.title}</h3>
+          <p className="an-modalMessage">{notification.message}</p>
 
-          {notification.details?.length > 0 && (
-            <div className="an-modalSection">
-              <h3>Details</h3>
-              <div className="an-detailList">
-                {notification.details.map((detail, index) => (
-                  <div className="an-detailRow" key={`${detail.label}-${index}`}>
-                    <span>{detail.label}</span>
-                    <strong>{detail.value}</strong>
-                  </div>
-                ))}
-              </div>
+          {notification.details && notification.details.length > 0 && (
+            <div className="an-modalExtra">
+              {notification.details.map((row, i) => (
+                <div className="an-modalRow" key={i}>
+                  <span>{row.label}:</span>
+                  <strong>{row.value}</strong>
+                </div>
+              ))}
             </div>
           )}
+        </div>
 
-          <div className="an-modalActions">
-            <button type="button" className="an-closeBtn" onClick={onClose}>
-              Close
-            </button>
-          </div>
+        <div className="an-modalFooter">
+          <button className="an-modalBtn" onClick={onClose}>
+            Close
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AdminNotificationsPage() {
-  const [menuOpen, setMenuOpen]                     = useState(false);
-  const [notifications, setNotifications]           = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedNotificationId, setSelectedNotificationId] = useState(null);
-  const [loading, setLoading]                       = useState(true);
-  const [error, setError]                           = useState("");
-  const [currentUser, setCurrentUser]               = useState(null);
+  
+  const [currentUser, setCurrentUser] = useState(null);
+  
+  // Custom Date Range State
+  const [customDates, setCustomDates] = useState({ start: "", end: "" });
 
-  // ── Load current user ──────────────────────────────────────────────────────
   useEffect(() => {
     const user = getCurrentUser();
     setCurrentUser(user);
   }, []);
 
-  const role      = currentUser?.role || "STAFF";
+  const role = currentUser?.role || "STAFF";
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
 
-  // ── Audio unlock on first tap ──────────────────────────────────────────────
-  //
-  // Mobile browsers (Android, iOS) require a user gesture before AudioContext
-  // can play sound. We listen for the first tap anywhere on this page and
-  // create/resume the AudioContext at that moment so the hook can play sounds
-  // when a notification arrives later.
-  //
+  // Load real-time notifications
   useEffect(() => {
-    function unlockAudio() {
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) return;
-        const ctx = new AudioCtx();
-        ctx.resume().then(() => ctx.close());
-      } catch (_) {}
-    }
-
-    // once:true means the listener removes itself after the first call
-    window.addEventListener("pointerdown", unlockAudio, { once: true });
-    window.addEventListener("touchstart",  unlockAudio, { once: true, passive: true });
-
-    return () => {
-      window.removeEventListener("pointerdown", unlockAudio);
-      window.removeEventListener("touchstart",  unlockAudio);
-    };
-  }, []);
-
-  // ── Real-time notification subscription ───────────────────────────────────
-  useEffect(() => {
-    const unsub = subscribeToNotifications(
+    setLoading(true);
+    const unsubscribe = subscribeToNotifications(
       (data) => {
         setNotifications(data);
         setLoading(false);
-        setError("");
       },
-      (err) => {
-        setError(err?.message || "Failed to load notifications.");
+      (error) => {
+        console.error("Notifs error:", error);
         setLoading(false);
       }
     );
-    return () => unsub();
+    return () => unsubscribe();
   }, []);
 
+  // Filter & Limit Logic
+  const filteredNotifications = useMemo(() => {
+    let result = notifications;
+    const isCustomDateActive = customDates.start || customDates.end;
+
+    // NEW: Firebase dates can be tricky. This helper safely extracts the exact Date object
+    // whether your field is called 'n_timestamp' or 'timestamp', and whether it's a raw Firestore Timestamp or a JS Date.
+    const getSafeDate = (n) => {
+      if (n.n_timestamp?.toDate) return n.n_timestamp.toDate();
+      if (n.timestamp?.toDate) return n.timestamp.toDate();
+      if (n.n_timestamp instanceof Date) return n.n_timestamp;
+      if (n.timestamp instanceof Date) return n.timestamp;
+      return null;
+    };
+
+    // Filter by Custom Date Range
+    if (customDates.start) {
+      const startDate = new Date(`${customDates.start}T00:00:00`);
+      result = result.filter(n => {
+        const d = getSafeDate(n);
+        return d && d >= startDate;
+      });
+    }
+    
+    if (customDates.end) {
+      const endDate = new Date(`${customDates.end}T23:59:59`);
+      result = result.filter(n => {
+        const d = getSafeDate(n);
+        return d && d <= endDate;
+      });
+    }
+
+    // Filter by Search Query
+    const keyword = search.toLowerCase();
+    if (keyword) {
+      result = result.filter((n) =>
+        Object.values(n).join(" ").toLowerCase().includes(keyword)
+      );
+    }
+
+    // Limit to 100 records if no custom date range is applied
+    if (!isCustomDateActive) {
+      result = result.slice(0, 100);
+    }
+
+    return result;
+  }, [notifications, search, customDates]);
+
   const selectedNotification = useMemo(
-    () => notifications.find((n) => n.id === selectedNotificationId) ?? null,
+    () => notifications.find((n) => n.id === selectedNotificationId) || null,
     [notifications, selectedNotificationId]
   );
 
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.isRead).length,
-    [notifications]
-  );
-
-  async function handleView(notification) {
-    if (!notification.isRead) {
-      await markNotificationAsRead(notification.id);
+  async function handleView(notif) {
+    setSelectedNotificationId(notif.id);
+    if (!notif.isRead) {
+      await markNotificationAsRead(notif.id);
     }
-    setSelectedNotificationId(notification.id);
   }
 
-  async function handleDelete(notificationId) {
-    if (selectedNotificationId === notificationId) {
-      setSelectedNotificationId(null);
-    }
-    await deleteNotificationById(notificationId);
+  async function handleDelete(id) {
+    const confirmed = window.confirm("Delete this notification?");
+    if (!confirmed) return;
+    await deleteNotificationById(id);
   }
 
   return (
@@ -178,39 +186,64 @@ export default function AdminNotificationsPage() {
 
       <main className="an-main">
         <AdminPageToolbar
-          title={
-            unreadCount > 0
-              ? `Notification List (${unreadCount} unread)`
-              : "Notification List"
-          }
-          showSearch={false}
+          title="Notifications"
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search notifications..."
         />
 
-        {error   ? <div className="an-empty an-error">{error}</div> : null}
-        {loading ? <div className="an-empty">Loading notifications…</div> : null}
+        {/* Custom Calendar Date Filter */}
+        <div className="an-dateFilterWrapper">
+          <label>Filter by Date: </label>
+          <input
+            type="date"
+            className="an-dateInput"
+            value={customDates.start}
+            onChange={(e) => setCustomDates(prev => ({ ...prev, start: e.target.value }))}
+          />
+          <span>to</span>
+          <input
+            type="date"
+            className="an-dateInput"
+            value={customDates.end}
+            onChange={(e) => setCustomDates(prev => ({ ...prev, end: e.target.value }))}
+          />
+          <button
+            className="an-clearDateBtn"
+            onClick={() => setCustomDates({ start: "", end: "" })}
+          >
+            Clear Range
+          </button>
+          
+          {/* Helper text showing if the limit is currently active */}
+          {!customDates.start && !customDates.end && (
+            <span style={{ marginLeft: "auto", fontSize: "12px", color: "#666" }}>
+              Showing latest 100 records. Select a date range to view older data.
+            </span>
+          )}
+        </div>
 
-        {!loading && (
+        {loading ? (
+          <div className="an-empty">Loading notifications...</div>
+        ) : (
           <div className="an-list">
-            {notifications.map((notification) => (
+            {filteredNotifications.map((notification) => (
               <div
                 key={notification.id}
                 className={`an-card ${notification.isRead ? "is-read" : ""}`}
               >
                 <div className="an-cardLeft">
-                  <div className={`an-avatar ${notification.isRead ? "is-read" : ""}`} style={{ overflow: "hidden", position: "relative" }}>
+                  <div className="an-avatar">
                     <img 
                       src={notification.picture} 
-                      alt="Notification Avatar" 
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }} 
+                      alt="Avatar" 
+                      style={{ width: "100%", height: "100%", objectFit: "contain" }}
                     />
-                    <span className="an-avatarIcon" style={{ position: "absolute", top: -5, left: -5 }}>
-                      {notification.typeIcon}
-                    </span>
                   </div>
 
-                  <div className="an-content">
-                    <div className="an-cardMeta">
-                      <span className="an-typeBadge an-typeBadge--sm">
+                  <div className="an-info">
+                    <div className="an-meta">
+                      <span className="an-typeBadge">
                         {notification.typeLabel}
                       </span>
                       {notification.actor && notification.actor !== "System" && (
@@ -243,8 +276,8 @@ export default function AdminNotificationsPage() {
               </div>
             ))}
 
-            {notifications.length === 0 && (
-              <div className="an-empty">No notifications yet.</div>
+            {filteredNotifications.length === 0 && (
+              <div className="an-empty">No notifications found.</div>
             )}
           </div>
         )}
