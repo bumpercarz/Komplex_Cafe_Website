@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../firebase.js";
+import { FaSpinner } from "react-icons/fa";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import NavBar from "../components/NavBar";
 import ItemPopup from "../components/ItemPopUp";
@@ -22,7 +23,7 @@ const getBaseName = (name) =>
     .replace(/\s*\((hot|iced)\)\s*$/i, "")
     .trim();
 
-const isHotVariant  = (n) => /^\s*hot\s+/i.test(n) || /\((hot)\)\s*$/i.test(n);
+const isHotVariant = (n) => /^\s*hot\s+/i.test(n) || /\((hot)\)\s*$/i.test(n);
 const isIcedVariant = (n) => /^\s*iced\s+/i.test(n) || /\((iced)\)\s*$/i.test(n);
 
 /**
@@ -31,12 +32,12 @@ const isIcedVariant = (n) => /^\s*iced\s+/i.test(n) || /\((iced)\)\s*$/i.test(n)
  * Untagged drinks (frappes, etc.) and non-drink items pass through unchanged.
  */
 const mergeTemperatureVariants = (items) => {
-  const drinks    = items.filter((i) => i.category?.toLowerCase() === "drink");
+  const drinks = items.filter((i) => i.category?.toLowerCase() === "drink");
   const nonDrinks = items.filter((i) => i.category?.toLowerCase() !== "drink");
 
-  const hotItems  = drinks.filter((i) => isHotVariant(i.m_name));
+  const hotItems = drinks.filter((i) => isHotVariant(i.m_name));
   const icedItems = drinks.filter((i) => isIcedVariant(i.m_name));
-  const untagged  = drinks.filter((i) => !isHotVariant(i.m_name) && !isIcedVariant(i.m_name));
+  const untagged = drinks.filter((i) => !isHotVariant(i.m_name) && !isIcedVariant(i.m_name));
 
   const merged = [];
   const usedIced = new Set();
@@ -47,8 +48,8 @@ const mergeTemperatureVariants = (items) => {
     const iced = icedItems.find((i) => getBaseName(i.m_name) === base);
     merged.push({
       ...hot,
-      m_name:   base,
-      hotItem:  hot,
+      m_name: base,
+      hotItem: hot,
       icedItem: iced ?? null,
     });
     if (iced) usedIced.add(iced.docId);
@@ -78,24 +79,24 @@ export default function MenuPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const [popup, setPopup]         = useState(null);
-  const [cart, setCart]           = useState(location.state?.cart ?? []);
-  const [menu, setMenu]           = useState([]);
-  const [addons, setAddons]       = useState([]);
-  const [dips, setDips]           = useState([]);
+  const [popup, setPopup] = useState(null);
+  const [cart, setCart] = useState(location.state?.cart ?? []);
+  const [menu, setMenu] = useState([]);
+  const [addons, setAddons] = useState([]);
+  const [dips, setDips] = useState([]);
   const [sweetness, setSweetness] = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [checkingOrder, setCheckingOrder] = useState(true);
 
   const sectionRefs = useRef({});
-  const headerRef   = useRef();
+  const headerRef = useRef();
 
   // ── 1. Check for active order first ──
   useEffect(() => {
     const checkActiveOrder = async () => {
       try {
-        const guestId       = sessionStorage.getItem("guest_id");
+        const guestId = sessionStorage.getItem("guest_id");
         const activeOrderId = sessionStorage.getItem("active_order_id");
 
         if (!guestId || !activeOrderId) return;
@@ -164,14 +165,29 @@ export default function MenuPage() {
 
   // ── All hooks done — now safe to return early ──
   if (checkingOrder || loading) return (
-    <div className="wrapper"><div className="menu-page"><NavBar /><div className="menu-loading">Loading menu…</div></div></div>
+    <div className="wrapper">
+      <div className="menu-page">
+        <NavBar />
+          <div className="menu-loading">
+          <FaSpinner size={50} className="spin" />
+          Loading menu…
+          </div>
+      </div>
+    </div>
   );
   if (error) return (
-    <div className="wrapper"><div className="menu-page"><NavBar /><div className="menu-error">{error}</div></div></div>
+    <div className="wrapper">
+      <div className="menu-page">
+        <NavBar />
+        <div className="menu-error">
+          {error}
+        </div>
+      </div>
+    </div>
   );
 
-  const categories   = [...new Set(menu.map((i) => i.category))];
-  const mergedMenu   = mergeTemperatureVariants(menu);
+  const categories = [...new Set(menu.map((i) => i.category))];
+  const mergedMenu = mergeTemperatureVariants(menu);
   const groupedItems = categories.map((cat) => ({
     category: cat,
     items: mergedMenu.filter((i) => i.category === cat),
@@ -186,9 +202,9 @@ export default function MenuPage() {
    * get different keys and are kept as separate rows.
    */
   const makeCartKey = (entry) => {
-    const addonIds   = (entry.addons    ?? []).map((a) => a.docId).sort().join(",");
-    const dipIds     = (entry.dips      ?? []).map((d) => d.docId).sort().join(",");
-    const sweetIds   = (entry.sweetness ?? []).map((s) => s.docId).sort().join(",");
+    const addonIds = (entry.addons ?? []).map((a) => a.docId).sort().join(",");
+    const dipIds = (entry.dips ?? []).map((d) => d.docId).sort().join(",");
+    const sweetIds = (entry.sweetness ?? []).map((s) => s.docId).sort().join(",");
     return `${entry.item.docId}|${entry.temperature ?? ""}|${addonIds}|${dipIds}|${sweetIds}`;
   };
 
@@ -223,7 +239,7 @@ export default function MenuPage() {
     ].filter(Boolean));
 
     const matches = cart.filter((e) => docIds.has(e.item.docId));
-    const qty     = matches.reduce((s, e) => s + e.qty, 0);
+    const qty = matches.reduce((s, e) => s + e.qty, 0);
     return { qty };
   };
 
@@ -232,7 +248,7 @@ export default function MenuPage() {
     if (!available) return "Unavailable";
     if (card.hotItem && card.icedItem)
       return `☕ ${peso(card.hotItem.price)} · 🧊 ${peso(card.icedItem.price)}`;
-    if (card.hotItem)  return `☕ ${peso(card.hotItem.price)}`;
+    if (card.hotItem) return `☕ ${peso(card.hotItem.price)}`;
     if (card.icedItem) return `🧊 ${peso(card.icedItem.price)}`;
     return peso(card.price ?? 0);
   };
