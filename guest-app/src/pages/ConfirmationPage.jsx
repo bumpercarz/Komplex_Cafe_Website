@@ -117,6 +117,7 @@ export default function ConfirmationPage() {
   const [referenceNumber, setReferenceNumber] = useState(null);
   const [orderItems,      setOrderItems]      = useState([]);
   const [totalAmount,     setTotalAmount]     = useState(null);
+  const [cancelReason,    setCancelReason]    = useState(null);
   const [showFeedback,    setShowFeedback]    = useState(false);
   const [statusToast,     setStatusToast]     = useState(null); // { message, colorClass }
 
@@ -180,6 +181,7 @@ export default function ConfirmationPage() {
       setOrderStatus(status);
       setOrderItems(data.items ?? []);
       setTotalAmount(data.total_amount ?? null);
+      setCancelReason(data.cancel_reason ?? null);
 
       if (status === "COMPLETED" || status === "CANCELLED") {
         sessionStorage.removeItem("active_order_id");
@@ -204,7 +206,12 @@ export default function ConfirmationPage() {
     return () => unsub();
   }, [paymentId]);
 
-  const { icon, header, sub } = STATUS_CONFIG[orderStatus] ?? FALLBACK;
+  const rawConfig = STATUS_CONFIG[orderStatus] ?? FALLBACK;
+  const { icon, header } = rawConfig;
+  const sub =
+    orderStatus === "CANCELLED" && cancelReason
+      ? `Your order has been canceled. Reason: ${cancelReason}`
+      : rawConfig.sub;
   const groups = groupItems(orderItems);
 
   return (
