@@ -269,13 +269,17 @@ export default function ConfirmationPage() {
 
             {isDone && (
               <div className="fb-trigger-wrap">
-                <p className="fb-trigger-label">How was your experience?</p>
-                <button
-                  className="fb-trigger-btn"
-                  onClick={() => setShowFeedback(true)}
-                >
-                  Send Feedback
-                </button>
+                {orderStatus === "COMPLETED" && (
+                  <>
+                    <p className="fb-trigger-label">How was your experience?</p>
+                    <button
+                      className="fb-trigger-btn"
+                      onClick={() => setShowFeedback(true)}
+                    >
+                      Send Feedback
+                    </button>
+                  </>
+                )}
                 <button
                   className="fb-trigger-btn fb-back-btn"
                   onClick={() => navigate("/menu", { replace: true })}
