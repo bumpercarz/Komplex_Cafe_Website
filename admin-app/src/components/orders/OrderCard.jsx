@@ -3,29 +3,39 @@ import OrderDetails from "./OrderDetails";
 import { formatDate, formatTime } from "../../services/adminOrderData";
 
 // --- LIVE STOPWATCH COMPONENT ---
-function OrderStopwatch({ status, preparingAt, completedAt }) {
+function OrderStopwatch({ status, preparingAt, completedAt, finishedAt }) {
   const [elapsed, setElapsed] = useState("00:00");
+
+  // Pick the right freeze timestamp based on status
+  const freezeAt =
+    status === "COMPLETED" ? (finishedAt || completedAt) :
+    status === "AWAITING PICK-UP" ? completedAt :
+    null;
 
   useEffect(() => {
     if (!preparingAt) return;
 
-    const interval = setInterval(() => {
-      const endTime = completedAt ? completedAt : new Date();
-      const startTime = preparingAt;
-      
-      const diffMs = Math.max(0, endTime - startTime);
-      
+    const tick = () => {
+      const endTime = freezeAt ? freezeAt : new Date();
+      const diffMs = Math.max(0, endTime - preparingAt);
       const totalSeconds = Math.floor(diffMs / 1000);
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
-      
       setElapsed(
         `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
       );
-    }, 1000);
+    };
 
+    tick(); // run immediately so display isn't blank for 1s
+
+    if (freezeAt) {
+      // Timer is frozen — compute once, no interval needed
+      return;
+    }
+
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [preparingAt, completedAt, status]);
+  }, [preparingAt, freezeAt]);
 
   if (!preparingAt) return null;
 
@@ -97,7 +107,8 @@ export default function OrderCard({
             <OrderStopwatch 
               status={status} 
               preparingAt={order.preparingAt} 
-              completedAt={order.completedAt} 
+              completedAt={order.completedAt}
+              finishedAt={order.finishedAt}
             />
 
             <div className="ao-time">

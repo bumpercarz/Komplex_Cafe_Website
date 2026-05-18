@@ -128,6 +128,11 @@ function mapFirestoreOrder(docSnap) {
       typeof data.completed_at?.toDate === "function"
         ? data.completed_at.toDate()
         : null,
+
+    finishedAt:
+      typeof data.finished_at?.toDate === "function"
+        ? data.finished_at.toDate()
+        : null,
     
     // NEW: Properly fetch cancel_reason from database to frontend
     cancelReason: data.cancel_reason || null, 
@@ -218,6 +223,8 @@ export async function updateOrderStatusRecord(
       updatePayload.preparing_at = serverTimestamp();
     } else if (newStatus === "AWAITING PICK-UP") {
       updatePayload.completed_at = serverTimestamp();
+    } else if (newStatus === "COMPLETED") {
+      updatePayload.finished_at = serverTimestamp();
     } else if (newStatus === "CANCELLED" && cancelReason) {
       // NEW: Tell Firebase to actually save the reason!
       updatePayload.cancel_reason = cancelReason; 
