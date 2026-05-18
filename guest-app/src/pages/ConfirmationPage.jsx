@@ -55,8 +55,8 @@ const STATUS_CONFIG = {
   },
   "PREPARING": {
     icon:    <FaCoffee size={50} />,
-    header:  "Do not leave or close this page. Your order is being prepared!",
-    sub:     "Our team is working on your order. ",
+    header:  "Your order is being prepared!",
+    sub:     "Our team is working on your order. Do not leave or close this page. ",
   },
   "AWAITING PICK-UP": {
     icon:    <FaBell size={50} />,
