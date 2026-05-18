@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  doc, runTransaction, serverTimestamp, arrayUnion,
+    doc, runTransaction, serverTimestamp, arrayUnion,
 } from "firebase/firestore";
 import { db } from "../firebase.js";
 import "../css/QRPage.css";
@@ -11,17 +11,17 @@ import komplexQR from "../assets/komplexQR.jpg";
 import { notifyNewOrder } from "../services/notificationService";
 
 const getSessionGuestId = () => {
-  const existing = sessionStorage.getItem("guest_id");
-  return existing ? Number(existing) : null;
+    const existing = sessionStorage.getItem("guest_id");
+    return existing ? Number(existing) : null;
 };
 
 const clean = (obj) =>
-  Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+    Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
 const generateReferenceNumber = (paymentId) => 100000 + paymentId;
 
 const peso = (n) =>
-  "₱" + Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2 });
+    "₱" + Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2 });
 
 export default function QRPage() {
     const navigate = useNavigate();
@@ -31,15 +31,15 @@ export default function QRPage() {
 
     const [showUpload, setShowUpload] = useState(false);
     const [submitting, setSubmitting] = useState(false);
-    const [error, setError]           = useState(null);
-    const qrRef                       = useRef(null);
+    const [error, setError] = useState(null);
+    const qrRef = useRef(null);
 
     const handleDownloadQR = async () => {
         const img = qrRef.current;
         if (!img) return;
 
         const canvas = document.createElement("canvas");
-        canvas.width  = img.naturalWidth  || img.width;
+        canvas.width = img.naturalWidth || img.width;
         canvas.height = img.naturalHeight || img.height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0);
@@ -79,11 +79,11 @@ export default function QRPage() {
 
     const submitOrder = async (receiptUrl = "") => {
         const existingGuestId = getSessionGuestId();
-        const isNewGuest      = existingGuestId === null;
+        const isNewGuest = existingGuestId === null;
 
-        const orderCounterRef   = doc(db, "counters", "order_id");
+        const orderCounterRef = doc(db, "counters", "order_id");
         const paymentCounterRef = doc(db, "counters", "payment_id");
-        const guestCounterRef   = doc(db, "counters", "guest_id");
+        const guestCounterRef = doc(db, "counters", "guest_id");
 
         let newOrderId, newPaymentId, guestId;
 
@@ -94,13 +94,13 @@ export default function QRPage() {
                 isNewGuest ? transaction.get(guestCounterRef) : Promise.resolve(null),
             ]);
 
-            newOrderId   = (orderSnap.data()?.current_value   ?? 0) + 1;
+            newOrderId = (orderSnap.data()?.current_value ?? 0) + 1;
             newPaymentId = (paymentSnap.data()?.current_value ?? 0) + 1;
-            guestId      = isNewGuest
+            guestId = isNewGuest
                 ? (guestCounterSnap.data()?.current_value ?? 0) + 1
                 : existingGuestId;
 
-            transaction.set(orderCounterRef,   { current_value: newOrderId   }, { merge: true });
+            transaction.set(orderCounterRef, { current_value: newOrderId }, { merge: true });
             transaction.set(paymentCounterRef, { current_value: newPaymentId }, { merge: true });
             if (isNewGuest) {
                 transaction.set(guestCounterRef, { current_value: guestId }, { merge: true });
@@ -108,35 +108,35 @@ export default function QRPage() {
 
             const orderRef = doc(db, "tbl_orders", String(newOrderId));
             transaction.set(orderRef, clean({
-                order_id:     newOrderId,
-                guest_id:     guestId,
-                user_id:      null,
+                order_id: newOrderId,
+                guest_id: guestId,
+                user_id: null,
                 items: cart.flatMap((e) => [
                     {
-                      name: e.item?.m_name ?? "Unknown",
-                      price: e.item?.price ?? 0,
-                      qty: e.qty ?? 1,
-                      ...(e.temperature ? { temperature: e.temperature } : {}),
+                        name: e.item?.m_name ?? "Unknown",
+                        price: e.item?.price ?? 0,
+                        qty: e.qty ?? 1,
+                        ...(e.temperature ? { temperature: e.temperature } : {}),
                     },
                     ...(e.addons ?? []).map((a) => ({ name: a.m_name ?? "Unknown", price: a.price ?? 0, qty: e.qty ?? 1, sub: true })),
-                    ...(e.dips   ?? []).map((d) => ({ name: d.m_name ?? "Unknown", price: d.price ?? 0, qty: e.qty ?? 1, sub: true })),
+                    ...(e.dips ?? []).map((d) => ({ name: d.m_name ?? "Unknown", price: d.price ?? 0, qty: e.qty ?? 1, sub: true })),
                     ...(e.sweetness ?? []).map((s) => ({ name: s.m_name ?? "Unknown", price: s.price ?? 0, qty: e.qty ?? 1, sub: true })),
                 ]),
-                total_amount:         totalAmount,
-                order_status:         "PROCESSING PAYMENT",
-                order_type:           orderType ?? null,
-                receive_at:           receiveAt ?? null,
+                total_amount: totalAmount,
+                order_status: "PROCESSING PAYMENT",
+                order_type: orderType ?? null,
+                receive_at: receiveAt ?? null,
                 special_instructions: instructions || null,
-                table_id:             finalTableId,
-                receipt_image:        receiptUrl,
-                o_timestamp:          serverTimestamp(),
+                table_id: finalTableId,
+                receipt_image: receiptUrl,
+                o_timestamp: serverTimestamp(),
             }));
 
             const guestRef = doc(db, "tbl_guests", String(guestId));
             if (isNewGuest) {
                 transaction.set(guestRef, {
-                    guest_id:     guestId,
-                    order_ids:    [newOrderId],
+                    guest_id: guestId,
+                    order_ids: [newOrderId],
                     date_ordered: serverTimestamp(),
                 });
             } else {
@@ -145,10 +145,10 @@ export default function QRPage() {
 
             const paymentRef = doc(db, "tbl_payments", String(newPaymentId));
             transaction.set(paymentRef, {
-                payment_id:       newPaymentId,
-                order_id:         newOrderId,
-                amount_paid:      totalAmount,
-                payment_method:   "ONLINE",
+                payment_id: newPaymentId,
+                order_id: newOrderId,
+                amount_paid: totalAmount,
+                payment_method: "ONLINE",
                 reference_number: generateReferenceNumber(newPaymentId),
                 transaction_time: serverTimestamp(),
             });
@@ -210,7 +210,15 @@ export default function QRPage() {
                         >
                             {submitting ? "Submitting…" : "Upload Receipt Image"}
                         </button>
+                        <button
+                            type="button"
+                            className="qr-btn-back"
+                            onClick={() => navigate("/paymenttype", { state: { cart } })}
+                        >
+                            Back
+                        </button>
                     </div>
+
                 </section>
             </div>
 

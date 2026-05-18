@@ -6,6 +6,7 @@ import { FaCoffee, FaCheckCircle, FaSpinner, FaBell, FaTimesCircle, FaClock } fr
 import "../css/ConfirmationPage.css";
 import NavBar from "../components/NavBar";
 import FeedbackModal from "../components/FeedbackModal";
+import { initGuestPush, sendGuestPush } from "../services/guestPushService";
 
 /* ── Guest-side notification sound (plays when order status changes) ── */
 function playStatusChime() {
@@ -27,18 +28,12 @@ function playStatusChime() {
   } catch (_) {}
 }
 
+// Fallback inline notification for when the page IS in the foreground
 function sendGuestBrowserNotif(title, body) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   try {
-    new Notification(title, { body, icon: "/favicon.ico" });
+    new Notification(title, { body, icon: "/komplexLogoTransparent.png" });
   } catch (_) {}
-}
-
-async function requestNotifPermission() {
-  if (!("Notification" in window)) return;
-  if (Notification.permission === "default") {
-    await Notification.requestPermission();
-  }
 }
 
 /* ── Status config ── */
@@ -127,9 +122,9 @@ export default function ConfirmationPage() {
   const isDoneRef = useRef(isDone);
   useEffect(() => { isDoneRef.current = isDone; }, [isDone]);
 
-  /* ── Request browser notification permission on page load ── */
+  /* ── Register push subscription on mount (enables out-of-app notifications) ── */
   useEffect(() => {
-    requestNotifPermission();
+    initGuestPush();
   }, []);
 
   /* ── Block browser back button until order is done ── */
@@ -163,7 +158,18 @@ export default function ConfirmationPage() {
         playStatusChime();
         const cfg = STATUS_CONFIG[status];
         if (cfg) {
+          // In-app notification (works when page is open/foreground)
           sendGuestBrowserNotif(cfg.header, cfg.sub);
+
+          // Out-of-app push notification via service worker (works when page is closed/backgrounded)
+          const isTerminal = status === "COMPLETED" || status === "CANCELLED";
+          sendGuestPush({
+            title:              cfg.header,
+            body:               cfg.sub,
+            tag:                "order-status",
+            requireInteraction: isTerminal,
+            url:                "/confirmation",
+          });
 
           // In-page toast
           const colorMap = {
