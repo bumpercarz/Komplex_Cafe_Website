@@ -55,8 +55,8 @@ const STATUS_CONFIG = {
   },
   "PREPARING": {
     icon:    <FaCoffee size={50} />,
-    header:  "Your order is being prepared!",
-    sub:     "Our team is working on your order. Do not leave or close this page.",
+    header:  "Do not leave or close this page. Your order is being prepared!",
+    sub:     "Our team is working on your order. ",
   },
   "AWAITING PICK-UP": {
     icon:    <FaBell size={50} />,
@@ -71,7 +71,7 @@ const STATUS_CONFIG = {
   "CANCELLED": {
     icon:    <FaTimesCircle size={50} />,
     header:  "Order cancelled.",
-    sub:     "Your order has been canceled. Please contact staff for assistance.",
+    sub:     "",
   },
 };
 

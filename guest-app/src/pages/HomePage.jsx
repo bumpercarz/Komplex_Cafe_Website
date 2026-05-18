@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
-import { TbFileSad } from "react-icons/tb";
-// ✅ Ensure this path points to your actual Firebase configuration file
 import { db } from "../firebase";
 import "../css/Fonts.css";
 import "../css/HomePage.css";
@@ -23,95 +21,30 @@ const HomePage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // New States for Verification
-  const [isVerifying, setIsVerifying] = useState(true);
-  const [errorMsg, setErrorMsg] = useState(null);
-
   useEffect(() => {
     const tableId = searchParams.get("table_id");
+    if (!tableId) return;
 
-    const verifyTableStatus = async (id) => {
+    sessionStorage.setItem("table_id", tableId);
+
+    // Fetch table status and store it — CheckoutPage_2 uses this to
+    // enable or disable the "Dine In" and "Table" options
+    const verifyTableStatus = async () => {
       try {
-        const tableRef = doc(db, "tbl_table", id);
-        const tableSnap = await getDoc(tableRef);
-
-        console.log("Table data:", JSON.stringify(tableSnap.data()));
-        console.log("Snap exists:", tableSnap.exists());
-        console.log("Data:", tableSnap.data());   // ← check exact field names here
-
-        if (tableSnap.exists()) {
-          const data = tableSnap.data();
-          console.log("isActive value:", data.isActive, typeof data.isActive);
-
-          if (data.table_status === "Active") {
-            sessionStorage.setItem("table_id", id);
-            setIsVerifying(false);
-          } else {
-            setErrorMsg("This QR code is currently inactive. Please ask staff for assistance.");
-          }
+        const tableSnap = await getDoc(doc(db, "tbl_table", tableId));
+        if (tableSnap.exists() && tableSnap.data().table_status === "Active") {
+          sessionStorage.setItem("table_status", "Active");
         } else {
-          setErrorMsg("Invalid Table ID. Please scan a valid QR code.");
+          sessionStorage.setItem("table_status", "Inactive");
         }
       } catch (error) {
-        console.error("Firebase Verification Error:", error);
-        setErrorMsg("Connection error. Please check your internet and try again.");
+        console.error("Failed to fetch table status:", error);
+        sessionStorage.setItem("table_status", "Inactive");
       }
     };
 
-    if (tableId) {
-      verifyTableStatus(tableId);
-    } else {
-      // If there is no table_id in the URL, we allow the page to load normally 
-      // (or you can set an error if table_id is strictly required for entry)
-      setIsVerifying(false);
-    }
+    verifyTableStatus();
   }, [searchParams]);
-
-  // ── "Shutdown" View ──
-  // This replaces the entire page UI if the QR check fails
-  if (errorMsg) {
-    return (
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-        textAlign: "center",
-        backgroundColor: "rgb(221, 221, 221)",
-        fontFamily: "sans-serif",
-        padding: "20px" 
-      }}>
-        <TbFileSad size={100} />
-        <h1 style={{ color: "#e2491f", fontFamily: "gliker", fontSize: "50px" }}>Access Denied</h1>
-        <p style={{ fontSize: "1.2rem", maxWidth: "400px", color: "black" }}>{errorMsg}</p>
-        <button
-          className="btn--orange"
-          style={{ marginTop: "20px" }}
-          onClick={() => window.location.reload()}
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
-  // ── Loading View ──
-  // Prevents the website content from flickering before the check is done
-  if (isVerifying) {
-    return (
-      <div style={{
-        display: "flex",
-        height: "100vh",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#1a1a1a",
-        color: "#fff"
-      }}>
-        <p>Verifying Table Status...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="wrapper">

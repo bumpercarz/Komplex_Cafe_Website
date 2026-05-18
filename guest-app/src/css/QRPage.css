@@ -54,3 +54,33 @@
     justify-content: center;
     gap: 10px;
 }
+
+.qr-total {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 32px;
+    background-color: #fff5ee;
+    border: 2px solid #EF7828;
+    border-radius: 10px;
+    width: 250px;
+}
+
+.qr-total-label {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0;
+}
+
+.qr-total-amount {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #EF7828;
+    padding: 0;
+}

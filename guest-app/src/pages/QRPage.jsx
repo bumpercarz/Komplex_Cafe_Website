@@ -20,6 +20,9 @@ const clean = (obj) =>
 
 const generateReferenceNumber = (paymentId) => 100000 + paymentId;
 
+const peso = (n) =>
+  "₱" + Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2 });
+
 export default function QRPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -43,26 +46,21 @@ export default function QRPage() {
 
         // 1. Try the Native Web Share API (Mobile Devices)
         try {
-            // Convert the canvas to a Blob (file data)
             const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
             const file = new File([blob], "komplex-cafe-qr.png", { type: "image/png" });
 
-            // Check if the device's browser supports sharing files
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({
                     files: [file],
                     title: "Komplex Cafe QR",
                 });
-                return; // Stop here if the native share sheet successfully opened
+                return;
             }
         } catch (error) {
             console.log("Web Share API failed or user cancelled:", error);
-            // If the user just hit 'cancel' on the share sheet, we don't necessarily 
-            // want to force the fallback download, but you can leave this empty to fail gracefully.
         }
 
         // 2. Fallback for Desktop / Older Browsers
-        // If the Web Share API isn't supported, do the standard browser download
         const link = document.createElement("a");
         link.download = "komplex-cafe-qr.png";
         link.href = canvas.toDataURL("image/png");
@@ -71,7 +69,7 @@ export default function QRPage() {
 
     const totalAmount = cart.reduce((s, e) => s + e.lineTotal, 0);
 
-    // Sanitize table_id — reject "null", "undefined", "NaN" strings (same guard as PaymentType)
+    // Sanitize table_id — reject "null", "undefined", "NaN" strings
     let rawTableId = sessionStorage.getItem("table_id");
     if (!rawTableId || rawTableId === "null" || rawTableId === "undefined" || rawTableId === "NaN") {
         rawTableId = null;
@@ -194,6 +192,12 @@ export default function QRPage() {
                     <img ref={qrRef} src={komplexQR} alt="QR Code" crossOrigin="anonymous" />
 
                     <p className="qr-subtitle">We accept Gcash and PayMaya!</p>
+
+                    {/* ── Payment Total ── */}
+                    <div className="qr-total">
+                        <span className="qr-total-label">Amount to Pay</span>
+                        <span className="qr-total-amount">{peso(totalAmount)}</span>
+                    </div>
 
                     {error && <p className="qr-error">{error}</p>}
 

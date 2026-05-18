@@ -16,11 +16,17 @@ export default function CheckoutPage_2() {
     const cart = location.state?.cart ?? [];
     const cartTotal = cart.reduce((s, e) => s + e.lineTotal, 0);
 
-    /* ── Form state ── */
-    const tableId = sessionStorage.getItem("table_id");
+    /* ── Table state ── */
+    const tableId     = sessionStorage.getItem("table_id");
+    const tableActive = sessionStorage.getItem("table_status") === "Active";
 
-    const [orderType, setOrderType] = useState(!tableId ? "take_out" : null);
-    const [receiveAt, setReceiveAt] = useState(!tableId ? "counter" : null);
+    // Dine In: requires table_id to exist (regardless of active/inactive)
+    // Table delivery: requires table_id AND active status
+    const dineInEnabled = !!tableId;
+    const tableDeliveryEnabled = !!tableId && tableActive;
+
+    const [orderType, setOrderType] = useState(!dineInEnabled ? "take_out" : null);
+    const [receiveAt, setReceiveAt] = useState(!dineInEnabled ? "counter" : null);
     const [instructions, setInstructions] = useState("");
 
     const canContinue = orderType === "take_out" || (orderType === "dine_in" && receiveAt);
@@ -67,7 +73,7 @@ export default function CheckoutPage_2() {
                                 type="button"
                                 className={`btn-dine-in${orderType === "dine_in" ? " btn-dine-in--active" : ""}`}
                                 onClick={() => { setOrderType("dine_in"); setReceiveAt(null); }}
-                                disabled={!tableId}
+                                disabled={!dineInEnabled}
                             >
                                 {!tableId ? "No Table Assigned" : "Dine In"}
                             </button>
@@ -94,12 +100,11 @@ export default function CheckoutPage_2() {
                                 <FaCashRegister size={30} />
                             </button>
 
-
                             <button
                                 type="button"
                                 className={`btn-table${receiveAt === "table" ? " btn-table--active" : ""}`}
                                 onClick={() => setReceiveAt("table")}
-                                disabled={orderType === "take_out" || !tableId}
+                                disabled={orderType === "take_out" || !tableDeliveryEnabled}
                             >
                                 <strong>Table</strong>
                                 <MdOutlineTableRestaurant size={40} />
