@@ -17,6 +17,12 @@ for react icons to display properly in the website
 `npm install firebase`
 to implement firebase
 
+`npm install -g firebase-tools`
+to implement firebase tools
+
+then connect your account to the database used for komplex cafe using
+`firebase login`
+
 `npm install @emailjs/browser`
 for emails in feedbackmodal
 
